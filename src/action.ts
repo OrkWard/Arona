@@ -1,6 +1,6 @@
 import type { Message, Self } from "./base";
 
-interface OneBotActionRequest<T extends Record<string, unknown>> {
+export interface OneBotActionRequest<T extends Record<string, unknown> = {}> {
   action: string; // 动作名称
   param: T; // 动作参数
   echo?: string; // 用于唯一标志一个动作请求
@@ -16,7 +16,7 @@ interface OneBotActionRequest<T extends Record<string, unknown>> {
  *  - 4xxxx, 5xxxx: 保留段, 不使用
  *  - 6xxxx ~ 9xxxxx: 其他错误段, 可自定义
  */
-interface OneBotActionResponse {
+export interface OneBotActionResponse {
   status: "ok" | "failed"; // 动作结果
   retcode: number; // 返回码
   data: unknown; // 数据
@@ -33,7 +33,7 @@ export type OneBotActions = {
       | { detail_type: "private"; user_id: string; message: Message }
       | { detail_type: "group"; group_id: string; message: Message }
     ),
-    { message_id: string; time: number },
+    { message_id: string; time: number }
   ];
   delete_message: [{ message_id: string }, null];
 };
