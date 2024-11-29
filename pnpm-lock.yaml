@@ -14,9 +14,16 @@ importers:
       neverthrow:
         specifier: ^8.1.0
         version: 8.1.0
+      picocolors:
+        specifier: ^1.1.1
+        version: 1.1.1
       ws:
         specifier: ^8.18.0
         version: 8.18.0
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.2
 
 packages:
 
@@ -24,7 +31,6 @@ packages:
     resolution: {integrity: sha512-ZXFk7M72R0YYFN5q13niV0B7G8/5dcQ9JDp8keJSfr3GoZeXEoMHP/HlvqROA3OMbMdfr19IjCeNAnPUG93b6A==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@types/node@22.7.9':
     resolution: {integrity: sha512-jrTfRC7FM6nChvU7X2KqcrgquofrWLFDeYC1hKfwNWomVvrn7JIksqf344WN2X/y8xrgqBd2dJATZV4GbatBfg==}
@@ -35,6 +41,14 @@ packages:
   neverthrow@8.1.0:
     resolution: {integrity: sha512-DV0klbzcsI0XOJvdGElzJ2sEXmEPwQLWio/ttq7D7CQApUduxqzNG2noc8ZPaAFc9XXINYVb0f5ozM0ZJKGF1w==}
     engines: {node: '>=18'}
+
+  picocolors@1.1.1:
+    resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
+  typescript@5.7.2:
+    resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
@@ -67,6 +81,10 @@ snapshots:
   neverthrow@8.1.0:
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.24.0
+
+  picocolors@1.1.1: {}
+
+  typescript@5.7.2: {}
 
   undici-types@6.19.8: {}
 

@@ -14,6 +14,10 @@
   "dependencies": {
     "@types/ws": "^8.5.12",
     "neverthrow": "^8.1.0",
+    "picocolors": "^1.1.1",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
   }
 }

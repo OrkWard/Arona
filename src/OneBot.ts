@@ -2,22 +2,29 @@ import type {
   OneBotActionRequest,
   OneBotActionResponse,
   OneBotActions,
-} from "./action.ts";
-import type { OneBotEvents } from "./event.ts";
+} from "./action.js";
+import type { OneBotEvent, OneBotEvents } from "./event.js";
 import WebSocket from "ws";
-import util from "node:util";
+import { Logger } from "./log.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
 
-const decoder = new util.TextDecoder();
+const logger = new Logger({ debug: true });
 
-class Arona {
+function assert(condition: any, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+function isEvent(message: any): message is OneBotEvent {
+  return Boolean(message.id);
+}
+
+class OneBot {
   ws: WebSocket;
-  listeners: Map<
-    string,
-    Map<number, (eventDetail: OneBotEvents[keyof OneBotEvents]) => void>
-  >;
+  listeners: Map<string, Map<number, (event: OneBotEvent) => void>>;
   // Only store action response here. Event will be handle or throw away when
   // receiving
   messageBuffer: (OneBotActionResponse | undefined)[] = [];
@@ -27,20 +34,23 @@ class Arona {
   constructor(host: string, config?: { timeout?: number }) {
     const ws = new WebSocket(`ws://${host}`);
     this.ws = ws;
-    ws.on("error", console.error);
+    ws.on("error", (err) => {
+      logger.error(err);
+    });
     ws.on("open", () => {
-      console.log("connected");
+      logger.info("Connected to", host);
     });
 
     ws.on("message", (message) => {
-      if (Array.isArray(message)) {
-        throw message;
-      }
-      const decodedMsg = decoder.decode(message);
-      const parsedMsg = JSON.parse(decodedMsg);
-      if (parsedMsg.status) {
-        this.messageBuffer.push(parsedMsg);
-      } else {
+      assert(
+        message instanceof Buffer,
+        "In default message should be Node native buffer"
+      );
+
+      logger.info("receive message");
+
+      const parsedMsg = JSON.parse(message.toString("utf8"));
+      if (isEvent(parsedMsg)) {
         const eventName = parsedMsg.type;
         const listeners = this.listeners.get(eventName);
         if (listeners) {
@@ -48,6 +58,8 @@ class Arona {
             callback(parsedMsg);
           });
         }
+      } else {
+        this.messageBuffer.push(parsedMsg);
       }
     });
 
@@ -85,7 +97,7 @@ class Arona {
 
   listen<T extends keyof OneBotEvents>(
     eventName: T,
-    callback: (eventDetail: OneBotEvents[T]) => void
+    callback: (event: OneBotEvent) => void
   ): number {
     if (this.listeners.get(eventName)) {
       this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
@@ -98,12 +110,8 @@ class Arona {
   }
 
   removeListener(eventName: string, listenerId: number) {
-    if (!this.listeners.get(eventName)) {
-      return;
-    }
-
-    this.listeners.get(eventName)!.delete(listenerId);
+    this.listeners.get(eventName)?.delete(listenerId);
   }
 }
 
-export { Arona };
+export { OneBot as Arona };

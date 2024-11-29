@@ -1,4 +1,4 @@
-import type { Message, Self } from "./base";
+import type { Message, Self } from "./base.js";
 
 export interface OneBotActionRequest<T extends Record<string, unknown> = {}> {
   action: string; // 动作名称
