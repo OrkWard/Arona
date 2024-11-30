@@ -1,4 +1,4 @@
-import { Message } from "./base.js";
+import { Message } from "./message.js";
 
 type OneBotMetaEvent = {
   post_type: "meta_event";
