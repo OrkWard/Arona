@@ -1,8 +1,4 @@
-import type {
-  OneBotActionRequest,
-  OneBotActionResponse,
-  OneBotActions,
-} from "./action.js";
+import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent, OneBotEvents } from "./event.js";
 import WebSocket from "ws";
 import { Logger } from "./log.js";
@@ -27,7 +23,7 @@ class OneBot {
   listeners: Map<string, Map<number, (event: OneBotEvent) => void>>;
   // Only store action response here. Event will be handle or throw away when
   // receiving
-  messageBuffer: (OneBotActionResponse | undefined)[] = [];
+  messageBuffer: Map<string, OneBotActionResponse> = new Map();
   // Event response timeout, in millisecond
   timeout: number = 10_000;
 
@@ -42,10 +38,7 @@ class OneBot {
     });
 
     ws.on("message", (message) => {
-      assert(
-        message instanceof Buffer,
-        "In default message should be Node native buffer"
-      );
+      assert(message instanceof Buffer, "In default message should be Node native buffer");
 
       logger.info("receive message");
 
@@ -59,7 +52,9 @@ class OneBot {
           });
         }
       } else {
-        this.messageBuffer.push(parsedMsg);
+        assert(typeof parsedMsg.echo === "string", "Action Response should have 'echo'");
+        const id = parsedMsg.echo;
+        this.messageBuffer.set(id, parsedMsg);
       }
     });
 
@@ -81,24 +76,17 @@ class OneBot {
 
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {
-        this.messageBuffer
-          .filter((res) => !!res)
-          .forEach((res, i) => {
-            if (res.echo === echo) {
-              // @ts-expect-error
-              resolve(res.data);
-              this.messageBuffer[i] = undefined;
-              clearInterval(intervalId);
-            }
-          });
+        const res = this.messageBuffer.get(echo);
+        if (res) {
+          resolve(res.data);
+          this.messageBuffer.delete(echo);
+          clearInterval(intervalId);
+        }
       }, 200);
     });
   }
 
-  listen<T extends keyof OneBotEvents>(
-    eventName: T,
-    callback: (event: OneBotEvent) => void
-  ): number {
+  listen<T extends keyof OneBotEvents>(eventName: T, callback: (event: OneBotEvent) => void): number {
     if (this.listeners.get(eventName)) {
       this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
     } else {
