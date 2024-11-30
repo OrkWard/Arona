@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id      Int       @id @default(autoincrement())
+  userId  String    @unique
+  Message Message[]
+  Group   Group[]   @relation()
+}
+
+model Group {
+  id        Int       @id @default(autoincrement())
+  groupId   String    @unique
+  groupName String
+  message   Message[]
+  User      User[]    @relation()
+}
+
+model Message {
+  id        Int       @id @default(autoincrement())
+  messageId String    @unique
+  text      String?
+  image     String?
+  file      String?
+  audio     String?
+  video     String?
+  replyToId Int?
+  segments  Segment[]
+  type      String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  group     Group?    @relation(fields: [groupId], references: [id])
+  groupId   Int?
+}
+
+model Segment {
+  id        Int     @id @default(autoincrement())
+  message   Message @relation(fields: [messageId], references: [id])
+  messageId Int
+  content   String // text type: content, otherwise file path
+  type      String
+}
+
+// Remove the enums
+// enum MessageType {
+//   PRIVATE
+//   GROUP
+// }
+
+// enum SegmentType {
+//   TEXT
+//   IMAGE
+//   FILE
+//   AUDIO
+//   VIDEO
+// }
