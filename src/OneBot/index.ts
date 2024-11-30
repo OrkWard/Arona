@@ -1,7 +1,7 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent } from "./event.js";
 import WebSocket from "ws";
-import { Logger } from "./log.js";
+import { Logger } from "../utils/log.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -19,13 +19,13 @@ function isEvent(message: any): message is OneBotEvent {
 }
 
 class OneBot {
-  ws: WebSocket;
-  listeners: Map<string, Map<number, (event: OneBotEvent) => void>>;
+  private ws: WebSocket;
+  private listeners: Map<string, Map<number, (event: OneBotEvent) => void>>;
   // Only store action response here. Event will be handle or throw away when
   // receiving
-  messageBuffer: Map<string, OneBotActionResponse> = new Map();
+  private messageBuffer: Map<string, OneBotActionResponse> = new Map();
   // Event response timeout, in millisecond
-  timeout: number = 10_000;
+  private timeout: number = 10_000;
 
   constructor(host: string, config?: { timeout?: number }) {
     const ws = new WebSocket(`ws://${host}`);
