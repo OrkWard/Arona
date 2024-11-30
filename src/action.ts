@@ -1,22 +1,36 @@
-import type { Message, Self } from "./base.js";
+import type { Message } from "./base.js";
 
 export interface OneBotActionRequest<T extends Record<string, unknown> = {}> {
   action: string; // 动作名称
   param: T; // 动作参数
   echo?: string; // 用于唯一标志一个动作请求
-  self?: Self; // 多个机器人账号共用一个 OneBot Connection 时, 必传, 用于标志机器人账号
 }
 
 export type OneBotActions = {
-  get_supported_actions: [{}, string[]];
-  get_status: [{}, { good: boolean; bots: { self: Self; online: boolean }[] }];
+  get_online_clients: [
+    {
+      /** @default false */
+      no_cache?: boolean;
+    },
+    { clients: object }
+  ];
+  get_status: [{}, { good: boolean; online: boolean }];
   get_version: [{}, { impl: string; version: string; onebot_version: string }];
-  send_message: [
-    (
-      | { detail_type: "private"; user_id: string; message: Message }
-      | { detail_type: "group"; group_id: string; message: Message }
-    ),
-    { message_id: string; time: number }
+  send_private_msg: [
+    {
+      user_id: number;
+      message: Message;
+      /** @default false 消息是否作为纯文本发送，不解析 CQ 码 */
+      auto_escape: boolean;
+    }
+  ];
+  send_group_msg: [
+    {
+      group_id: number;
+      message: Message;
+      auto_escape: boolean;
+    },
+    { message_id: number }
   ];
   delete_message: [{ message_id: string }, null];
 };
@@ -24,11 +38,8 @@ export type OneBotActions = {
 /**
  * @param retcode
  *  - 0: OK
- *  - 1xxxx: Request Error, 见 https://12.onebot.dev/connect/data-protocol/action-response/#1xxxx-request-error
- *  - 2xxxx: Handler Error, 见 https://12.onebot.dev/connect/data-protocol/action-response/#2xxxx-handler-error
- *  - 3xxxx: Execution Error, 见 https://12.onebot.dev/connect/data-protocol/action-response/#3xxxx-execution-error
- *  - 4xxxx, 5xxxx: 保留段, 不使用
- *  - 6xxxx ~ 9xxxxx: 其他错误段, 可自定义
+ *  - 1400: 消息格式错误
+ *  - 1404: 不支持的 Action
  */
 export type OneBotActionResponse = {
   [A in keyof OneBotActions]: {

@@ -1,41 +1,37 @@
-export type Self = {
-  platform: string;
-  user_id: string;
-};
-
 type MessageType = {
   text: {
     text: string;
   };
-  mention: {
-    user_id: string;
+  face: {
+    id: string;
   };
-  mention_all: {};
+  at: {
+    qq: string; // all 表示所有人
+  };
   image: {
-    file_id: string;
+    file: string;
+    type: string;
+    url: string;
   };
-  voice: {
-    file_id: string;
-  };
-  audio: {
-    file_id: string;
+  record: {
+    file: string;
+    magic: number;
+    url: string;
   };
   video: {
-    file_id: string;
+    file: string;
+    url: string;
   };
   file: {
     file_id: string;
   };
   reply: {
-    message_id: string;
-    user_id: string;
+    id: string;
   };
 };
 
-type Convert<T> = {
-  [K in keyof T]: { type: K; data: T[K] };
-}[keyof T];
-
-export type MessageSegment = Convert<MessageType>;
+export type MessageSegment = {
+  [K in keyof MessageType]: { type: K; data: MessageType[K] };
+}[keyof MessageType];
 
 export type Message = MessageSegment[] | MessageSegment | string;

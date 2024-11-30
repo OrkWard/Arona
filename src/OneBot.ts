@@ -1,5 +1,5 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
-import type { OneBotEvent, OneBotEvents } from "./event.js";
+import type { OneBotEvent } from "./event.js";
 import WebSocket from "ws";
 import { Logger } from "./log.js";
 
@@ -44,7 +44,7 @@ class OneBot {
 
       const parsedMsg = JSON.parse(message.toString("utf8"));
       if (isEvent(parsedMsg)) {
-        const eventName = parsedMsg.type;
+        const eventName = parsedMsg.post_type;
         const listeners = this.listeners.get(eventName);
         if (listeners) {
           listeners.forEach((callback) => {
@@ -86,7 +86,7 @@ class OneBot {
     });
   }
 
-  listen<T extends keyof OneBotEvents>(eventName: T, callback: (event: OneBotEvent) => void): number {
+  listen<T extends OneBotEvent["post_type"]>(eventName: T, callback: (event: OneBotEvent) => void): number {
     if (this.listeners.get(eventName)) {
       this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
     } else {
@@ -102,4 +102,4 @@ class OneBot {
   }
 }
 
-export { OneBot as Arona };
+export { OneBot };
