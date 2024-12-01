@@ -134,3 +134,5 @@ export class Logger {
     this._writeLogOutput(FATAL, args);
   }
 }
+
+export const logger = new Logger({ debug: true });

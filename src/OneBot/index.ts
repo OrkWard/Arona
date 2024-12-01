@@ -1,12 +1,10 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent } from "./event.js";
 import WebSocket from "ws";
-import { Logger } from "../utils/log.js";
+import { logger } from "../utils/log.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
-
-const logger = new Logger({ debug: true });
 
 function assert(condition: any, message: string): asserts condition {
   if (!condition) {
@@ -14,13 +12,13 @@ function assert(condition: any, message: string): asserts condition {
   }
 }
 
-function isEvent(message: any): message is OneBotEvent {
-  return Boolean(message.id);
+function isActionResponse(message: any): message is OneBotActionResponse {
+  return Boolean(message.status);
 }
 
 class OneBot {
   private ws: WebSocket;
-  private listeners: Map<string, Map<number, (event: OneBotEvent) => void>>;
+  private listeners: Map<string, Map<number, (event: OneBotEvent) => void>> = new Map();
   // Only store action response here. Event will be handle or throw away when
   // receiving
   private messageBuffer: Map<string, OneBotActionResponse> = new Map();
@@ -43,7 +41,11 @@ class OneBot {
       logger.info("receive message");
 
       const parsedMsg = JSON.parse(message.toString("utf8"));
-      if (isEvent(parsedMsg)) {
+      if (isActionResponse(parsedMsg)) {
+        assert(typeof parsedMsg.echo === "string", "Action Response should have 'echo'");
+        const id = parsedMsg.echo;
+        this.messageBuffer.set(id, parsedMsg);
+      } else {
         const eventName = parsedMsg.post_type;
         const listeners = this.listeners.get(eventName);
         if (listeners) {
@@ -51,14 +53,8 @@ class OneBot {
             callback(parsedMsg);
           });
         }
-      } else {
-        assert(typeof parsedMsg.echo === "string", "Action Response should have 'echo'");
-        const id = parsedMsg.echo;
-        this.messageBuffer.set(id, parsedMsg);
       }
     });
-
-    this.listeners = new Map();
   }
 
   request<T extends keyof OneBotActions>(
@@ -86,12 +82,12 @@ class OneBot {
     });
   }
 
-  listen<T extends OneBotEvent["post_type"]>(eventName: T, callback: (event: OneBotEvent) => void): number {
+  addListener<T extends OneBotEvent["post_type"]>(eventName: T, callback: (event: OneBotEvent) => void): number {
     if (this.listeners.get(eventName)) {
-      this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
-    } else {
       const eventListeners = this.listeners.get(eventName)!;
       eventListeners.set(listenerCounter, callback);
+    } else {
+      this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
     }
 
     return listenerCounter++;
@@ -99,6 +95,10 @@ class OneBot {
 
   removeListener(eventName: string, listenerId: number) {
     this.listeners.get(eventName)?.delete(listenerId);
+  }
+
+  close() {
+    this.ws.close();
   }
 }
 
