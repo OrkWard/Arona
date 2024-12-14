@@ -33,6 +33,20 @@ export type OneBotActions = {
     { message_id: number }
   ];
   delete_message: [{ message_id: string }, null];
+  get_group_member_info: [
+    { user_id: number; group_id: number; no_cache?: boolean },
+    {
+      user_id: number;
+      nickname: number;
+      card: string;
+      join_time: number;
+      last_send_time: number;
+      level: string;
+      role: "owner" | "admin" | "member";
+      sex: string;
+      age: number;
+    }
+  ];
 };
 
 /**

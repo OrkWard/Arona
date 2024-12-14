@@ -5,7 +5,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc -w",
+    "start": "nodemon -w ./dist ./dist/main.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +15,7 @@
   "packageManager": "pnpm@9.6.0+sha512.38dc6fba8dba35b39340b9700112c2fe1e12f10b17134715a4aa98ccf7bb035e76fd981cf0bb384dfa98f8d6af5481c2bef2f4266a24bfa20c34eb7147ce0b5e",
   "dependencies": {
     "@prisma/client": "6.0.0",
+    "dotenv": "^16.4.7",
     "neverthrow": "^8.1.0",
     "picocolors": "^1.1.1",
     "ws": "^8.18.0"
@@ -20,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^22.10.1",
     "@types/ws": "^8.5.12",
+    "nodemon": "^3.1.7",
     "prisma": "^6.0.0",
     "typescript": "^5.7.2"
   }

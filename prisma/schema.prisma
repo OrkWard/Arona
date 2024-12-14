@@ -49,17 +49,3 @@ model Segment {
   content   String // text type: content, otherwise file path
   type      String
 }
-
-// Remove the enums
-// enum MessageType {
-//   PRIVATE
-//   GROUP
-// }
-
-// enum SegmentType {
-//   TEXT
-//   IMAGE
-//   FILE
-//   AUDIO
-//   VIDEO
-// }

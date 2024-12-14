@@ -1,6 +1,6 @@
 import { Message } from "./message.js";
 
-type OneBotMetaEvent = {
+export type OneBotMetaEvent = {
   post_type: "meta_event";
 } & (
   | {
@@ -10,7 +10,7 @@ type OneBotMetaEvent = {
   | { meta_event_type: "heartbeat"; status: { online: boolean; good: boolean } }
 );
 
-type OneBotMessageEvent = {
+export type OneBotMessageEvent = {
   post_type: "message";
 } & (
   | {

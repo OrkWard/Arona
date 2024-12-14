@@ -2,18 +2,17 @@ import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from ".
 import type { OneBotEvent } from "./event.js";
 import WebSocket from "ws";
 import { logger } from "../utils/log.js";
+import assert from "assert";
 
 let listenerCounter = 0;
 let requestCounter = 0;
 
-function assert(condition: any, message: string): asserts condition {
-  if (!condition) {
-    throw new Error(message);
-  }
+function isActionResponse(message: any): message is OneBotActionResponse {
+  return Boolean(message.retcode);
 }
 
-function isActionResponse(message: any): message is OneBotActionResponse {
-  return Boolean(message.status);
+function isEvent(message: any): message is OneBotEvent {
+  return Boolean(message.post_type);
 }
 
 class OneBot {
@@ -25,8 +24,10 @@ class OneBot {
   // Event response timeout, in millisecond
   private timeout: number = 10_000;
 
-  constructor(host: string, config?: { timeout?: number }) {
-    const ws = new WebSocket(`ws://${host}`);
+  constructor(host: string, config?: { timeout?: number; auth?: string }) {
+    const ws = new WebSocket(`ws://${host}`, {
+      headers: { authorization: config?.auth ? `Bearer ${config.auth}` : undefined },
+    });
     this.ws = ws;
     ws.on("error", (err) => {
       logger.error(err);
@@ -38,14 +39,14 @@ class OneBot {
     ws.on("message", (message) => {
       assert(message instanceof Buffer, "In default message should be Node native buffer");
 
-      logger.info("receive message");
-
       const parsedMsg = JSON.parse(message.toString("utf8"));
       if (isActionResponse(parsedMsg)) {
+        logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
         assert(typeof parsedMsg.echo === "string", "Action Response should have 'echo'");
         const id = parsedMsg.echo;
         this.messageBuffer.set(id, parsedMsg);
-      } else {
+      } else if (isEvent(parsedMsg)) {
+        logger.debug(`Receive event: ${JSON.stringify(parsedMsg)}`);
         const eventName = parsedMsg.post_type;
         const listeners = this.listeners.get(eventName);
         if (listeners) {
