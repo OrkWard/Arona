@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  typedi@0.10.0:
+    hash: cvr5dvqsaurbolzqtpuqj5n3eq
+    path: patches/typedi@0.10.0.patch
+
 importers:
 
   .:
@@ -20,6 +25,12 @@ importers:
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      typedi:
+        specifier: ^0.10.0
+        version: 0.10.0(patch_hash=cvr5dvqsaurbolzqtpuqj5n3eq)
       ws:
         specifier: ^8.18.0
         version: 8.18.0
@@ -189,6 +200,9 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
+  reflect-metadata@0.2.2:
+    resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
+
   semver@7.6.3:
     resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
     engines: {node: '>=10'}
@@ -209,6 +223,9 @@ packages:
   touch@3.1.1:
     resolution: {integrity: sha512-r0eojU4bI8MnHr8c5bNo7lJDdI2qXlWWJk6a9EAFG7vbhTjElYhBVS3/miuE0uOuoLdb8Mc/rVfsmm6eo5o9GA==}
     hasBin: true
+
+  typedi@0.10.0:
+    resolution: {integrity: sha512-v3UJF8xm68BBj6AF4oQML3ikrfK2c9EmZUyLOfShpJuItAqVBHWP/KtpGinkSsIiP6EZyyb6Z3NXyW9dgS9X1w==}
 
   typescript@5.7.2:
     resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
@@ -379,6 +396,8 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
+  reflect-metadata@0.2.2: {}
+
   semver@7.6.3: {}
 
   simple-update-notifier@2.0.0:
@@ -394,6 +413,8 @@ snapshots:
       is-number: 7.0.0
 
   touch@3.1.1: {}
+
+  typedi@0.10.0(patch_hash=cvr5dvqsaurbolzqtpuqj5n3eq): {}
 
   typescript@5.7.2: {}
 

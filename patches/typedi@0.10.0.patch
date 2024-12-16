@@ -1,0 +1,13 @@
+diff --git a/types/container.class.d.ts b/types/container.class.d.ts
+index 1ef1c5d077f163faedffceb605ad0929479f3637..2d0ee1a47ac44e4d732b6554195dedbd25ea5e15 100644
+--- a/types/container.class.d.ts
++++ b/types/container.class.d.ts
+@@ -49,7 +49,7 @@ export declare class Container {
+     static set<T = unknown>(type: Constructable<T>, value: any): Container;
+     static set<T = unknown>(type: AbstractConstructable<T>, value: any): Container;
+     static set<T = unknown>(name: string, value: any): Container;
+-    static set<T = unknown>(token: Token<T>, value: any): Container;
++    static set<T = unknown>(token: Token<T>, value: T): Container;
+     static set<T = unknown>(value: ServiceOptions<T>): Container;
+     static set<T = unknown>(values: ServiceOptions<T>[]): Container;
+     /**
