@@ -20,7 +20,6 @@ model User {
 model Group {
   id        Int       @id @default(autoincrement())
   groupId   String    @unique
-  groupName String
   message   Message[]
   User      User[]    @relation()
 }
