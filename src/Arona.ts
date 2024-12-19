@@ -1,17 +1,15 @@
 import { OneBot } from "./OneBot/index.js";
 import { PrismaClient } from "@prisma/client";
-import { logger } from "./utils/log.js";
 import { OneBotEvent, OneBotMessageEvent } from "./OneBot/event.js";
 import assert from "assert";
+import { Service } from "typedi";
+import { Logger } from "./utils/log.js";
 
 const prisma = new PrismaClient();
 
+@Service()
 export class Arona {
-  private oneBot: OneBot;
-
-  constructor() {
-    this.oneBot = new OneBot("sur4:3001", { auth: process.env.AUTH_TOKEN });
-
+  constructor(private oneBot: OneBot, private logger: Logger) {
     this.oneBot.addListener("message", async (e) => {
       assert(e.self_id === 2339362968, "使用了错误的 QQ 号");
 
@@ -25,35 +23,6 @@ export class Arona {
         default:
           break;
       }
-
-      // Save the message to the database
-      try {
-        // await prisma.message.create({
-        //   data: {
-        //     messageId: e.message_id.toString(),
-        //     text: typeof e.message === "string" ? e.message : null,
-        //     type: e.message_type,
-        //     user: {
-        //       connectOrCreate: {
-        //         where: { userId: e.user_id.toString() },
-        //         create: { userId: e.user_id.toString() },
-        //       },
-        //     },
-        //     group:
-        //       e.message_type === "group"
-        //         ? {
-        //             connectOrCreate: {
-        //               where: { groupId: e.group_id.toString() },
-        //               create: { groupId: e.group_id.toString(), groupName: "" },
-        //             },
-        //           }
-        //         : undefined,
-        //   },
-        // });
-        // logger.info("Message saved to database");
-      } catch (error) {
-        logger.error("Failed to save message to database", error);
-      }
     });
   }
 
@@ -61,20 +30,62 @@ export class Arona {
     assert(Array.isArray(e.message), `Receive none array message: ${JSON.stringify(e.message)}`);
 
     if (e.message_type === "private") {
-      logger.warn(`Private message from ${e.sender.nickname}(${e.user_id}) received`);
+      this.logger.warn(`Private message from ${e.sender.nickname}(${e.user_id}) received`);
       return;
     }
 
-    const groupId = e.group_id;
-    const userId = e.user_id;
+    const groupId = e.group_id.toString();
+    const userId = e.user_id.toString();
+
     await prisma.user.upsert({
-      where: { userId: userId.toString() },
-      create: { userId: userId.toString() },
-      update: {},
+      where: { userId: userId },
+      create: {
+        userId: userId,
+        Group: {
+          create: {
+            groupId: groupId,
+          },
+        },
+      },
+      update: {
+        Group: {
+          upsert: {
+            where: { groupId },
+            create: { groupId },
+            update: {},
+          },
+        },
+      },
     });
+
+    const msgId = e.message_id.toString();
+    const msg = e.message;
+    msg.forEach((m) => {
+      switch (m.type) {
+        case "text":
+          // text
+          break;
+        case "at":
+          // at
+          break;
+        case "file":
+          // file
+          break;
+        case "image":
+          // image
+          break;
+        case "reply":
+          // reply
+          break;
+        default:
+          break;
+      }
+    });
+    await prisma.message.create({ data: { messageId: msgId, type: "group", user: { connect: { userId } } } });
   }
 
   public exit() {
+    this.logger.info("Exiting...");
     this.oneBot.close();
   }
 }

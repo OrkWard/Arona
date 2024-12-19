@@ -1,8 +1,9 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent } from "./event.js";
 import WebSocket from "ws";
-import { logger } from "../utils/log.js";
+import { Logger } from "../utils/log.js";
 import assert from "assert";
+import { Inject, Service, Token } from "typedi";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -15,25 +16,33 @@ function isEvent(message: any): message is OneBotEvent {
   return Boolean(message.post_type);
 }
 
+export interface OneBotConfig {
+  origin: string;
+  authKey: string;
+  // Event response timeout, in millisecond
+  // timeout: number = 10_000;
+}
+
+export const OneBotConfig = new Token<OneBotConfig>();
+
+@Service()
 class OneBot {
   private ws: WebSocket;
   private listeners: Map<string, Map<number, (event: OneBotEvent) => void>> = new Map();
   // Only store action response here. Event will be handle or throw away when
   // receiving
   private messageBuffer: Map<string, OneBotActionResponse> = new Map();
-  // Event response timeout, in millisecond
-  private timeout: number = 10_000;
 
-  constructor(host: string, config?: { timeout?: number; auth?: string }) {
-    const ws = new WebSocket(`ws://${host}`, {
-      headers: { authorization: config?.auth ? `Bearer ${config.auth}` : undefined },
+  constructor(private config: OneBotConfig, private logger: Logger) {
+    const ws = new WebSocket(`ws://${config.origin}`, {
+      headers: { authorization: `Bearer ${config.authKey}` },
     });
     this.ws = ws;
     ws.on("error", (err) => {
       logger.error(err);
     });
     ws.on("open", () => {
-      logger.info("Connected to", host);
+      logger.info("Connected to", config.origin);
     });
 
     ws.on("message", (message) => {
@@ -42,7 +51,7 @@ class OneBot {
       const parsedMsg = JSON.parse(message.toString("utf8"));
       if (isActionResponse(parsedMsg)) {
         logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
-        assert(typeof parsedMsg.echo === "string", "Action Response should have 'echo'");
+        assert(typeof parsedMsg.echo === "string", `Action Response should have 'echo': ${JSON.stringify(parsedMsg)}`);
         const id = parsedMsg.echo;
         this.messageBuffer.set(id, parsedMsg);
       } else if (isEvent(parsedMsg)) {

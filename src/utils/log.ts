@@ -1,5 +1,6 @@
 import { Console } from "console";
 import picocolors from "picocolors";
+import { Service } from "typedi";
 
 const TRACE = 10;
 const DEBUG = 20;
@@ -39,6 +40,7 @@ interface Options {
 
 type ConsoleArgs = any[];
 
+@Service()
 export class Logger {
   _silent: boolean;
   _debug: boolean;
@@ -134,5 +136,3 @@ export class Logger {
     this._writeLogOutput(FATAL, args);
   }
 }
-
-export const logger = new Logger({ debug: true });
