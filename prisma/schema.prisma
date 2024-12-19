@@ -18,33 +18,27 @@ model User {
 }
 
 model Group {
-  id        Int       @id @default(autoincrement())
-  groupId   String    @unique
-  message   Message[]
-  User      User[]    @relation()
+  id      Int       @id @default(autoincrement())
+  groupId String    @unique
+  message Message[]
+  User    User[]    @relation()
 }
 
 model Message {
   id        Int       @id @default(autoincrement())
   messageId String    @unique
-  text      String?
-  image     String?
-  file      String?
-  audio     String?
-  video     String?
-  replyToId Int?
+  type      String // group | private
   segments  Segment[]
-  type      String
-  user      User      @relation(fields: [userId], references: [id])
-  userId    Int
-  group     Group?    @relation(fields: [groupId], references: [id])
-  groupId   Int?
+  user      User      @relation(fields: [userId], references: [userId])
+  userId    String
+  group     Group     @relation(fields: [groupId], references: [groupId])
+  groupId   String
 }
 
 model Segment {
   id        Int     @id @default(autoincrement())
-  message   Message @relation(fields: [messageId], references: [id])
-  messageId Int
-  content   String // text type: content, otherwise file path
+  message   Message @relation(fields: [messageId], references: [messageId])
+  messageId String
+  content   String // text type: content, at type: target, otherwise file path
   type      String
 }
