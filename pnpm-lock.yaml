@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  typedi@0.10.0:
-    hash: cvr5dvqsaurbolzqtpuqj5n3eq
-    path: patches/typedi@0.10.0.patch
-
 importers:
 
   .:
@@ -30,7 +25,7 @@ importers:
         version: 0.2.2
       typedi:
         specifier: ^0.10.0
-        version: 0.10.0(patch_hash=cvr5dvqsaurbolzqtpuqj5n3eq)
+        version: 0.10.0
       ws:
         specifier: ^8.18.0
         version: 8.18.0
@@ -414,7 +409,7 @@ snapshots:
 
   touch@3.1.1: {}
 
-  typedi@0.10.0(patch_hash=cvr5dvqsaurbolzqtpuqj5n3eq): {}
+  typedi@0.10.0: {}
 
   typescript@5.7.2: {}
 
