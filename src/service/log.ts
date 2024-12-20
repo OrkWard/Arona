@@ -1,6 +1,7 @@
 import { Console } from "console";
 import picocolors from "picocolors";
 import { Service } from "typedi";
+import { AppConfig } from "./app.js";
 
 const TRACE = 10;
 const DEBUG = 20;
@@ -33,11 +34,6 @@ const console = new Console({
   colorMode: false,
 });
 
-interface Options {
-  debug?: boolean;
-  silent?: boolean;
-}
-
 type ConsoleArgs = any[];
 
 @Service()
@@ -46,7 +42,8 @@ export class Logger {
   _debug: boolean;
   level: number;
 
-  constructor({ debug = false, silent = false }: Options = {}) {
+  constructor(private app: AppConfig) {
+    const { silent, debug } = app.config.logger || {};
     this._silent = silent || false;
     this._debug = debug || false;
 

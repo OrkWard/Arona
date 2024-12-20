@@ -1,9 +1,10 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent } from "./event.js";
 import WebSocket from "ws";
-import { Logger } from "../utils/log.js";
+import { Logger } from "../service/log.js";
 import assert from "assert";
-import { Inject, Service, Token } from "typedi";
+import { Service } from "typedi";
+import { AppConfig } from "../service/app.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -16,15 +17,6 @@ function isEvent(message: any): message is OneBotEvent {
   return Boolean(message.post_type);
 }
 
-export interface OneBotConfig {
-  origin: string;
-  authKey: string;
-  // Event response timeout, in millisecond
-  // timeout: number = 10_000;
-}
-
-export const OneBotConfig = new Token<OneBotConfig>();
-
 @Service()
 class OneBot {
   private ws: WebSocket;
@@ -33,16 +25,16 @@ class OneBot {
   // receiving
   private messageBuffer: Map<string, OneBotActionResponse> = new Map();
 
-  constructor(private config: OneBotConfig, private logger: Logger) {
-    const ws = new WebSocket(`ws://${config.origin}`, {
-      headers: { authorization: `Bearer ${config.authKey}` },
+  constructor(private logger: Logger, private app: AppConfig) {
+    const ws = new WebSocket(`ws://${app.config.origin}`, {
+      headers: { authorization: `Bearer ${app.config.authKey}` },
     });
     this.ws = ws;
     ws.on("error", (err) => {
       logger.error(err);
     });
     ws.on("open", () => {
-      logger.info("Connected to", config.origin);
+      logger.info("Connected to", app.config.origin);
     });
 
     ws.on("message", (message) => {

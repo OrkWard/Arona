@@ -23,7 +23,7 @@ type MessageType = {
     url: string;
   };
   file: {
-    file_id: string;
+    file: string;
   };
   reply: {
     id: string;
