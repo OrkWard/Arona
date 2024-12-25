@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsc -w",
-    "start": "nodemon -w ./dist ./dist/main.js"
+    "start:db": "npx nodemon -w ./dist ./dist/db-worker.js",
+    "start:arona": "nodemon -w ./dist ./dist/Arona.js"
   },
   "keywords": [],
   "author": "",

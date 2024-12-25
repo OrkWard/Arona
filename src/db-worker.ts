@@ -6,18 +6,19 @@ import { OneBotEvent, OneBotMessageEvent } from "./OneBot/event.js";
 import assert from "assert";
 import { Service, Container } from "typedi";
 import { Logger } from "./service/log.js";
+import { AppConfig } from "./service/app.js";
 
 const prisma = new PrismaClient();
 
 @Service()
 export class DBWorker {
-  constructor(private oneBot: OneBot, private logger: Logger) {
+  constructor(private oneBot: OneBot, private logger: Logger, private app: AppConfig) {
     this.oneBot.addListener("message", async (e) => {
       assert(e.self_id === 2339362968, "使用了错误的 QQ 号");
 
       switch (e.post_type) {
         case "message":
-          this.handleMessageEvent(e);
+          this.storeMessage(e);
           break;
         case "meta_event":
           break;
@@ -28,7 +29,7 @@ export class DBWorker {
     });
   }
 
-  protected async handleMessageEvent(e: OneBotMessageEvent) {
+  protected async storeMessage(e: OneBotMessageEvent) {
     assert(Array.isArray(e.message), `Receive none array message: ${JSON.stringify(e.message)}`);
 
     if (e.message_type === "private") {
@@ -39,22 +40,23 @@ export class DBWorker {
     const groupId = e.group_id.toString();
     const userId = e.user_id.toString();
 
+    // 更新用户和组
     await prisma.user.upsert({
       where: { userId },
       create: {
         userId,
         Group: {
-          create: {
-            groupId: groupId,
+          connectOrCreate: {
+            where: { groupId },
+            create: { groupId },
           },
         },
       },
       update: {
         Group: {
-          upsert: {
+          connectOrCreate: {
             where: { groupId },
             create: { groupId },
-            update: {},
           },
         },
       },
@@ -83,7 +85,6 @@ export class DBWorker {
                   content = m.data.file;
                   break;
                 case "image":
-                  this.logger.info(`Image Received, type: ${m.data.type}`);
                   content = m.data.file;
                   break;
                 case "reply":

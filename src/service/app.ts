@@ -17,9 +17,6 @@ export class AppConfig {
   private _config: OneBotConfig = {
     authKey: process.env.AUTH_TOKEN!,
     origin: "sur4:3001",
-    logger: {
-      debug: true,
-    },
   };
   constructor() {}
 
