@@ -70,6 +70,7 @@ export class DBWorker {
         type: "group",
         user: { connect: { userId } },
         group: { connect: { groupId } },
+        time: e.time.toString(),
         segments: {
           createMany: {
             data: msg.map((m) => {

@@ -19,6 +19,7 @@ export type OneBotMessageEvent = {
       message_id: number;
       group_id: number;
       user_id: number;
+      time: number;
       message: Message;
       raw_message: string;
       sender: {
@@ -33,6 +34,7 @@ export type OneBotMessageEvent = {
       sub_type: "friend" | "group" | "other";
       message_id: number;
       user_id: number;
+      time: number;
       message: Message;
       raw_message: string;
       sender: {

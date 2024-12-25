@@ -28,6 +28,7 @@ model Message {
   id        Int       @id @default(autoincrement())
   messageId String    @unique
   type      String // group | private
+  time      DateTime
   segments  Segment[]
   user      User      @relation(fields: [userId], references: [userId])
   userId    String
