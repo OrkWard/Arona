@@ -7,4 +7,4 @@ RUN corepack enable \
     && pnpm prisma migrate deploy \
     && pnpm run build
 
-CMD ["node", "./dist/Arona.js"]
+CMD ["node", "./dist/arona.js"]
