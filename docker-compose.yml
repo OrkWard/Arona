@@ -17,4 +17,4 @@ services:
     volumes:
       - type: bind
         source: /var/lib/arona
-        target: /lib
+        target: /store
