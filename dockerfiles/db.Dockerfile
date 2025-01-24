@@ -7,4 +7,4 @@ RUN corepack enable \
     && pnpm prisma migrate deploy \
     && pnpm run build
 
-CMD ["node", "./dist/db-worker.js"]
+ENTRYPOINT node ./dist/db-worker.js
