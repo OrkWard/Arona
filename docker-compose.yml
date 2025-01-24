@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  # arona:
+  #   build:
+  #     context: .
+  #     dockerfile: ./dockerfiles/arona.Dockerfile
+  #   restart: always
+  #   volumes:
+  #     - type: bind
+  #       source: /var/lib/arona
+  #       target: /lib
+
+  db-worker:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/db.Dockerfile
+    restart: always
+    volumes:
+      - type: bind
+        source: /var/lib/arona
+        target: /lib
