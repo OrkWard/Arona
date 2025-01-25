@@ -1,22 +1,18 @@
-import "reflect-metadata";
 import "dotenv/config";
-import { OneBot } from "./OneBot/index.js";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { OneBotMessageEvent } from "./OneBot/event.js";
 import assert from "assert";
-import { Service, Container } from "typedi";
-import { Logger } from "./service/log.js";
-import { AppConfig } from "./service/app.js";
 import { ResultAsync } from "neverthrow";
+import { Prisma, PrismaClient } from "@prisma/client";
+
+import { OneBot } from "./OneBot/index.js";
+import { OneBotMessageEvent } from "./OneBot/event.js";
+import { Logger } from "./utils/log.js";
 
 const prisma = new PrismaClient();
 
-@Service()
 export class DBWorker {
   constructor(
     private oneBot: OneBot,
-    private logger: Logger,
-    private app: AppConfig
+    private logger: Logger
   ) {
     this.oneBot.addListener("message", async (e) => {
       assert(e.self_id === 2339362968, "使用了错误的 QQ 号");
@@ -134,7 +130,9 @@ export class DBWorker {
 }
 
 (function () {
-  const worker = Container.get(DBWorker);
+  const logger = new Logger();
+  const onebot = new OneBot(logger, { authKey: process.env.AUTH_TOKEN!, origin: "sur4:3001" });
+  const worker = new DBWorker(onebot, logger);
 
   process.on("SIGINT", () => {
     worker.exit();

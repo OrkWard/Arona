@@ -18,8 +18,6 @@
     "dotenv": "^16.4.7",
     "neverthrow": "^8.1.0",
     "picocolors": "^1.1.1",
-    "reflect-metadata": "^0.2.2",
-    "typedi": "^0.10.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
