@@ -1,6 +1,6 @@
 FROM node:20
 WORKDIR /app
-COPY . .
+COPY prisma/ src/ package.json pnpm-lock.yaml ./
 ENV DATABASE_URL "file:/store/prod.db"
 ENV NODE_ENV "prod"
 RUN corepack enable \
