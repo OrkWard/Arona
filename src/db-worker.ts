@@ -8,6 +8,7 @@ import { Service, Container } from "typedi";
 import { Logger } from "./service/log.js";
 import { AppConfig } from "./service/app.js";
 import { ResultAsync } from "neverthrow";
+import { existsSync } from "fs";
 
 const prisma = new PrismaClient();
 
