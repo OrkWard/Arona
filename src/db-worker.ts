@@ -2,13 +2,12 @@ import "reflect-metadata";
 import "dotenv/config";
 import { OneBot } from "./OneBot/index.js";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { OneBotEvent, OneBotMessageEvent } from "./OneBot/event.js";
+import { OneBotMessageEvent } from "./OneBot/event.js";
 import assert from "assert";
 import { Service, Container } from "typedi";
 import { Logger } from "./service/log.js";
 import { AppConfig } from "./service/app.js";
 import { ResultAsync } from "neverthrow";
-import { existsSync } from "fs";
 
 const prisma = new PrismaClient();
 

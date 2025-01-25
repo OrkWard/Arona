@@ -25,7 +25,10 @@ class OneBot {
   // receiving
   private messageBuffer: Map<string, OneBotActionResponse> = new Map();
 
-  constructor(private logger: Logger, private app: AppConfig) {
+  constructor(
+    private logger: Logger,
+    private app: AppConfig
+  ) {
     const ws = new WebSocket(`ws://${app.config.origin}`, {
       headers: { authorization: `Bearer ${app.config.authKey}` },
     });
