@@ -5,6 +5,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 import { OneBot } from "./OneBot/index.js";
 import { Logger } from "./utils/log.js";
+import { handleDBError } from "./utils/db.js";
 
 const prisma = new PrismaClient();
 
@@ -91,14 +92,7 @@ export class DBWorker {
             },
           }),
         ]),
-        (e) => {
-          if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            return new Error(`DB Known Error, code ${e.code}, message ${e.message}`);
-          } else if (e instanceof Error) {
-            return e;
-          }
-          return new Error(`DB Unkown Error: ${JSON.stringify(e)}`);
-        }
+        (e) => handleDBError(e)
       ).match(
         () => this.logger.debug("User, Group, Message has been all successfully updated"),
         (e) => {

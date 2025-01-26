@@ -3,16 +3,24 @@ import type { OneBotEvent, OneBotEventBase, OneBotMessageEvent, OneBotMetaEvent 
 import WebSocket from "ws";
 import { Logger } from "../utils/log.js";
 import assert from "assert";
+import { fromPromise, ResultAsync } from "neverthrow";
 
 let listenerCounter = 0;
 let requestCounter = 0;
 
 function isActionResponse(message: any): message is OneBotActionResponse {
-  return Boolean(message.retcode);
+  return "retcode" in message;
 }
 
 function isEvent(message: any): message is OneBotEvent {
-  return Boolean(message.post_type);
+  return "post_type" in message;
+}
+
+export class OneBotError extends Error {
+  constructor(message?: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "OneBotError";
+  }
 }
 
 type OneBotConfig = {
@@ -72,26 +80,42 @@ class OneBot {
     });
   }
 
-  post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0]): Promise<OneBotActions[T][1]> {
+  post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0]) {
     const echo = (requestCounter++).toString();
-    this.ws.send(
-      JSON.stringify({
-        action: actionName,
-        params: actionParams,
-        echo: echo.toString(),
-      } satisfies OneBotActionRequest)
-    );
+    const payload = JSON.stringify({
+      action: actionName,
+      params: actionParams,
+      echo: echo.toString(),
+    } satisfies OneBotActionRequest);
 
-    return new Promise((resolve) => {
-      const intervalId = setInterval(() => {
-        const res = this.messageBuffer.get(echo);
-        if (res) {
-          resolve(res.data);
-          this.messageBuffer.delete(echo);
-          clearInterval(intervalId);
+    this.ws.send(payload);
+    this.logger.debug(`Action Sent: ${payload}`);
+
+    return ResultAsync.fromPromise(
+      new Promise<OneBotActions[T][1]>((resolve, reject) => {
+        const intervalId = setInterval(() => {
+          const res = this.messageBuffer.get(echo);
+          if (res) {
+            if (res.status === "ok") {
+              this.logger.debug(`Action Return: ${JSON.stringify(res)}`);
+              resolve(res.data);
+            } else if (res.status === "failed") {
+              this.logger.debug(`Action Error: ${JSON.stringify(res)}`);
+              reject(new OneBotError(`[${res.retcode}] ` + res.message));
+            }
+            this.messageBuffer.delete(echo);
+            clearInterval(intervalId);
+          }
+        }, 200);
+      }),
+      (e) => {
+        if (e instanceof OneBotError) {
+          return e;
+        } else {
+          return new OneBotError(`Unknown Error: ${Error.prototype.toString.call(e)}`);
         }
-      }, 200);
-    });
+      }
+    );
   }
 
   _on(eventName: string, callback: EventCallback): number {

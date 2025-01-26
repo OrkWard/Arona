@@ -24,6 +24,9 @@ export type OneBotActions = {
       /** @default false 消息是否作为纯文本发送，不解析 CQ 码 */
       auto_escape?: boolean;
     },
+    {
+      message_id: number;
+    },
   ];
   send_group_msg: [
     {
@@ -48,6 +51,23 @@ export type OneBotActions = {
       age: number;
     },
   ];
+  get_group_member_list: [
+    { group_id: number },
+    [
+      {
+        user_id: number;
+        nickname: number;
+        card: string;
+        join_time: number;
+        last_send_time: number;
+        level: string;
+        role: "owner" | "admin" | "member";
+        sex: string;
+        age: number;
+      },
+    ],
+  ];
+  ArkShareGroup: [{ group_id: number }, string];
 };
 
 /**

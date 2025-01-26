@@ -28,6 +28,9 @@ type MessageType = {
   reply: {
     id: string;
   };
+  json: {
+    data: string;
+  };
 };
 
 export type MessageSegment = {
