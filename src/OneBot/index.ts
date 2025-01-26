@@ -1,5 +1,5 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
-import type { OneBotEvent } from "./event.js";
+import type { OneBotEvent, OneBotEventBase, OneBotMessageEvent, OneBotMetaEvent } from "./event.js";
 import WebSocket from "ws";
 import { Logger } from "../utils/log.js";
 import assert from "assert";
@@ -26,9 +26,11 @@ type OneBotConfig = {
   // timeout: number = 10_000;
 };
 
+type EventCallback = (event: OneBotEvent) => void;
+
 class OneBot {
   private ws: WebSocket;
-  private listeners: Map<string, Map<number, (event: OneBotEvent) => void>> = new Map();
+  private listeners: Map<string, Map<number, EventCallback>> = new Map();
   // Only store action response here. Event will be handle or throw away when
   // receiving
   private messageBuffer: Map<string, OneBotActionResponse> = new Map();
@@ -70,10 +72,7 @@ class OneBot {
     });
   }
 
-  request<T extends keyof OneBotActions>(
-    actionName: T,
-    actionParams: OneBotActions[T][0]
-  ): Promise<OneBotActions[T][1]> {
+  post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0]): Promise<OneBotActions[T][1]> {
     const echo = (requestCounter++).toString();
     this.ws.send(
       JSON.stringify({
@@ -95,15 +94,18 @@ class OneBot {
     });
   }
 
-  addListener<T extends OneBotEvent["post_type"]>(eventName: T, callback: (event: OneBotEvent) => void): number {
+  _on(eventName: string, callback: EventCallback): number {
     if (this.listeners.get(eventName)) {
-      const eventListeners = this.listeners.get(eventName)!;
-      eventListeners.set(listenerCounter, callback);
+      this.listeners.get(eventName)?.set(listenerCounter, callback);
     } else {
       this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
     }
 
     return listenerCounter++;
+  }
+
+  onMessage(callback: (event: OneBotMessageEvent) => void): number {
+    return this._on("message", callback as EventCallback);
   }
 
   removeListener(eventName: string, listenerId: number) {
