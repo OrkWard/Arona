@@ -7,6 +7,7 @@
     "dev": "tsc -w",
     "build": "tsc",
     "watch:db": "npx nodemon -w ./dist ./dist/db-worker.js",
+    "watch:backup": "npx nodemon -w ./dist ./dist/backup.js",
     "watch:arona": "nodemon -w ./dist ./dist/Arona.js"
   },
   "keywords": [],

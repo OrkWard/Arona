@@ -77,7 +77,7 @@ class OneBot {
     this.ws.send(
       JSON.stringify({
         action: actionName,
-        param: actionParams,
+        params: actionParams,
         echo: echo.toString(),
       } satisfies OneBotActionRequest)
     );

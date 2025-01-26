@@ -2,7 +2,7 @@ import type { Message } from "./message.js";
 
 export interface OneBotActionRequest<T extends Record<string, unknown> = {}> {
   action: string; // 动作名称
-  param: T; // 动作参数
+  params: T; // 动作参数
   echo?: string; // 用于唯一标志一个动作请求
 }
 
@@ -12,17 +12,18 @@ export type OneBotActions = {
       /** @default false */
       no_cache?: boolean;
     },
-    { clients: object }
+    { clients: object },
   ];
   get_status: [{}, { good: boolean; online: boolean }];
   get_version: [{}, { impl: string; version: string; onebot_version: string }];
   send_private_msg: [
     {
       user_id: number;
+      group_id?: number;
       message: Message;
       /** @default false 消息是否作为纯文本发送，不解析 CQ 码 */
-      auto_escape: boolean;
-    }
+      auto_escape?: boolean;
+    },
   ];
   send_group_msg: [
     {
@@ -30,7 +31,7 @@ export type OneBotActions = {
       message: Message;
       auto_escape: boolean;
     },
-    { message_id: number }
+    { message_id: number },
   ];
   delete_message: [{ message_id: string }, null];
   get_group_member_info: [
@@ -45,7 +46,7 @@ export type OneBotActions = {
       role: "owner" | "admin" | "member";
       sex: string;
       age: number;
-    }
+    },
   ];
 };
 
