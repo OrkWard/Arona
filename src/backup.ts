@@ -89,7 +89,7 @@ const sourceGroup = 663985246;
 const targetGroup = 940273522;
 const task1 = backup(sourceGroup, targetGroup);
 let waitTime = 0;
-let waitStep = 60;
+let count = 0;
 
 setInterval(() => {
   if (waitTime > 0) {
@@ -100,11 +100,13 @@ setInterval(() => {
 
   task1().then((result) => {
     if (result === true) {
-      waitTime = 0;
-      waitStep = 60;
+      count += 1;
+      if (count === 5) {
+        count = 0;
+        waitTime = 180;
+      }
     } else if (result === false) {
-      waitTime += waitStep;
-      waitStep *= 2;
+      waitTime += 180;
     }
   });
 }, 1 * 1000);

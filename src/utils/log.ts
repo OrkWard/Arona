@@ -61,22 +61,12 @@ export class Logger {
       errArg = consoleArgs.shift();
     }
 
-    if (this._debug) {
-      const str = new Date().toISOString().substring(11, 23) + " ";
-
+    if (level >= this.level) {
+      const str = new Date().toLocaleTimeString() + " " + LEVEL_COLORS[level](LEVEL_NAMES[level]) + " ";
       if (level === TRACE || level >= WARN) {
         process.stderr.write(LEVEL_COLORS[DEBUG](str));
       } else {
         process.stdout.write(LEVEL_COLORS[DEBUG](str));
-      }
-    }
-
-    if (level >= this.level) {
-      const str = LEVEL_COLORS[level](LEVEL_NAMES[level]) + " ";
-      if (level === TRACE || level >= WARN) {
-        process.stderr.write(str);
-      } else {
-        process.stdout.write(str);
       }
 
       if (level === TRACE) {
