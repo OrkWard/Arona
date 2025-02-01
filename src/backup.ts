@@ -1,5 +1,5 @@
 import { okAsync, ResultAsync } from "neverthrow";
-import { OneBot, OneBotError } from "./OneBot/index.js";
+import { OneBot, OneBotError } from "./onebot/index.js";
 import { Logger } from "./utils/log.js";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { handleDBError } from "./utils/db.js";

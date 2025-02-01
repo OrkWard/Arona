@@ -3,7 +3,7 @@ import assert from "assert";
 import { ResultAsync } from "neverthrow";
 import { Prisma, PrismaClient } from "@prisma/client";
 
-import { OneBot } from "./OneBot/index.js";
+import { OneBot } from "./onebot/index.js";
 import { Logger } from "./utils/log.js";
 import { handleDBError } from "./utils/db.js";
 
