@@ -4,6 +4,7 @@ import WebSocket from "ws";
 import { Logger } from "../utils/log.js";
 import assert from "assert";
 import { fromPromise, ResultAsync } from "neverthrow";
+import { throttleAsync } from "../utils/nt.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -39,8 +40,6 @@ type EventCallback = (event: OneBotEvent) => void;
 class OneBot {
   private ws: WebSocket;
   private listeners: Map<string, Map<number, EventCallback>> = new Map();
-  // Only store action response here. Event will be handle or throw away when
-  // receiving
   private messageBuffer: Map<string, OneBotActionResponse> = new Map();
 
   constructor(
@@ -117,6 +116,11 @@ class OneBot {
       }
     );
   }
+
+  sendPrivateMsg = throttleAsync(
+    (params: OneBotActions["send_private_msg"][0]) => this.post("send_private_msg", params),
+    3000
+  );
 
   _on(eventName: string, callback: EventCallback): number {
     if (this.listeners.get(eventName)) {

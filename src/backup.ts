@@ -39,7 +39,7 @@ function backup(sourceGroup: number, targetGroup: number) {
         ResultAsync.combine(
           members.map((m) =>
             onebot
-              .post("send_private_msg", {
+              .sendPrivateMsg({
                 user_id: m,
                 message: [
                   { type: "text", data: { text: "好久不见，老师！别忘了接入什亭之匣的备份，防止丢失讯号哦！" } },
@@ -88,27 +88,9 @@ function backup(sourceGroup: number, targetGroup: number) {
 const sourceGroup = 663985246;
 const targetGroup = 940273522;
 const task1 = backup(sourceGroup, targetGroup);
-let waitTime = 0;
-let count = 0;
 
 setInterval(() => {
-  if (waitTime > 0) {
-    waitTime -= 1;
-    waitTime % 5 === 0 && logger.warn(`skip, remaing: ${waitTime}`);
-    return;
-  }
-
-  task1().then((result) => {
-    if (result === true) {
-      count += 1;
-      if (count === 5) {
-        count = 0;
-        waitTime = 180;
-      }
-    } else if (result === false) {
-      waitTime += 180;
-    }
-  });
+  task1();
 }, 1 * 1000);
 
 function graceExit() {
