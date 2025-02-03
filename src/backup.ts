@@ -1,4 +1,4 @@
-import { okAsync, ResultAsync } from "neverthrow";
+import { ResultAsync } from "neverthrow";
 import { OneBot, OneBotError } from "./onebot/index.js";
 import { Logger } from "./utils/log.js";
 import { Prisma, PrismaClient } from "@prisma/client";
@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
 const onebot = new OneBot(logger, { authKey: process.env.AUTH_TOKEN!, origin: "sur4:3001" });
 
-function backup(sourceGroup: number, targetGroup: number) {
+function sendInvitation(sourceGroup: number, targetGroup: number) {
   let lock = false;
 
   return () => {
@@ -85,9 +85,15 @@ function backup(sourceGroup: number, targetGroup: number) {
   };
 }
 
+function backupGroup(group: number) {}
+
+function backupEssence(group: number) {
+  return onebot.post("get_essence_msg_list", { group_id: group });
+}
+
 const sourceGroup = 663985246;
 const targetGroup = 940273522;
-const task1 = backup(sourceGroup, targetGroup);
+const task1 = sendInvitation(sourceGroup, targetGroup);
 
 setInterval(() => {
   task1();

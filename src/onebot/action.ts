@@ -1,4 +1,4 @@
-import type { Message } from "./message.js";
+import type { Message, MessageSegment } from "./message.js";
 
 export interface OneBotActionRequest<T extends Record<string, unknown> = {}> {
   action: string; // 动作名称
@@ -68,6 +68,20 @@ export type OneBotActions = {
     ],
   ];
   ArkShareGroup: [{ group_id: number }, string];
+  get_essence_msg_list: [
+    { group_id: number },
+    {
+      msg_seq: number;
+      msg_random: number;
+      sender_id: number;
+      sender_nick: string;
+      operator_id: number;
+      operator_nick: string;
+      message_id: string;
+      operator_time: string;
+      content: MessageSegment[];
+    },
+  ];
 };
 
 /**
