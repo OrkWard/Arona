@@ -12,7 +12,7 @@ services:
   db-worker:
     build:
       context: .
-      dockerfile: ./dockerfiles/db.Dockerfile
+      dockerfile: ./apps/backup/Dockerfile
     restart: always
     volumes:
       - type: bind
