@@ -2,13 +2,22 @@ packages:
   - packages/*
   - apps/*
 catalog:
+  "@eslint/eslintrc": ^3
   "@prisma/client": 6.0.0
-  "@types/node": ^22.10.1
+  "@radix-ui/themes": ^3.2.0
+  "@types/node": ^20
+  "@types/react": ^19
+  "@types/react-dom": ^19
   "@types/ws": ^8.5.12
   dotenv: ^16.4.7
+  eslint-config-next: 15.1.6
   neverthrow: ^8.1.0
+  next: 15.1.6
   nodemon: ^3.1.7
   picocolors: ^1.1.1
+  prettier: ^3.4.2
   prisma: ^6.0.0
-  typescript: ^5.7.2
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  typescript: ^5
   ws: ^8.18.0
