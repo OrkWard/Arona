@@ -7,4 +7,3 @@ dist/
 .gitsecret/keys/random_seed
 !*.secret
 Makefile
-packages/onebot/.env

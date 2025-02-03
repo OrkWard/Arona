@@ -146,3 +146,4 @@ class OneBot {
 }
 
 export { OneBot, Logger };
+export type { OneBotEvent, OneBotActions };

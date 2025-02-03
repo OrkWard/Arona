@@ -66,18 +66,6 @@ catalogs:
 
 importers:
 
-  .:
-    devDependencies:
-      eslint:
-        specifier: ^9.19.0
-        version: 9.19.0
-      eslint-config-next:
-        specifier: 'catalog:'
-        version: 15.1.6(eslint@9.19.0)(typescript@5.7.2)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.4.2
-
   apps/backup:
     dependencies:
       '@prisma/client':
@@ -90,7 +78,7 @@ importers:
         specifier: 'catalog:'
         version: 8.1.0
       onebot:
-        specifier: 'workspace:'
+        specifier: workspace:*
         version: link:../../packages/onebot
     devDependencies:
       '@types/node':
@@ -106,14 +94,22 @@ importers:
         specifier: 'catalog:'
         version: 5.7.2
 
+  apps/essence: {}
+
   apps/zju-ba-page:
     dependencies:
       '@radix-ui/themes':
         specifier: 'catalog:'
         version: 3.2.0(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      essence:
+        specifier: workspace:*
+        version: link:../essence
       next:
         specifier: 'catalog:'
         version: 15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      onebot:
+        specifier: workspace:*
+        version: link:../../packages/onebot
       react:
         specifier: 'catalog:'
         version: 19.0.0
@@ -133,9 +129,20 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.0.3(@types/react@19.0.8)
+      eslint:
+        specifier: ^9.19.0
+        version: 9.19.0
+      eslint-config-next:
+        specifier: 'catalog:'
+        version: 15.1.6(eslint@9.19.0)(typescript@5.7.2)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.4.2
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
+
+  infra: {}
 
   packages/onebot:
     dependencies:

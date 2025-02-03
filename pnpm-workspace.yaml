@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - apps/*
+  - infra
 catalog:
   "@eslint/eslintrc": ^3
   "@prisma/client": 6.0.0

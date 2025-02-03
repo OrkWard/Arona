@@ -25,6 +25,6 @@
     "@prisma/client": "catalog:",
     "dotenv": "catalog:",
     "neverthrow": "catalog:",
-    "onebot": "workspace:"
+    "onebot": "workspace:*"
   }
 }

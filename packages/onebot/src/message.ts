@@ -9,8 +9,8 @@ type MessageType = {
     qq: string; // all 表示所有人
   };
   image: {
-    file: string;
-    type: string;
+    file?: string;
+    type?: string;
     url: string;
   };
   record: {

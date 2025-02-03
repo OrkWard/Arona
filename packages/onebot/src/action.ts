@@ -77,8 +77,8 @@ export type OneBotActions = {
       sender_nick: string;
       operator_id: number;
       operator_nick: string;
-      message_id: string;
-      operator_time: string;
+      message_id: number;
+      operator_time: number;
       content: MessageSegment[];
     },
   ];
