@@ -1,4 +1,4 @@
-import { errAsync, okAsync, ResultAsync } from "neverthrow";
+import { errAsync, ResultAsync } from "neverthrow";
 
 class ThrottleError extends Error {
   constructor(message?: string, options?: ErrorOptions) {
@@ -7,7 +7,7 @@ class ThrottleError extends Error {
   }
 }
 
-interface ThrottledAsync<T extends (...args: any[]) => ResultAsync<any, any>> {
+export interface ThrottledAsync<T extends (...args: any[]) => ResultAsync<any, any>> {
   (
     ...args: Parameters<T>
   ): ReturnType<T> extends ResultAsync<infer V, infer E1> ? ResultAsync<V, E1 | ThrottleError> : never;

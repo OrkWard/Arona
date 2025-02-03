@@ -1,10 +1,10 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent, OneBotEventBase, OneBotMessageEvent, OneBotMetaEvent } from "./event.js";
 import WebSocket from "ws";
-import { Logger } from "../utils/log.js";
+import { Logger } from "./utils/log.js";
 import assert from "assert";
-import { fromPromise, ResultAsync } from "neverthrow";
-import { throttleAsync } from "../utils/nt.js";
+import { ResultAsync } from "neverthrow";
+import { throttleAsync } from "./utils/nt.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -145,4 +145,4 @@ class OneBot {
   }
 }
 
-export { OneBot };
+export { OneBot, Logger };

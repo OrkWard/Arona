@@ -1,3 +1,14 @@
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  - packages/*
+  - apps/*
+catalog:
+  "@prisma/client": 6.0.0
+  "@types/node": ^22.10.1
+  "@types/ws": ^8.5.12
+  dotenv: ^16.4.7
+  neverthrow: ^8.1.0
+  nodemon: ^3.1.7
+  picocolors: ^1.1.1
+  prisma: ^6.0.0
+  typescript: ^5.7.2
+  ws: ^8.18.0

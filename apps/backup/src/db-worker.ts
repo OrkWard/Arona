@@ -3,23 +3,27 @@ import assert from "assert";
 import { ResultAsync } from "neverthrow";
 import { Prisma, PrismaClient } from "@prisma/client";
 
-import { OneBot } from "./onebot/index.js";
-import { Logger } from "./utils/log.js";
-import { handleDBError } from "./utils/db.js";
+import { OneBot, Logger } from "onebot";
+import { handleDBError } from "./db.js";
 
 const prisma = new PrismaClient();
 
 export class DBWorker {
   constructor(
     private oneBot: OneBot,
-    private logger: Logger
+    private logger: Logger,
   ) {
     this.oneBot.onMessage(async (e) => {
       assert(e.self_id === 2339362968, "使用了错误的 QQ 号");
-      assert(Array.isArray(e.message), `Receive none array message: ${JSON.stringify(e.message)}`);
+      assert(
+        Array.isArray(e.message),
+        `Receive none array message: ${JSON.stringify(e.message)}`,
+      );
 
       if (e.message_type === "private") {
-        this.logger.warn(`Private message from ${e.sender.nickname}(${e.user_id}) received`);
+        this.logger.warn(
+          `Private message from ${e.sender.nickname}(${e.user_id}) received`,
+        );
         return;
       }
 
@@ -92,12 +96,15 @@ export class DBWorker {
             },
           }),
         ]),
-        (e) => handleDBError(e)
+        (e) => handleDBError(e),
       ).match(
-        () => this.logger.debug("User, Group, Message has been all successfully updated"),
+        () =>
+          this.logger.debug(
+            "User, Group, Message has been all successfully updated",
+          ),
         (e) => {
           this.logger.error(e.message);
-        }
+        },
       );
     });
   }
@@ -110,7 +117,10 @@ export class DBWorker {
 
 (function () {
   const logger = new Logger();
-  const onebot = new OneBot(logger, { authKey: process.env.AUTH_TOKEN!, origin: "sur4:3001" });
+  const onebot = new OneBot(logger, {
+    authKey: process.env.AUTH_TOKEN!,
+    origin: "sur4:3001",
+  });
   const worker = new DBWorker(onebot, logger);
 
   process.on("SIGINT", () => {
