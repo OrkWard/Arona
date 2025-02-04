@@ -147,3 +147,4 @@ class OneBot {
 
 export { OneBot, Logger };
 export type { OneBotEvent, OneBotActions };
+export type { Message, MessageSegment } from "./message.js";

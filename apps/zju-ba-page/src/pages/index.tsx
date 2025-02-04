@@ -1,14 +1,60 @@
-import Head from "next/head";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
-// import Image from "next/image";
+import Head from "next/head";
+import Image from "next/image";
 // import { Geist, Geist_Mono } from "next/font/google";
-import styles from "@/styles/Home.module.css";
 
 import ESSENCE from "essence";
-import { type OneBotActions } from "onebot";
+import { type MessageSegment, type OneBotActions } from "onebot";
 
 import "@radix-ui/themes/styles.css";
-import { Theme, ThemePanel } from "@radix-ui/themes";
+import { Avatar, Box, Card, Flex, Link, ScrollArea, Text, Theme, ThemePanel } from "@radix-ui/themes";
+
+function formatSegment(segment: MessageSegment, key: number) {
+  const urlRegex = /(https?:\/\/[^\s<>(){}|\\^~\[\]`"']+)/gi;
+  switch (segment.type) {
+    case "text":
+      return segment.data.text.split(urlRegex).map((text, i) =>
+        i % 2 ? (
+          <Link target="_blank" href={text} key={i}>
+            {text}
+          </Link>
+        ) : (
+          <Text key={i}>{text}</Text>
+        )
+      );
+    case "image":
+      return (
+        <Image
+          src={segment.data.url}
+          alt={"seg"}
+          height="160"
+          width="160"
+          style={{ objectFit: "cover", outline: "0.5px solid var(--gray-8)", cursor: "pointer" }}
+          onClick={() => open(segment.data.url, "_blank", "noreferrer=true")}
+          key={key}
+          quality={100}
+        />
+      );
+    case "at":
+      return (
+        <Text key={key} color="cyan">
+          @{segment.data.qq}{" "}
+        </Text>
+      );
+    case "face":
+      return (
+        <Text key={key} color="grass">
+          [QQ表情{segment.data.id}]
+        </Text>
+      );
+    default:
+      return (
+        <Text key={key} as="div">
+          {JSON.stringify(segment)}
+        </Text>
+      );
+  }
+}
 
 export default function Home({ essence }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
@@ -20,13 +66,37 @@ export default function Home({ essence }: InferGetStaticPropsType<typeof getStat
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Theme>
-        <main className={styles.main}></main>
-        <ThemePanel />
+        <main>
+          {essence.map((msg) => (
+            <Box key={msg.message_id} m={"3"}>
+              <Card>
+                <Flex gap={"3"} align={"center"} mb="2">
+                  <Avatar fallback={msg.sender_nick[0]} radius="full" size={"3"} />
+                  <Box>
+                    <Text size="2" weight="bold">
+                      {msg.sender_nick}
+                    </Text>
+                    <Text size="1" weight="light">
+                      {" "}
+                      {msg.sender_id}
+                    </Text>
+                    <br />
+                    <Text size="1" color="gray" title={msg.operator_id.toString()}>
+                      由 {msg.operator_nick} 于 {new Date(msg.operator_time * 1000).toLocaleString()} 设置
+                    </Text>
+                  </Box>
+                </Flex>
+                <Text>{msg.content.map(formatSegment)}</Text>
+              </Card>
+            </Box>
+          ))}
+        </main>
+        {/* <ThemePanel /> */}
       </Theme>
     </>
   );
 }
 
-export const getStaticProps: GetStaticProps<{ essence: OneBotActions["get_essence_msg_list"][1] }> = (context) => {
+export const getStaticProps: GetStaticProps<{ essence: OneBotActions["get_essence_msg_list"][1][] }> = (context) => {
   return { props: { essence: ESSENCE as any } };
 };
