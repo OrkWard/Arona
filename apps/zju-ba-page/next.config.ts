@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
       },
       {
-        hostname: "multimedia.nt.qq.com.cn",
+        hostname: "r2.orkward.dev",
       },
       {
         hostname: "gchat.qpic.cn",

@@ -31,8 +31,8 @@ onebot.onOpen(() => {
               return seg;
             }
 
-            objects.push({ id, url: seg.data.url });
-            seg.data.url = `https://r2.orkward.dev/${id}`;
+            objects.push({ id: id + ".jpg", url: seg.data.url });
+            seg.data.url = `https://r2.orkward.dev/${id}.jpg`;
             return seg;
           }
           return seg;
@@ -64,10 +64,10 @@ onebot.onOpen(() => {
       const fileName = `./essence-${new Date().getTime()}.json`;
       const linkName = "./essence.json";
       writeFileSync(fileName, JSON.stringify(data, undefined, "  "));
-      if (existsSync(linkName)) {
+      try {
         unlinkSync(linkName);
-      }
-      symlinkSync(linkName, fileName);
+      } catch {}
+      symlinkSync(fileName, linkName);
     })
     .match(
       () => {
