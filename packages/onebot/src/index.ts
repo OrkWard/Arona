@@ -53,7 +53,7 @@ class OneBot {
     ws.on("error", (err) => {
       logger.error(err);
     });
-    ws.on("open", () => {
+    ws.once("open", () => {
       logger.info("Connected to", config.origin);
     });
 
@@ -134,6 +134,10 @@ class OneBot {
 
   onMessage(callback: (event: OneBotMessageEvent) => void): number {
     return this._on("message", callback as EventCallback);
+  }
+
+  onOpen(callback: () => void) {
+    this.ws.on("open", callback);
   }
 
   removeListener(eventName: string, listenerId: number) {

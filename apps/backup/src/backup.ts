@@ -1,7 +1,7 @@
 import { ResultAsync } from "neverthrow";
 import { OneBot, OneBotError, Logger } from "onebot";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { handleDBError } from "./db.js";
+import { handleDBError } from "./utils/db.js";
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
     ])
       .map(async ([sourceMembers, targetMembers, invitation]) => {
         const unjoin = new Set(sourceMembers.map((m) => m.user_id)).difference(
-          new Set(targetMembers.map((m) => m.user_id)),
+          new Set(targetMembers.map((m) => m.user_id))
         );
         logger.info(`Left ${unjoin.size} guys don't in the backup group`);
         const invited = await prisma.invite.findMany({
@@ -37,9 +37,7 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
           },
         });
         logger.info(`Already ${invited.length} guys received invite`);
-        const unsent = [
-          ...unjoin.difference(new Set(invited.map((i) => Number(i.userId)))),
-        ].slice(0, 1);
+        const unsent = [...unjoin.difference(new Set(invited.map((i) => Number(i.userId))))].slice(0, 1);
         return [unsent, invitation] as const;
       })
       .andThen(([members, invitation]) =>
@@ -75,11 +73,11 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
                       userId: m.toString(),
                     },
                   }),
-                  (e) => handleDBError(e),
-                ),
-              ),
-          ),
-        ),
+                  (e) => handleDBError(e)
+                )
+              )
+          )
+        )
       )
       .match(
         () => {
@@ -89,7 +87,7 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
         (e) => {
           logger.error(e);
           return false;
-        },
+        }
       )
       .finally(() => {
         lock = false;

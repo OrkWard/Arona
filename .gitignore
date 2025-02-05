@@ -7,3 +7,5 @@ dist/
 .gitsecret/keys/random_seed
 !*.secret
 Makefile
+apps/essence/.env
+apps/backup/.env

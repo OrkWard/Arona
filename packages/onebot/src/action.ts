@@ -80,7 +80,7 @@ export type OneBotActions = {
       message_id: number;
       operator_time: number;
       content: MessageSegment[];
-    },
+    }[],
   ];
 };
 

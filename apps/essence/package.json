@@ -1,14 +1,27 @@
 {
   "name": "essence",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "gen": "tsc && cp .env dist && node ./dist/main.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.741.0",
+    "dotenv": "catalog:",
+    "neverthrow": "catalog:",
+    "onebot": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "nodemon": "catalog:",
+    "typescript": "catalog:"
+  },
   "exports": {
     ".": "./essence.json"
-  }
+  },
+  "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a"
 }

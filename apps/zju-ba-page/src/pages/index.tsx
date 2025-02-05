@@ -97,6 +97,6 @@ export default function Home({ essence }: InferGetStaticPropsType<typeof getStat
   );
 }
 
-export const getStaticProps: GetStaticProps<{ essence: OneBotActions["get_essence_msg_list"][1][] }> = (context) => {
+export const getStaticProps: GetStaticProps<{ essence: OneBotActions["get_essence_msg_list"][1] }> = (context) => {
   return { props: { essence: ESSENCE as any } };
 };
