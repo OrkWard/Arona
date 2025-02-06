@@ -1,7 +1,7 @@
 import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import "dotenv/config";
 import { fromPromise, ok, okAsync } from "neverthrow";
-import { existsSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import { createWriteStream, existsSync, symlinkSync, unlinkSync, writeFileSync, writeSync } from "node:fs";
 import { Logger, OneBot } from "onebot";
 
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
@@ -48,6 +48,7 @@ onebot.onOpen(() => {
               new PutObjectCommand({
                 Bucket: "zju-ba-images",
                 Key: o.id,
+                ContentType: "image/jpg",
                 Body: await fetch(o.url)
                   .then((rs) => rs.arrayBuffer())
                   .then((ab) => Buffer.from(ab)),
