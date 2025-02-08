@@ -12,7 +12,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.741.0",
     "dotenv": "catalog:",
-    "neverthrow": "catalog:",
     "onebot": "workspace:*"
   },
   "devDependencies": {

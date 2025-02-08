@@ -1,4 +1,3 @@
-import { ResultAsync } from "neverthrow";
 import { OneBot, OneBotError, Logger } from "onebot";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { handleDBError } from "./utils/db.js";
@@ -14,84 +13,59 @@ const onebot = new OneBot(logger, {
 function sendInvitation(sourceGroup: number, targetGroup: number) {
   let lock = false;
 
-  return () => {
+  return async () => {
     if (lock) {
-      return Promise.resolve(undefined);
+      return undefined;
     }
     lock = true;
 
-    return ResultAsync.combine([
-      onebot.post("get_group_member_list", { group_id: sourceGroup }),
-      onebot.post("get_group_member_list", { group_id: targetGroup }),
-      onebot.post("ArkShareGroup", { group_id: targetGroup }),
-    ])
-      .map(async ([sourceMembers, targetMembers, invitation]) => {
-        const unjoin = new Set(sourceMembers.map((m) => m.user_id)).difference(
-          new Set(targetMembers.map((m) => m.user_id))
-        );
-        logger.info(`Left ${unjoin.size} guys don't in the backup group`);
-        const invited = await prisma.invite.findMany({
-          where: {
-            sourceGroupId: sourceGroup.toString(),
-            AND: { targetGroupId: targetGroup.toString() },
-          },
-        });
-        logger.info(`Already ${invited.length} guys received invite`);
-        const unsent = [...unjoin.difference(new Set(invited.map((i) => Number(i.userId))))].slice(0, 1);
-        return [unsent, invitation] as const;
-      })
-      .andThen(([members, invitation]) =>
-        ResultAsync.combine(
-          members.map((m) =>
-            onebot
-              .sendPrivateMsg({
-                user_id: m,
-                message: [
-                  {
-                    type: "text",
-                    data: {
-                      text: "好久不见，老师！别忘了接入什亭之匣的备份，防止丢失讯号哦！",
-                    },
-                  },
-                  { type: "text", data: { text: targetGroup.toString() } },
-                ],
-                group_id: sourceGroup,
-              })
-              // .andThen(() =>
-              //   onebot.post("send_private_msg", {
-              //     user_id: m,
-              //     message: [{ type: "json", data: { data: invitation } }],
-              //     group_id: sourceGroup,
-              //   })
-              // )
-              .andThen(() =>
-                ResultAsync.fromPromise(
-                  prisma.invite.create({
-                    data: {
-                      sourceGroupId: sourceGroup.toString(),
-                      targetGroupId: targetGroup.toString(),
-                      userId: m.toString(),
-                    },
-                  }),
-                  (e) => handleDBError(e)
-                )
-              )
-          )
+    // {{{ get members that haven't joined target and receive invitation
+    const sourceMem = await onebot.post("get_group_member_list", { group_id: sourceGroup });
+    const targetMem = await onebot.post("get_group_member_list", { group_id: targetGroup });
+    // const invitation = await onebot.post("ArkShareGroup", { group_id: targetGroup });
+    const unjoinMem = new Set(sourceMem.map((m) => m.user_id)).difference(new Set(targetMem.map((m) => m.user_id)));
+    logger.info(`Left ${unjoinMem.size} guys don't in the backup group`);
+    const invitedMem = await prisma.invite.findMany({
+      where: {
+        sourceGroupId: sourceGroup.toString(),
+        AND: { targetGroupId: targetGroup.toString() },
+      },
+    });
+    logger.info(`Already ${invitedMem.length} guys received invite`);
+    const unsendMem = [...unjoinMem.difference(new Set(invitedMem.map((i) => Number(i.userId))))].slice(0, 1);
+    // }}}
+
+    for (const m of unsendMem) {
+      await onebot
+        .sendPrivateMsg({
+          user_id: m,
+          message: [
+            {
+              type: "text",
+              data: {
+                text: "好久不见，老师！别忘了接入什亭之匣的备份，防止丢失讯号哦！",
+              },
+            },
+            { type: "text", data: { text: targetGroup.toString() } },
+          ],
+          group_id: sourceGroup,
+        })
+        .then(() =>
+          prisma.invite.create({
+            data: {
+              sourceGroupId: sourceGroup.toString(),
+              targetGroupId: targetGroup.toString(),
+              userId: m.toString(),
+            },
+          })
         )
-      )
-      .match(
-        () => {
-          logger.info("Sync Success");
-          return true;
-        },
-        (e) => {
-          logger.error(e);
-          return false;
-        }
-      )
-      .finally(() => {
-        lock = false;
-      });
+        // ignore error here
+        .catch((e) => console.error(e));
+    }
+
+    logger.info("Sync Success");
+
+    lock = false;
   };
 }
 

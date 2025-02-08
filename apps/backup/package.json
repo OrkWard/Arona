@@ -24,7 +24,6 @@
   "dependencies": {
     "@prisma/client": "catalog:",
     "dotenv": "catalog:",
-    "neverthrow": "catalog:",
     "onebot": "workspace:*"
   }
 }

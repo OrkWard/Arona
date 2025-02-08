@@ -1,7 +1,6 @@
 import "dotenv/config";
 import assert from "assert";
-import { ResultAsync } from "neverthrow";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 import { OneBot, Logger } from "onebot";
 import { handleDBError } from "./utils/db.js";
@@ -27,77 +26,70 @@ export class DBWorker {
       const msgId = e.message_id.toString();
       const msg = e.message;
 
-      await ResultAsync.fromPromise<unknown, Error>(
-        prisma.$transaction([
-          // 存储用户和组
-          prisma.user.upsert({
-            where: { userId },
-            create: {
-              userId,
-              Group: {
-                connectOrCreate: {
-                  where: { groupId },
-                  create: { groupId },
-                },
+      await prisma.$transaction([
+        // 存储用户和组
+        prisma.user.upsert({
+          where: { userId },
+          create: {
+            userId,
+            Group: {
+              connectOrCreate: {
+                where: { groupId },
+                create: { groupId },
               },
             },
-            update: {
-              Group: {
-                connectOrCreate: {
-                  where: { groupId },
-                  create: { groupId },
-                },
+          },
+          update: {
+            Group: {
+              connectOrCreate: {
+                where: { groupId },
+                create: { groupId },
               },
             },
-          }),
+          },
+        }),
 
-          // 存储消息
-          prisma.message.create({
-            data: {
-              messageId: msgId,
-              type: "group",
-              user: { connect: { userId } },
-              group: { connect: { groupId } },
-              time: new Date(e.time * 1000),
-              segments: {
-                createMany: {
-                  data: msg.map((m) => {
-                    let content: string;
-                    switch (m.type) {
-                      case "text":
-                        content = m.data.text;
-                        break;
-                      case "at":
-                        content = m.data.qq;
-                        break;
-                      case "file":
-                        content = m.data.file;
-                        break;
-                      case "image":
-                        content = m.data.file || m.data.url;
-                        break;
-                      case "reply":
-                        content = m.data.id;
-                        break;
-                      default:
-                        content = JSON.stringify(m.data);
-                        break;
-                    }
+        // 存储消息
+        prisma.message.create({
+          data: {
+            messageId: msgId,
+            type: "group",
+            user: { connect: { userId } },
+            group: { connect: { groupId } },
+            time: new Date(e.time * 1000),
+            segments: {
+              createMany: {
+                data: msg.map((m) => {
+                  let content: string;
+                  switch (m.type) {
+                    case "text":
+                      content = m.data.text;
+                      break;
+                    case "at":
+                      content = m.data.qq;
+                      break;
+                    case "file":
+                      content = m.data.file;
+                      break;
+                    case "image":
+                      content = m.data.file || m.data.url;
+                      break;
+                    case "reply":
+                      content = m.data.id;
+                      break;
+                    default:
+                      content = JSON.stringify(m.data);
+                      break;
+                  }
 
-                    return { content, type: m.type };
-                  }),
-                },
+                  return { content, type: m.type };
+                }),
               },
             },
-          }),
-        ]),
-        (e) => handleDBError(e)
-      ).match(
-        () => this.logger.debug("User, Group, Message has been all successfully updated"),
-        (e) => {
-          this.logger.error(e.message);
-        }
-      );
+          },
+        }),
+      ]);
+      this.logger.debug("User, Group, Message has been all successfully updated");
     });
   }
 

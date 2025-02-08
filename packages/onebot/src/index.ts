@@ -3,8 +3,7 @@ import type { OneBotEvent, OneBotEventBase, OneBotMessageEvent, OneBotMetaEvent 
 import WebSocket from "ws";
 import { Logger } from "./utils/log.js";
 import assert from "assert";
-import { ResultAsync } from "neverthrow";
-import { throttleAsync } from "./utils/nt.js";
+import { throttle } from "./utils/nt.js";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -79,6 +78,9 @@ class OneBot {
     });
   }
 
+  /**
+   * @throws OneBotError
+   */
   post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0]) {
     const echo = (requestCounter++).toString();
     const payload = JSON.stringify({
@@ -90,34 +92,28 @@ class OneBot {
     this.ws.send(payload);
     this.logger.debug(`Action Sent: ${payload}`);
 
-    return ResultAsync.fromPromise(
-      new Promise<OneBotActions[T][1]>((resolve, reject) => {
-        const intervalId = setInterval(() => {
-          const res = this.messageBuffer.get(echo);
-          if (res) {
-            if (res.status === "ok") {
-              this.logger.debug(`Action Return: ${JSON.stringify(res)}`);
-              resolve(res.data);
-            } else if (res.status === "failed") {
-              this.logger.debug(`Action Error: ${JSON.stringify(res)}`);
-              reject(new OneBotError(`[${res.retcode}] ` + res.message));
-            }
-            this.messageBuffer.delete(echo);
-            clearInterval(intervalId);
+    return new Promise<OneBotActions[T][1]>((resolve, reject) => {
+      const intervalId = setInterval(() => {
+        const res = this.messageBuffer.get(echo);
+        if (res) {
+          if (res.status === "ok") {
+            this.logger.debug(`Action Return: ${JSON.stringify(res)}`);
+            resolve(res.data);
+          } else if (res.status === "failed") {
+            this.logger.debug(`Action Error: ${JSON.stringify(res)}`);
+            reject(new OneBotError(`[${res.retcode}] ` + res.message));
           }
-        }, 200);
-      }),
-      (e) => {
-        if (e instanceof OneBotError) {
-          return e;
-        } else {
-          return new OneBotError(`Unknown Error: ${Error.prototype.toString.call(e)}`);
+          this.messageBuffer.delete(echo);
+          clearInterval(intervalId);
         }
-      }
-    );
+      }, 200);
+    });
   }
 
-  sendPrivateMsg = throttleAsync(
+  /**
+   * @throws ThrottleError
+   */
+  sendPrivateMsg = throttle(
     (params: OneBotActions["send_private_msg"][0]) => this.post("send_private_msg", params),
     3000
   );

@@ -1,5 +1,3 @@
-import { errAsync, ResultAsync } from "neverthrow";
-
 class ThrottleError extends Error {
   constructor(message?: string, options?: ErrorOptions) {
     super(message, options);
@@ -7,12 +5,10 @@ class ThrottleError extends Error {
   }
 }
 
-export interface ThrottledAsync<T extends (...args: any[]) => ResultAsync<any, any>> {
-  (
-    ...args: Parameters<T>
-  ): ReturnType<T> extends ResultAsync<infer V, infer E1> ? ResultAsync<V, E1 | ThrottleError> : never;
+export interface ThrottledFunc<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): ReturnType<T>;
 }
-export function throttleAsync<T extends (...args: any[]) => ResultAsync<any, any>>(func: T, wait: number) {
+export function throttle<T extends (...args: any[]) => any>(func: T, wait: number) {
   let lastTime = 0;
   return function (...args: any[]) {
     const now = new Date().getTime();
@@ -21,6 +17,6 @@ export function throttleAsync<T extends (...args: any[]) => ResultAsync<any, any
       return func(...args);
     }
 
-    return errAsync(new ThrottleError(`func: ${func.name}`));
-  } as ThrottledAsync<T>;
+    throw new ThrottleError(`${func.name}`);
+  } as ThrottledFunc<T>;
 }

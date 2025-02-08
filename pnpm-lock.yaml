@@ -33,9 +33,6 @@ catalogs:
     eslint-config-next:
       specifier: 15.1.6
       version: 15.1.6
-    neverthrow:
-      specifier: ^8.1.0
-      version: 8.1.0
     next:
       specifier: 15.1.6
       version: 15.1.6
@@ -74,9 +71,6 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 16.4.7
-      neverthrow:
-        specifier: 'catalog:'
-        version: 8.1.0
       onebot:
         specifier: workspace:*
         version: link:../../packages/onebot
@@ -102,9 +96,6 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 16.4.7
-      neverthrow:
-        specifier: 'catalog:'
-        version: 8.1.0
       onebot:
         specifier: workspace:*
         version: link:../../packages/onebot
@@ -169,9 +160,6 @@ importers:
 
   packages/onebot:
     dependencies:
-      neverthrow:
-        specifier: 'catalog:'
-        version: 8.1.0
       picocolors:
         specifier: 'catalog:'
         version: 1.1.1
@@ -1275,11 +1263,6 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@rollup/rollup-linux-x64-gnu@4.34.2':
-    resolution: {integrity: sha512-j+jFdfOycLIQ7FWKka9Zd3qvsIyugg5LeZuHF6kFlXo6MSOc6R1w37YUVy8VpAKd81LMWGi5g9J25P09M0SSIw==}
-    cpu: [x64]
-    os: [linux]
-
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
@@ -2315,10 +2298,6 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
-
-  neverthrow@8.1.0:
-    resolution: {integrity: sha512-DV0klbzcsI0XOJvdGElzJ2sEXmEPwQLWio/ttq7D7CQApUduxqzNG2noc8ZPaAFc9XXINYVb0f5ozM0ZJKGF1w==}
-    engines: {node: '>=18'}
 
   next@15.1.6:
     resolution: {integrity: sha512-Hch4wzbaX0vKQtalpXvUiw5sYivBy4cm5rzUKrBnUB/y436LGrvOUqYvlSeNVCWFO/770gDlltR9gqZH62ct4Q==}
@@ -4211,9 +4190,6 @@ snapshots:
       '@types/react': 19.0.8
       '@types/react-dom': 19.0.3(@types/react@19.0.8)
 
-  '@rollup/rollup-linux-x64-gnu@4.34.2':
-    optional: true
-
   '@rtsao/scc@1.1.0': {}
 
   '@rushstack/eslint-patch@1.10.5': {}
@@ -5583,10 +5559,6 @@ snapshots:
   nanoid@3.3.8: {}
 
   natural-compare@1.4.0: {}
-
-  neverthrow@8.1.0:
-    optionalDependencies:
-      '@rollup/rollup-linux-x64-gnu': 4.34.2
 
   next@15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
