@@ -1,4 +1,4 @@
-import { OneBot, OneBotError, Logger } from "onebot";
+import { OneBot, Logger } from "onebot";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { handleDBError } from "./utils/db.js";
 

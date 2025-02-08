@@ -37,4 +37,5 @@ export type MessageSegment = {
   [K in keyof MessageType]: { type: K; data: MessageType[K] };
 }[keyof MessageType];
 
-export type Message = MessageSegment[] | MessageSegment | string;
+// export type Message = MessageSegment[] | MessageSegment | string;
+export type Message = MessageSegment[];

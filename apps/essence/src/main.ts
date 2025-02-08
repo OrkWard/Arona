@@ -45,7 +45,8 @@ onebot.onOpen(async () => {
       }
       const view = new Uint8Array(buffer, 0, 1);
       if (view[0] === "{".charCodeAt(0)) {
-        throw new Error(`[Get Image]: resp is json, content: ${new TextDecoder("utf-8").decode(buffer)}`);
+        logger.warn(`[Get Image]: resp is json, content: ${new TextDecoder("utf-8").decode(buffer)}`);
+        return;
       }
 
       await S3.send(
@@ -56,6 +57,7 @@ onebot.onOpen(async () => {
           Body: Buffer.from(buffer),
         })
       );
+      // const bytes = Uint8Array.from(atob(fileDesc.base64), (c) => c.charCodeAt(0));
     })
   );
 

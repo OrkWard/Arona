@@ -68,9 +68,17 @@ export type OneBotActions = {
     ],
   ];
   ArkShareGroup: [{ group_id: number }, string];
-  get_image: [
-    { file_id: string },
-    { file: string; url: string; file_size: string; file_name: string; base64?: string },
+  get_image: [{ file_id: string }, { file: string; url: string; file_size: string; file_name: string; base64: string }];
+  get_msg: [
+    { message_id: number },
+    {
+      time: number;
+      message_type: "private" | "group";
+      message_id: number;
+      real_id: number;
+      sender: {};
+      message: Message;
+    },
   ];
   get_essence_msg_list: [
     { group_id: number },
