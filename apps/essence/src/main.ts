@@ -1,7 +1,8 @@
 import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import "dotenv/config";
-import { fromPromise, ok, okAsync } from "neverthrow";
+import { fromPromise, ok, okAsync, ResultAsync } from "neverthrow";
 import { createWriteStream, existsSync, symlinkSync, unlinkSync, writeFileSync, writeSync } from "node:fs";
+import { arrayBuffer } from "node:stream/consumers";
 import { Logger, OneBot } from "onebot";
 
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
@@ -21,47 +22,68 @@ const S3 = new S3Client({
 onebot.onOpen(() => {
   onebot
     .post("get_essence_msg_list", { group_id: 663985246 })
-    .andThen((data) => {
-      const objects: { url: string; id: string }[] = [];
+    .map((data) => {
+      const ids: string[] = [];
       data.forEach((msg) => {
         msg.content = msg.content.map((seg) => {
           if (seg.type === "image" && seg.data.url.includes("multimedia.nt.qq.com.cn")) {
-            const id = new URL(seg.data.url).searchParams.get("fileid");
-            if (!id) {
-              return seg;
+            const id = seg.data.file;
+            if (id) {
+              ids.push(id);
+              seg.data.url = `https://r2.orkward.dev/${id}.jpg`;
             }
-
-            objects.push({ id: id + ".jpg", url: seg.data.url });
-            seg.data.url = `https://r2.orkward.dev/${id}.jpg`;
-            return seg;
           }
           return seg;
         });
       });
 
-      logger.info(`start upload, count: ${objects.length}`);
+      logger.info(`start upload, count: ${ids.length}`);
 
-      return fromPromise(
-        Promise.all(
-          objects.map(async (o) =>
-            S3.send(
-              new PutObjectCommand({
-                Bucket: "zju-ba-images",
-                Key: o.id,
-                ContentType: "image/jpg",
-                Body: await fetch(o.url)
-                  .then((rs) => rs.arrayBuffer())
-                  .then((ab) => Buffer.from(ab)),
-              })
-            )
-          )
-        ).then(() => data),
-        (e) => {
-          return new Error(`[Upload]: ${e}`);
-        }
-      );
+      return [data, ids] as const;
     })
-    .map((data) => {
+    .andThrough(([_, ids]) => {
+      return ResultAsync.combine(ids.map((id) => onebot.post("get_image", { file_id: id })))
+        .andThen((files) =>
+          fromPromise(
+            Promise.all(
+              files.map(async (file) => {
+                const buffer = await fetch(file.url).then((resp) => resp.arrayBuffer());
+                if (buffer.byteLength === 0) {
+                  throw new Error(`[Get Image]: resp null, file id: ${file.file_name}`);
+                }
+                const view = new Uint8Array(buffer, 0, 1);
+                if (view[0] === "{".charCodeAt(0)) {
+                  throw new Error(`[Get Image]: resp is json, content: ${new TextDecoder("utf-8").decode(buffer)}`);
+                }
+                return buffer;
+              })
+            ),
+            (e) => {
+              return new Error(`[Get Image]: ${e}`);
+            }
+          )
+        )
+        .andThen((buffer) =>
+          fromPromise(
+            Promise.all(
+              ids.map(async (id, i) => {
+                return S3.send(
+                  new PutObjectCommand({
+                    Bucket: "zju-ba-images",
+                    Key: id,
+                    ContentType: "image/jpg",
+                    Body: Buffer.from(buffer[i]),
+                  })
+                );
+              })
+            ),
+            (e) => {
+              return new Error(`[Upload]: ${e}`);
+            }
+          )
+        );
+    })
+    .map(([data]) => {
       const fileName = `./essence-${new Date().getTime()}.json`;
       const linkName = "./essence.json";
       writeFileSync(fileName, JSON.stringify(data, undefined, "  "));
