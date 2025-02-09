@@ -25,7 +25,7 @@ onebot.onOpen(async () => {
     msg.content = msg.content.map((seg) => {
       if (seg.type === "image") {
         const id = crypto.randomUUID();
-        images.push({ id: crypto.randomUUID(), url: seg.data.url });
+        images.push({ id, url: seg.data.url });
         seg.data.url = `https://r2.orkward.dev/${encodeURIComponent(id)}`;
       }
       return seg;

@@ -1,13 +1,14 @@
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import ImageNotFound from "../../public/not-found.png";
 // import { Geist, Geist_Mono } from "next/font/google";
 
 import ESSENCE from "essence";
 import { type MessageSegment, type OneBotActions } from "onebot";
 
 import "@radix-ui/themes/styles.css";
-import { Avatar, Box, Card, Flex, Link, ScrollArea, Text, Theme, ThemePanel } from "@radix-ui/themes";
+import { Avatar, Box, Card, Flex, Link, Text, Theme, ThemePanel } from "@radix-ui/themes";
 
 function formatSegment(segment: MessageSegment, key: number) {
   const urlRegex = /(https?:\/\/[^\s<>(){}|\\^~\[\]`"']+)/gi;
@@ -26,7 +27,11 @@ function formatSegment(segment: MessageSegment, key: number) {
       return (
         <Image
           src={segment.data.url}
-          alt={"seg"}
+          onError={(e) => {
+            console.error(e);
+            e.currentTarget.srcset = ImageNotFound.src;
+          }}
+          alt={segment.data.file || segment.data.url}
           height="160"
           width="160"
           style={{ objectFit: "cover", outline: "0.5px solid var(--gray-8)", cursor: "pointer" }}
