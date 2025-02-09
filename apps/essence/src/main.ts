@@ -20,28 +20,26 @@ const S3 = new S3Client({
 onebot.onOpen(async () => {
   const msgList = await onebot.post("get_essence_msg_list", { group_id: 663985246 });
   /** Need to manually fetch the file */
-  const ids: string[] = [];
+  const images: { id: string; url: string }[] = [];
   msgList.forEach((msg) => {
     msg.content = msg.content.map((seg) => {
-      if (seg.type === "image" && seg.data.url.includes("multimedia.nt.qq.com.cn")) {
-        const id = seg.data.file;
-        if (id) {
-          ids.push(id);
-          seg.data.url = `https://r2.orkward.dev/${id}`;
-        }
+      if (seg.type === "image") {
+        const id = crypto.randomUUID();
+        images.push({ id: crypto.randomUUID(), url: seg.data.url });
+        seg.data.url = `https://r2.orkward.dev/${encodeURIComponent(id)}`;
       }
       return seg;
     });
   });
 
-  logger.info(`Start fetch and upload, count: ${ids.length}`);
+  logger.info(`Start fetch and upload, count: ${images.length}`);
 
   await Promise.all(
-    ids.map(async (id) => {
-      const fileDesc = await onebot.post("get_image", { file_id: id });
-      const buffer = await fetch(fileDesc.url).then((resp) => resp.arrayBuffer());
+    images.map(async ({ id, url }) => {
+      const buffer = await fetch(url).then((resp) => resp.arrayBuffer());
       if (buffer.byteLength === 0) {
-        throw new Error(`[Get Image]: resp null, file name: ${fileDesc.file_name}`);
+        logger.warn(`[Get Image]: resp null, url: ${url}`);
+        return;
       }
       const view = new Uint8Array(buffer, 0, 1);
       if (view[0] === "{".charCodeAt(0)) {
@@ -52,7 +50,7 @@ onebot.onOpen(async () => {
       await S3.send(
         new PutObjectCommand({
           Bucket: "zju-ba-images",
-          Key: id,
+          Key: encodeURIComponent(id),
           ContentType: "image/jpg",
           Body: Buffer.from(buffer),
         })
