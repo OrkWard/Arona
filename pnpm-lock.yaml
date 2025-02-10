@@ -110,6 +110,28 @@ importers:
         specifier: 'catalog:'
         version: 5.7.2
 
+  apps/subscribe:
+    dependencies:
+      dotenv:
+        specifier: 'catalog:'
+        version: 16.4.7
+      html-entities:
+        specifier: ^2.5.2
+        version: 2.5.2
+      onebot:
+        specifier: workspace:*
+        version: link:../../packages/onebot
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.17.16
+      nodemon:
+        specifier: 'catalog:'
+        version: 3.1.7
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
   apps/zju-ba-page:
     dependencies:
       '@radix-ui/themes':
@@ -2081,6 +2103,9 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  html-entities@2.5.2:
+    resolution: {integrity: sha512-K//PSRMQk4FZ78Kyau+mZurHn3FH0Vwr+H36eE0rPbeYkRRi9YxceYPhuN60UwWorxyKHhqoAJl2OFKa4BVtaA==}
 
   ignore-by-default@1.0.1:
     resolution: {integrity: sha512-Ius2VYcGNk7T90CppJqcIkS5ooHUZyIQK+ClZfMfMNFEF9VSE73Fq+906u/CWu92x4gzZMWOwfFYckPObzdEbA==}
@@ -5340,6 +5365,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  html-entities@2.5.2: {}
 
   ignore-by-default@1.0.1: {}
 
