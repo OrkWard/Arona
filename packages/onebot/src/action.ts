@@ -1,4 +1,4 @@
-import type { Message, MessageSegment } from "./message.js";
+import type { Message, MessageSegment, SendMessage } from "./message.js";
 
 export interface OneBotActionRequest<T extends Record<string, unknown> = {}> {
   action: string; // 动作名称
@@ -20,7 +20,7 @@ export type OneBotActions = {
     {
       user_id: number;
       group_id?: number;
-      message: Message;
+      message: SendMessage;
       /** @default false 消息是否作为纯文本发送，不解析 CQ 码 */
       auto_escape?: boolean;
     },
@@ -31,8 +31,8 @@ export type OneBotActions = {
   send_group_msg: [
     {
       group_id: number;
-      message: Message;
-      auto_escape: boolean;
+      message: SendMessage;
+      auto_escape?: boolean;
     },
     { message_id: number },
   ];

@@ -26,10 +26,6 @@ export class OneBotError extends Error {
 type OneBotConfig = {
   origin: string;
   authKey: string;
-  logger?: {
-    silent?: boolean;
-    debug?: boolean;
-  };
   // Event response timeout, in millisecond
   // timeout: number = 10_000;
 };

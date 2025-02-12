@@ -1,7 +1,5 @@
 node_modules/
 dist/
 *.db
-/.env
 *.db-journal
 .DS_Store
-!*.secret

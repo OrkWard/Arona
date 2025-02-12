@@ -1,11 +1,16 @@
-import "dotenv/config";
-import { prepareAPI, type TweetLegacy } from "twitter-scraper";
+import { config } from "dotenv";
+import { findUpSync } from "find-up";
+import { getTweetMedia, prepareAPI, type TimelineTweetLegacy } from "twitter-scraper";
 import { decode } from "html-entities";
+import { Logger, OneBot } from "onebot";
+import { serverStatic } from "./serve.js";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
-function getTweetContent(tweet: TweetLegacy) {
+function getTweetContent(tweet: TimelineTweetLegacy) {
   const tweetId = tweet.id_str;
   const text = decode(tweet.full_text);
-  const media = tweet.entities.media?.map((m) => m.media_url_https).filter((url) => typeof url === "string");
+  const media = tweet.entities.media?.map(getTweetMedia);
   return {
     tweetId,
     text,
@@ -13,7 +18,7 @@ function getTweetContent(tweet: TweetLegacy) {
   };
 }
 
-async function main() {
+async function startSubscribe() {
   const { getUserId, getUserTweets } = await prepareAPI({
     cookie: process.env.cookie,
     referer: `https://x.com/blue_archivejp/media`,
@@ -22,15 +27,68 @@ async function main() {
     "x-csrf-token": process.env["x-csrf-token"],
     Authorization: process.env.Authorization,
   });
-  const id = await getUserId("blue_archivejp");
-  const tweets = await getUserTweets(id);
-  const latestTweet = tweets.find((t) => t.content?.entryType === "TimelineTimelineItem")?.content.itemContent
-    .tweet_results.result.legacy;
-  if (latestTweet) {
-    console.log("OOO", getTweetContent(latestTweet));
-  }
 
-  // console.log(decode(latestTweet?.full_text));
+  setInterval(
+    async () => {
+      try {
+        const id = await getUserId("blue_archivejp");
+        const entries = await getUserTweets(id);
+        const timelineTweets = entries
+          .slice(0, 1)
+          .filter((e) => ["TimelineTimelineItem", "TimelineTimelineModule"].includes(e.content.entryType))
+          .map((e) =>
+            e.content.entryType === "TimelineTimelineItem"
+              ? e.content.itemContent
+              : e.content.items.map((i) => i.item.itemContent)
+          )
+          .flat()
+          .filter((t) => t.itemType === "TimelineTweet")
+          .map((t) => t.tweet_results.result.legacy)
+          .map(getTweetContent);
+
+        for (const tweet of timelineTweets) {
+          if (!sent.has(tweet.tweetId)) {
+            const medias = await Promise.all(
+              tweet.media?.map(async (m) => {
+                const path = crypto.randomUUID();
+                await writeFile(join(staticRoot, path), await m.buffer);
+                return { url: "http://airm3:" + staticPort + "/" + path, type: m.type };
+              }) || []
+            );
+
+            await onebot.post("send_group_msg", {
+              group_id: 909983720,
+              message: [{ type: "text", data: { text: tweet.text } }],
+            });
+            await Promise.all(
+              medias.map((media) =>
+                onebot.post("send_group_msg", {
+                  group_id: 909983720,
+                  message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
+                })
+              )
+            );
+            sent.add(tweet.tweetId);
+          }
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          console.error(e.message);
+        } else {
+          console.error(e);
+        }
+      }
+    },
+    1000 * 5 * 60
+  );
 }
 
-main();
+config({ path: findUpSync(".env") });
+
+const staticRoot = "./static";
+const staticPort = 8888;
+serverStatic(staticRoot, staticPort);
+const sent = new Set<string>();
+const logger = new Logger();
+const onebot = new OneBot(logger, { authKey: process.env.ONEBOT_AUTH_TOKEN!, origin: process.env.ONEBOT_ORIGIN! });
+onebot.onOpen(startSubscribe);
