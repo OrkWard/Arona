@@ -6,6 +6,7 @@ import { Logger, OneBot } from "onebot";
 import { serverStatic } from "./serve.js";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
 
 function getTweetContent(tweet: TimelineTweetLegacy) {
   const tweetId = tweet.id_str;
@@ -86,6 +87,9 @@ async function startSubscribe() {
 config({ path: findUpSync(".env") });
 
 const staticRoot = "./static";
+if (!existsSync(staticRoot)) {
+  mkdirSync(staticRoot);
+}
 const staticPort = 8888;
 serverStatic(staticRoot, staticPort);
 const sent = new Set<string>();
