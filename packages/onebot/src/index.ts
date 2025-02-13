@@ -35,7 +35,9 @@ type EventCallback = (event: OneBotEvent) => void;
 class OneBot {
   private ws: WebSocket;
   private listeners: Map<string, Map<number, EventCallback>> = new Map();
-  private messageBuffer: Map<string, OneBotActionResponse> = new Map();
+  private receiveQueue: Map<string, OneBotActionResponse> = new Map();
+  /** Only use when connection not ready  */
+  private sendQueue: string[] = [];
 
   constructor(
     private logger: Logger,
@@ -50,6 +52,10 @@ class OneBot {
     });
     ws.once("open", () => {
       logger.info("Connected to", config.origin);
+      this.sendQueue.forEach((msg) => {
+        ws.send(msg);
+        this.logger.debug(`Msg in queue sent: ${msg}`);
+      });
     });
 
     ws.on("message", (message) => {
@@ -60,7 +66,7 @@ class OneBot {
         logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
         assert(typeof parsedMsg.echo === "string", `Action Response should have 'echo': ${JSON.stringify(parsedMsg)}`);
         const id = parsedMsg.echo;
-        this.messageBuffer.set(id, parsedMsg);
+        this.receiveQueue.set(id, parsedMsg);
       } else if (isEvent(parsedMsg)) {
         logger.debug(`Receive event: ${JSON.stringify(parsedMsg)}`);
         const eventName = parsedMsg.post_type;
@@ -85,12 +91,17 @@ class OneBot {
       echo: echo.toString(),
     } satisfies OneBotActionRequest);
 
-    this.ws.send(payload);
-    this.logger.debug(`Action Sent: ${payload}`);
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(payload);
+      this.logger.debug(`Action sent: ${payload}`);
+    } else {
+      this.sendQueue.push(payload);
+      this.logger.debug(`Action queued: ${payload}`);
+    }
 
     return new Promise<OneBotActions[T][1]>((resolve, reject) => {
       const intervalId = setInterval(() => {
-        const res = this.messageBuffer.get(echo);
+        const res = this.receiveQueue.get(echo);
         if (res) {
           if (res.status === "ok") {
             this.logger.debug(`Action Return: ${JSON.stringify(res)}`);
@@ -99,7 +110,7 @@ class OneBot {
             this.logger.debug(`Action Error: ${JSON.stringify(res)}`);
             reject(new OneBotError(`[${res.retcode}] ` + res.message));
           }
-          this.messageBuffer.delete(echo);
+          this.receiveQueue.delete(echo);
           clearInterval(intervalId);
         }
       }, 200);
