@@ -1,5 +1,9 @@
 import { getTweetMedia, prepareAPI, type TimelineTweetLegacy } from "twitter-scraper";
 import { decode } from "html-entities";
+import { config } from "dotenv";
+import { findUpSync } from "find-up";
+
+config({ path: findUpSync(".env") });
 
 function getTweetContent(tweet: TimelineTweetLegacy) {
   const tweetId = tweet.id_str;
