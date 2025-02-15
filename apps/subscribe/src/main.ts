@@ -1,22 +1,27 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { Logger, OneBot } from "onebot";
+import { createClient } from "redis";
 
 import { serverStatic } from "./serve.js";
 import { getLastTweetContent } from "./twitter.js";
-import C from "../config.json" assert { type: "json" };
+import C from "../config.json" with { type: "json" };
 
 const origin = serverStatic();
-const sent = new Set<string>();
 const logger = new Logger();
 const onebot = new OneBot(logger, { authKey: C.ONEBOT_AUTH_TOKEN, origin: C.ONEBOT_ORIGIN });
+
+const redisKey = "arona_twitter_bajp_sent";
+const redis = createClient({ url: C.REDIS }).connect();
 
 setInterval(
   async () => {
     try {
       const timelineTweets = await getLastTweetContent();
       for (const tweet of timelineTweets) {
-        if (!sent.has(tweet.tweetId)) {
+        if (!(await redis).sIsMember(redisKey, tweet.tweetId)) {
+          logger.info("New tweet detected");
+
           const medias = await Promise.all(
             tweet.media?.map(async (m) => {
               const path = crypto.randomUUID();
@@ -37,7 +42,8 @@ setInterval(
               })
             )
           );
-          sent.add(tweet.tweetId);
+          logger.info("Send to group done");
+          await (await redis).sAdd(redisKey, tweet.tweetId);
         }
       }
     } catch (e) {

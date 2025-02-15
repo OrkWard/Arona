@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "tsc -w",
     "build": "tsc",
-    "start": "node ./dist/main.js",
-    "watch:start": "nodemon -w ./dist ./dist/main.js"
+    "start": "node ./dist/src/main.js",
+    "watch:start": "nodemon -w ./dist ./dist/src/main.js"
   },
   "keywords": [],
   "author": "",
@@ -22,8 +22,9 @@
   },
   "dependencies": {
     "@koa/send": "^6.0.0",
-    "html-entities": "^2.5.2",
     "koa": "^2.15.4",
-    "onebot": "workspace:*"
+    "html-entities": "^2.5.2",
+    "onebot": "workspace:*",
+    "redis": "^4.7.0"
   }
 }

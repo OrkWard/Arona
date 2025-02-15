@@ -1,9 +1,6 @@
 import { getTweetMedia, prepareAPI, type TimelineTweetLegacy } from "twitter-scraper";
 import { decode } from "html-entities";
-import { config } from "dotenv";
-import { findUpSync } from "find-up";
-
-config({ path: findUpSync(".env") });
+import C from "../config.json" with { type: "json" };
 
 function getTweetContent(tweet: TimelineTweetLegacy) {
   const tweetId = tweet.id_str;
@@ -18,12 +15,12 @@ function getTweetContent(tweet: TimelineTweetLegacy) {
 
 async function prepare() {
   const { getUserId, getUserTweets } = await prepareAPI({
-    cookie: process.env.cookie,
+    cookie: C.cookie,
     referer: `https://x.com/blue_archivejp/media`,
     "user-agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "x-csrf-token": process.env["x-csrf-token"],
-    Authorization: process.env.Authorization,
+    "x-csrf-token": C["x-csrf-token"],
+    Authorization: C.Authorization,
   });
 
   return async (idx?: number) => {

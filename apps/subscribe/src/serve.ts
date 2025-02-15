@@ -2,7 +2,7 @@ import Koa from "koa";
 import { send } from "@koa/send";
 import { existsSync, mkdirSync } from "node:fs";
 import { execSync } from "node:child_process";
-import C from "../config.json" assert { type: "json" };
+import C from "../config.json" with { type: "json" };
 
 // setup file server
 export function serverStatic() {
