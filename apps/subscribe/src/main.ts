@@ -1,24 +1,15 @@
-import { config } from "dotenv";
-import { findUpSync } from "find-up";
-import { Logger, OneBot } from "onebot";
-import { serverStatic } from "./serve.js";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { existsSync, mkdirSync } from "node:fs";
-import { execAsync } from "./utils.js";
+import { Logger, OneBot } from "onebot";
+
+import { serverStatic } from "./serve.js";
 import { getLastTweetContent } from "./twitter.js";
+import C from "../config.json" assert { type: "json" };
 
-config({ path: findUpSync(".env") });
-
-const staticRoot = "./static";
-if (!existsSync(staticRoot)) {
-  mkdirSync(staticRoot);
-}
-const staticPort = 8888;
-serverStatic(staticRoot, staticPort);
+const origin = serverStatic();
 const sent = new Set<string>();
 const logger = new Logger();
-const onebot = new OneBot(logger, { authKey: process.env.ONEBOT_AUTH_TOKEN!, origin: process.env.ONEBOT_ORIGIN! });
+const onebot = new OneBot(logger, { authKey: C.ONEBOT_AUTH_TOKEN, origin: C.ONEBOT_ORIGIN });
 
 setInterval(
   async () => {
@@ -29,20 +20,19 @@ setInterval(
           const medias = await Promise.all(
             tweet.media?.map(async (m) => {
               const path = crypto.randomUUID();
-              await writeFile(join(staticRoot, path), await m.buffer);
-              const hostname = await execAsync("tailscale status --peers=false | awk '{print $2}'");
-              return { url: `http://${hostname}:${staticPort}/${path}`, type: m.type };
+              await writeFile(join(C.STATIC_ROOT, path), await m.buffer);
+              return { url: `${origin}/${path}`, type: m.type };
             }) || []
           );
 
           await onebot.post("send_group_msg", {
-            group_id: 909983720,
+            group_id: C.GROUP_ID,
             message: [{ type: "text", data: { text: tweet.text } }],
           });
           await Promise.all(
             medias.map((media) =>
               onebot.post("send_group_msg", {
-                group_id: 909983720,
+                group_id: C.GROUP_ID,
                 message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
               })
             )

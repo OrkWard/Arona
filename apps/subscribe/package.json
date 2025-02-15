@@ -22,8 +22,6 @@
   },
   "dependencies": {
     "@koa/send": "^6.0.0",
-    "dotenv": "catalog:",
-    "find-up": "^7.0.0",
     "html-entities": "^2.5.2",
     "koa": "^2.15.4",
     "onebot": "workspace:*"
