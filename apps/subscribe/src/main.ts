@@ -19,7 +19,7 @@ setInterval(
     try {
       const timelineTweets = await getLastTweetContent();
       for (const tweet of timelineTweets) {
-        if (!(await redis).sIsMember(redisKey, tweet.tweetId)) {
+        if (!(await (await redis).sIsMember(redisKey, tweet.tweetId))) {
           logger.info("New tweet detected");
 
           const medias = await Promise.all(
