@@ -7,8 +7,9 @@
   "scripts": {
     "dev": "tsc -w",
     "build": "tsc",
-    "start": "node ./dist/src/main.js",
-    "watch:start": "nodemon -w ./dist ./dist/src/main.js"
+    "watch:start": "nodemon -w ./dist ./dist/src/main.js",
+    "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:start\" ",
+    "start": "node ./dist/src/main.js"
   },
   "keywords": [],
   "author": "",
@@ -17,13 +18,14 @@
   "devDependencies": {
     "@types/koa": "^2.15.0",
     "@types/node": "catalog:",
+    "concurrently": "^9.1.2",
     "nodemon": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
     "@koa/send": "^6.0.0",
-    "koa": "^2.15.4",
     "html-entities": "^2.5.2",
+    "koa": "^2.15.4",
     "onebot": "workspace:*",
     "redis": "^4.7.0"
   }
