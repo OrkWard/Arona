@@ -1,20 +1,20 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import "dotenv/config";
-import { createWriteStream, existsSync, symlinkSync, unlinkSync, writeFileSync, writeSync } from "node:fs";
+import { symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { OneBot } from "onebot";
 import { Logger } from "common";
+import C from "./config.json" with { type: "json" };
 
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
 const onebot = new OneBot(logger, {
-  authKey: process.env.AUTH_TOKEN!,
-  origin: "sur4:3001",
+  authKey: C.AUTH_TOKEN,
+  origin: C.ORIGIN,
 });
 const S3 = new S3Client({
   region: "auto",
-  endpoint: `https://${process.env.ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: `https://${C.ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: process.env.ACCESS_KEY_ID!,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY!,
+    accessKeyId: C.ACCESS_KEY_ID,
+    secretAccessKey: C.SECRET_ACCESS_KEY,
   },
 });
 
@@ -56,7 +56,6 @@ onebot.onOpen(async () => {
           Body: Buffer.from(buffer),
         })
       );
-      // const bytes = Uint8Array.from(atob(fileDesc.base64), (c) => c.charCodeAt(0));
     })
   );
 
