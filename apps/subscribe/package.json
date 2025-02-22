@@ -27,6 +27,7 @@
     "html-entities": "^2.5.2",
     "koa": "^2.15.4",
     "onebot": "workspace:*",
-    "redis": "^4.7.0"
+    "redis": "^4.7.0",
+    "common": "workspace:*"
   }
 }

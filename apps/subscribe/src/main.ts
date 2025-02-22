@@ -1,7 +1,8 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { Logger, OneBot } from "onebot";
+import { OneBot } from "onebot";
 import { createClient } from "redis";
+import { Logger } from "common";
 
 import { serverStatic } from "./serve.js";
 import { getLastTweetContent } from "./twitter.js";

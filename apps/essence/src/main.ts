@@ -1,7 +1,8 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import "dotenv/config";
 import { createWriteStream, existsSync, symlinkSync, unlinkSync, writeFileSync, writeSync } from "node:fs";
-import { Logger, OneBot } from "onebot";
+import { OneBot } from "onebot";
+import { Logger } from "common";
 
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
 const onebot = new OneBot(logger, {

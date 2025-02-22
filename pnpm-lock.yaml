@@ -68,6 +68,9 @@ importers:
       '@prisma/client':
         specifier: 'catalog:'
         version: 6.0.0(prisma@6.0.0)
+      common:
+        specifier: workspace:*
+        version: link:../../packages/common
       onebot:
         specifier: workspace:*
         version: link:../../packages/onebot
@@ -90,6 +93,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.741.0
         version: 3.741.0
+      common:
+        specifier: workspace:*
+        version: link:../../packages/common
       dotenv:
         specifier: 'catalog:'
         version: 16.4.7
@@ -112,6 +118,9 @@ importers:
       '@koa/send':
         specifier: ^6.0.0
         version: 6.0.0
+      common:
+        specifier: workspace:*
+        version: link:../../packages/common
       html-entities:
         specifier: ^2.5.2
         version: 2.5.2
@@ -189,8 +198,24 @@ importers:
 
   infra: {}
 
+  packages/common:
+    dependencies:
+      picocolors:
+        specifier: 'catalog:'
+        version: 1.1.1
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.17.16
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
   packages/onebot:
     dependencies:
+      common:
+        specifier: workspace:*
+        version: link:../common
       picocolors:
         specifier: 'catalog:'
         version: 1.1.1

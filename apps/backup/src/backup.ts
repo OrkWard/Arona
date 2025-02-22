@@ -1,4 +1,5 @@
-import { OneBot, Logger } from "onebot";
+import { OneBot } from "onebot";
+import { Logger } from "common";
 import { PrismaClient } from "@prisma/client";
 import C from "./config.json" with { type: "json" };
 
