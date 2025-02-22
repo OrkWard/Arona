@@ -1,13 +1,13 @@
 import { OneBot, Logger } from "onebot";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { handleDBError } from "./utils/db.js";
+import { PrismaClient } from "@prisma/client";
+import C from "./config.json" with { type: "json" };
 
 const prisma = new PrismaClient();
 
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
 const onebot = new OneBot(logger, {
-  authKey: process.env.AUTH_TOKEN!,
-  origin: "sur4:3001",
+  authKey: C.AUTH_TOKEN,
+  origin: C.ORIGIN,
 });
 
 function sendInvitation(sourceGroup: number, targetGroup: number) {
@@ -67,12 +67,6 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
 
     lock = false;
   };
-}
-
-function backupGroup(group: number) {}
-
-function backupEssence(group: number) {
-  return onebot.post("get_essence_msg_list", { group_id: group });
 }
 
 const sourceGroup = 663985246;

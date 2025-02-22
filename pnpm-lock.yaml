@@ -68,9 +68,6 @@ importers:
       '@prisma/client':
         specifier: 'catalog:'
         version: 6.0.0(prisma@6.0.0)
-      dotenv:
-        specifier: 'catalog:'
-        version: 16.4.7
       onebot:
         specifier: workspace:*
         version: link:../../packages/onebot

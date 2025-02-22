@@ -1,9 +1,8 @@
-import "dotenv/config";
 import assert from "assert";
 import { PrismaClient } from "@prisma/client";
+import C from "./config.json" with { type: "json" };
 
 import { OneBot, Logger } from "onebot";
-import { handleDBError } from "./utils/db.js";
 
 const prisma = new PrismaClient();
 
@@ -102,7 +101,7 @@ export class DBWorker {
 (function () {
   const logger = new Logger();
   const onebot = new OneBot(logger, {
-    authKey: process.env.AUTH_TOKEN!,
+    authKey: C.AUTH_TOKEN,
     origin: "sur4:3001",
   });
   const worker = new DBWorker(onebot, logger);

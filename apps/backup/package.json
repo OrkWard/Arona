@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@prisma/client": "catalog:",
-    "dotenv": "catalog:",
     "onebot": "workspace:*"
   }
 }
