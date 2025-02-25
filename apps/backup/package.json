@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsc -w",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "watch:db": "npx nodemon -w ./dist ./dist/db-worker.js",
     "watch:backup": "npx nodemon -w ./dist ./dist/backup.js",
     "watch:arona": "nodemon -w ./dist ./dist/Arona.js"
