@@ -4,16 +4,17 @@
   "type": "module",
   "description": "",
   "scripts": {
-    "gen": "tsc && cp .env dist && node ./dist/main.js"
+    "gen": "tsc && node ./dist/main.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.741.0",
+    "common": "workspace:*",
     "dotenv": "catalog:",
-    "onebot": "workspace:*",
-    "common": "workspace:*"
+    "es-toolkit": "^1.32.0",
+    "onebot": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

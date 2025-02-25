@@ -20,7 +20,7 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
     }
     lock = true;
 
-    // {{{ get members that haven't joined target and receive invitation
+    // get members that haven't joined target and receive invitation
     const sourceMem = await onebot.post("get_group_member_list", { group_id: sourceGroup });
     const targetMem = await onebot.post("get_group_member_list", { group_id: targetGroup });
     // const invitation = await onebot.post("ArkShareGroup", { group_id: targetGroup });
@@ -34,7 +34,6 @@ function sendInvitation(sourceGroup: number, targetGroup: number) {
     });
     logger.info(`Already ${invitedMem.length} guys received invite`);
     const unsendMem = [...unjoinMem.difference(new Set(invitedMem.map((i) => Number(i.userId))))].slice(0, 1);
-    // }}}
 
     for (const m of unsendMem) {
       await onebot

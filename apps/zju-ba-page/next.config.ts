@@ -9,14 +9,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
     remotePatterns: [
       {
-        hostname: "*.file.myqcloud.com",
-        protocol: "https",
-      },
-      {
         hostname: "r2.orkward.dev",
-      },
-      {
-        hostname: "gchat.qpic.cn",
       },
     ],
   },

@@ -1,8 +1,9 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { OneBot } from "onebot";
 import { Logger } from "common";
 import C from "./config.json" with { type: "json" };
+import { createHash } from "node:crypto";
 
 const logger = new Logger({ debug: Boolean(process.env.DEBUG) || false });
 const onebot = new OneBot(logger, {
@@ -19,15 +20,15 @@ const S3 = new S3Client({
 });
 
 onebot.onOpen(async () => {
-  const msgList = await onebot.post("get_essence_msg_list", { group_id: 663985246 });
-  /** Need to manually fetch the file */
+  const msgList = await onebot.post("get_essence_msg_list", { group_id: C.GROUP_ID });
+
   const images: { id: string; url: string }[] = [];
   msgList.forEach((msg) => {
     msg.content = msg.content.map((seg) => {
       if (seg.type === "image") {
-        const id = crypto.randomUUID();
+        const id = createHash("sha256").update(seg.data.url).digest("hex");
         images.push({ id, url: seg.data.url });
-        seg.data.url = `https://r2.orkward.dev/${encodeURIComponent(id)}`;
+        seg.data.url = `https://r2.orkward.dev/${id}`;
       }
       return seg;
     });
@@ -37,6 +38,20 @@ onebot.onOpen(async () => {
 
   await Promise.all(
     images.map(async ({ id, url }) => {
+      if (
+        await S3.send(
+          new HeadObjectCommand({
+            Bucket: C.BUCKET,
+            Key: id,
+          })
+        ).then(
+          () => true,
+          (e) => false
+        )
+      ) {
+        return;
+      }
+
       const buffer = await fetch(url).then((resp) => resp.arrayBuffer());
       if (buffer.byteLength === 0) {
         logger.warn(`[Get Image]: resp null, url: ${url}`);
@@ -50,8 +65,8 @@ onebot.onOpen(async () => {
 
       await S3.send(
         new PutObjectCommand({
-          Bucket: "zju-ba-images",
-          Key: encodeURIComponent(id),
+          Bucket: C.BUCKET,
+          Key: id,
           ContentType: "image/jpg",
           Body: Buffer.from(buffer),
         })
