@@ -2,6 +2,7 @@ packages:
   - packages/*
   - apps/*
   - infra
+  - external/web-scraper/twitter
 catalog:
   "@eslint/eslintrc": ^3
   "@prisma/client": 6.0.0
