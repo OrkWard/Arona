@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc -bw",
+    "dev": "tsc --build --watch",
     "build": "tsc",
     "watch:start": "nodemon -w ./dist ./dist/src/main.js",
     "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:start\" ",

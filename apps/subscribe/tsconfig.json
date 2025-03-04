@@ -108,5 +108,9 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
-  "references": [{ "path": "../../packages/common" }, { "path": "../../packages/onebot" }]
+  "references": [
+    { "path": "../../packages/common" },
+    { "path": "../../packages/onebot" },
+    { "path": "../../external/web-scraper/twitter" }
+  ]
 }
