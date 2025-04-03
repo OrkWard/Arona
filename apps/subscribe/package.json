@@ -6,10 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "tsc --build --watch",
-    "build": "tsc",
-    "watch:start": "nodemon -w ./dist ./dist/src/main.js",
     "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:start\" ",
-    "start": "node ./dist/src/main.js"
+    "build": "tsc --build",
+    "start": "node ./dist/main.js",
+    "watch:start": "nodemon -w ./dist ./dist/main.js"
   },
   "keywords": [],
   "author": "",
@@ -24,11 +24,12 @@
   },
   "dependencies": {
     "@koa/send": "^6.0.0",
+    "@sentry/node": "^9.10.1",
+    "common": "workspace:*",
     "html-entities": "^2.5.2",
     "koa": "^2.15.4",
     "onebot": "workspace:*",
-    "twitter-scraper": "workspace:*",
     "redis": "^4.7.0",
-    "common": "workspace:*"
+    "twitter-scraper": "workspace:*"
   }
 }

@@ -1,3 +1,5 @@
+import "./sentry.js";
+import * as Sentry from "@sentry/node";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { OneBot } from "onebot";
@@ -6,24 +8,24 @@ import { Logger } from "common";
 
 import { serverStatic } from "./serve.js";
 import { getLastTweetContent } from "./twitter.js";
-import C from "../config.json" with { type: "json" };
+import { C } from "./config.js";
 
 const origin = serverStatic();
 const logger = new Logger();
 const onebot = new OneBot(logger, { authKey: C.ONEBOT_AUTH_TOKEN, origin: C.ONEBOT_ORIGIN });
 
 const redisKey = "arona_twitter_bajp_sent";
-const redis = createClient({ url: C.REDIS }).connect();
+const redis = await createClient({ url: C.REDIS }).connect();
 
 setInterval(
   async () => {
     try {
       const timelineTweets = await getLastTweetContent();
       for (const tweet of timelineTweets) {
-        if (!(await (await redis).sIsMember(redisKey, tweet.tweetId))) {
+        if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
           logger.info("New tweet detected");
 
-          const medias = await Promise.all(
+          const mediaList = await Promise.all(
             tweet.media?.map(async (m) => {
               const path = crypto.randomUUID();
               await writeFile(join(C.STATIC_ROOT, path), await m.buffer);
@@ -36,7 +38,7 @@ setInterval(
             message: [{ type: "text", data: { text: tweet.text } }],
           });
           await Promise.all(
-            medias.map((media) =>
+            mediaList.map((media) =>
               onebot.post("send_group_msg", {
                 group_id: C.GROUP_ID,
                 message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
@@ -44,7 +46,7 @@ setInterval(
             )
           );
           logger.info("Send to group done");
-          await (await redis).sAdd(redisKey, tweet.tweetId);
+          await redis.sAdd(redisKey, tweet.tweetId);
         }
       }
     } catch (e) {

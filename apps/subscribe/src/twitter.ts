@@ -1,6 +1,6 @@
 import { getTweetMedia, prepareAPI, type TimelineTweetLegacy } from "twitter-scraper";
 import { decode } from "html-entities";
-import C from "../config.json" with { type: "json" };
+import { C } from "./config.js";
 
 function getTweetContent(tweet: TimelineTweetLegacy) {
   const tweetId = tweet.id_str;
@@ -41,22 +41,15 @@ async function prepare() {
   };
 }
 
-let client = prepare();
-
-async function getLast20TweetContent() {
-  const f = await client;
-  return await f();
-}
+const getLast20TweetContent = await prepare();
 
 async function getLastTweetContent() {
-  const f = await client;
-  const tweets = await f(0);
+  const tweets = await getLast20TweetContent(0);
   return tweets;
 }
 
 async function getTweetContentAt(idx: number) {
-  const f = await client;
-  const tweets = await f(idx);
+  const tweets = await getLast20TweetContent(idx);
   return tweets;
 }
 
