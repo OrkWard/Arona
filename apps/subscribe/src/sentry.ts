@@ -1,5 +1,7 @@
 import * as Sentry from "@sentry/node";
+import { C } from "./config.js";
 
 Sentry.init({
-  dsn: "https://ecaba691aa46269824a50c8afdae9925@o4509089172357120.ingest.us.sentry.io/4509089183563776",
+  dsn: C.SENTRY_DSN,
+  environment: process.env.NODE_ENV ?? "development",
 });

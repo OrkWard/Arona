@@ -50,10 +50,11 @@ setInterval(
         }
       }
     } catch (e) {
+      Sentry.captureException(e);
       if (e instanceof Error) {
-        console.error(e.message);
+        logger.error(e.message);
       } else {
-        console.error(e);
+        logger.error(e);
       }
     }
   },
