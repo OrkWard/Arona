@@ -20,6 +20,7 @@ const redis = await createClient({ url: C.REDIS }).connect();
 setInterval(
   async () => {
     try {
+      // get latest post, which may contain multiple tweets (for example, self reply)
       const timelineTweets = await getLastTweetContent();
       for (const tweet of timelineTweets) {
         if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
@@ -33,6 +34,7 @@ setInterval(
             }) || []
           );
 
+          // send msg and media for each tweet
           await onebot.post("send_group_msg", {
             group_id: C.GROUP_ID,
             message: [{ type: "text", data: { text: tweet.text } }],
@@ -46,6 +48,8 @@ setInterval(
             )
           );
           logger.info("Send to group done");
+
+          // save to db
           await redis.sAdd(redisKey, tweet.tweetId);
         }
       }
