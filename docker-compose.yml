@@ -1,18 +1,11 @@
 services:
-  # arona:
-  #   build:
-  #     context: .
-  #     dockerfile: ./dockerfiles/arona.Dockerfile
-  #   restart: always
-  #   volumes:
-  #     - type: bind
-  #       source: /var/lib/arona
-  #       target: /lib
+  napcat:
+    container_name: napcat
+    image: mlikiowa/napcat-docker:v4.4.4
 
-  db-worker:
+  twitter-subscriber:
     build:
       context: .
-      dockerfile: ./apps/backup/Dockerfile
     restart: always
     volumes:
       - type: bind
