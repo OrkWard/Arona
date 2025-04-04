@@ -5,11 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc -w",
-    "build": "prisma generate && tsc",
+    "dev": "DATABASE_URL=file:./dev.db prisma generate && tsc --build --watch",
+    "dev:db": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:db\" ",
+    "dev:backup": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:backup\" ",
+    "build": "tsc --build",
+    "start:db": "node ./dist/db-worker.js",
+    "start:backup": "node ./dist/db-worker.js",
     "watch:db": "npx nodemon -w ./dist ./dist/db-worker.js",
-    "watch:backup": "npx nodemon -w ./dist ./dist/backup.js",
-    "watch:arona": "nodemon -w ./dist ./dist/Arona.js"
+    "watch:backup": "npx nodemon -w ./dist ./dist/backup.js"
   },
   "keywords": [],
   "author": "",

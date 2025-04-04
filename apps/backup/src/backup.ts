@@ -1,7 +1,7 @@
 import { OneBot } from "onebot";
 import { Logger } from "common";
 import { PrismaClient } from "@prisma/client";
-import C from "./config.json" with { type: "json" };
+import { C } from "./config.js";
 
 const prisma = new PrismaClient();
 

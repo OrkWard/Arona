@@ -9,7 +9,7 @@
     "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:start\" ",
     "build": "tsc --build",
     "start": "node ./dist/main.js",
-    "watch:start": "nodemon -w ./dist ./dist/main.js"
+    "watch": "nodemon -w ./dist ./dist/main.js"
   },
   "keywords": [],
   "author": "",
