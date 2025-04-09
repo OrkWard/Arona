@@ -7,7 +7,12 @@ services:
     build:
       context: .
     restart: always
-    volumes:
-      - type: bind
-        source: /var/lib/arona
-        target: /store
+    working_dir: /arona/apps/subscribe
+    command: npm run start
+
+  backup:
+    build:
+      context: .
+    restart: always
+    working_dir: /arona/apps/backup
+    command: npm run start
