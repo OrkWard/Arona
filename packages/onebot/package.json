@@ -5,8 +5,8 @@
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "tsc -w",
-    "build": "rm -rf dist && tsc"
+    "dev": "tsc --build -w",
+    "build": "rm -rf dist && tsc --build"
   },
   "keywords": [],
   "author": "",
