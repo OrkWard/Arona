@@ -8,6 +8,10 @@ services:
       context: .
     restart: always
     working_dir: /arona/apps/subscribe
+    environment:
+      # TODO
+      HOSTNAME: twitter-subscriber
+      ONEBOT_ORIGIN: napcat
     command: npm run start
 
   backup:
@@ -15,4 +19,7 @@ services:
       context: .
     restart: always
     working_dir: /arona/apps/backup
-    command: npm run start
+    environment:
+      # TODO
+      ONEBOT_ORIGIN: napcat
+    command: npm run start:db

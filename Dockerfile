@@ -6,5 +6,5 @@ ENV NODE_ENV production
 ENV DATABASE_URL file:/db/prod.db
 
 RUN npm install -g pnpm@9 \
-    && pnpm install --frozen-lockfile \
-    && pnpm run --recursive build
+    && pnpm install --prod false --frozen-lockfile \
+    && pnpm run --filter backup --filter subscribe build
