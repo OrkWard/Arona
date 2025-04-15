@@ -9,17 +9,16 @@ services:
     restart: always
     working_dir: /arona/apps/subscribe
     environment:
-      # TODO
-      HOSTNAME: twitter-subscriber
-      ONEBOT_ORIGIN: napcat
+      STATIC_HOST: twitter-subscriber
+      ONEBOT_ORIGIN: napcat:3001
+      REDIS: redis://host.docker.internal:6369/1
     command: npm run start
 
-  backup:
-    build:
-      context: .
-    restart: always
-    working_dir: /arona/apps/backup
-    environment:
-      # TODO
-      ONEBOT_ORIGIN: napcat
-    command: npm run start:db
+  # backup:
+  #   build:
+  #     context: .
+  #   restart: always
+  #   working_dir: /arona/apps/backup
+  #   environment:
+  #     ONEBOT_ORIGIN: napcat
+  #   command: npm run start:db
