@@ -6,10 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "tsc --build --watch",
-    "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch:start\" ",
+    "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch\" ",
     "build": "tsc --build",
-    "start": "node ./dist/main.js",
-    "watch": "nodemon -w ./dist ./dist/main.js"
+    "start": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node ./dist/main.js",
+    "watch": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node --watch ./dist/main.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +19,6 @@
     "@types/koa": "^2.15.0",
     "@types/node": "catalog:",
     "concurrently": "^9.1.2",
-    "nodemon": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {

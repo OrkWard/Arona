@@ -14,7 +14,6 @@ catalog:
   dotenv: ^16.4.7
   eslint-config-next: 15.1.6
   next: 15.1.6
-  nodemon: ^3.1.7
   picocolors: ^1.1.1
   prettier: ^3.4.2
   prisma: ^6.0.0

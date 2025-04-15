@@ -7,8 +7,13 @@ import { createClient } from "redis";
 import { Logger } from "common";
 
 import { serverStatic } from "./serve.js";
-import { getLastTweetContent } from "./twitter.js";
+import { getLast20TweetContent } from "./twitter.js";
 import { C } from "./config.js";
+import assert from "node:assert";
+
+assert(C.STATIC_HOST);
+assert(C.ONEBOT_ORIGIN);
+assert(C.REDIS);
 
 const origin = serverStatic();
 const logger = new Logger();
@@ -20,8 +25,8 @@ const redis = await createClient({ url: C.REDIS }).connect();
 setInterval(
   async () => {
     try {
-      // get latest post, which may contain multiple tweets (for example, self reply)
-      const timelineTweets = await getLastTweetContent();
+      // may contain more then 20 tweets (for example, self reply)
+      const timelineTweets = await getLast20TweetContent();
       for (const tweet of timelineTweets) {
         if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
           logger.info("New tweet detected");

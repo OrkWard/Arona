@@ -11,8 +11,8 @@
     "build": "prisma generate && tsc --build",
     "start:db": "node ./dist/db-worker.js",
     "start:backup": "node ./dist/db-worker.js",
-    "watch:db": "npx nodemon -w ./dist ./dist/db-worker.js",
-    "watch:backup": "npx nodemon -w ./dist ./dist/backup.js"
+    "watch:db": "node --watch ./dist/db-worker.js",
+    "watch:backup": "node --watch ./dist/backup.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +21,6 @@
   "devDependencies": {
     "typescript": "catalog:",
     "@types/node": "catalog:",
-    "nodemon": "catalog:",
     "prisma": "catalog:"
   },
   "dependencies": {

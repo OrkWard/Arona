@@ -23,16 +23,15 @@ async function prepare() {
     Authorization: C.Authorization,
   });
 
-  return async (idx?: number) => {
+  return async () => {
     const id = await getUserId("blue_archivejp");
     const entries = await getUserTweets(id);
     return entries
       .filter((e) => ["TimelineTimelineItem", "TimelineTimelineModule"].includes(e.content.entryType))
-      .filter((e, i) => (typeof idx === "number" ? idx === i : true))
       .map((e) =>
         e.content.entryType === "TimelineTimelineItem"
           ? e.content.itemContent
-          : e.content.items.map((i) => i.item.itemContent)
+          : e.content.items.map((i) => i.item.itemContent).reverse()
       )
       .flat()
       .filter((t) => t.itemType === "TimelineTweet")
@@ -43,14 +42,4 @@ async function prepare() {
 
 const getLast20TweetContent = await prepare();
 
-async function getLastTweetContent() {
-  const tweets = await getLast20TweetContent(0);
-  return tweets;
-}
-
-async function getTweetContentAt(idx: number) {
-  const tweets = await getLast20TweetContent(idx);
-  return tweets;
-}
-
-export { getLast20TweetContent, getLastTweetContent, getTweetContentAt };
+export { getLast20TweetContent };

@@ -1,7 +1,6 @@
 import Koa from "koa";
 import { send } from "@koa/send";
 import { existsSync, mkdirSync } from "node:fs";
-import { execSync } from "node:child_process";
 import { C } from "./config.js";
 
 // setup file server
@@ -9,7 +8,6 @@ export function serverStatic() {
   if (!existsSync(C.STATIC_ROOT)) {
     mkdirSync(C.STATIC_ROOT);
   }
-  const hostname = execSync("tailscale status --peers=false | awk '{print $2}'");
 
   const app = new Koa();
   app.use(async (ctx) => {
@@ -17,5 +15,5 @@ export function serverStatic() {
   });
   app.listen(C.STATIC_PORT);
 
-  return `http://${hostname}:${C.STATIC_PORT}`;
+  return `http://${C.STATIC_HOST}:${C.STATIC_PORT}`;
 }
