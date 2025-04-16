@@ -2,6 +2,11 @@ services:
   napcat:
     container_name: napcat
     image: mlikiowa/napcat-docker:v4.4.4
+    ports:
+      - "6099:6099"
+    volumes:
+      - "QQConfig:/app/.config/QQ"
+      - "NapcatConfig:/app/napcat/config"
 
   twitter-subscriber:
     build:
@@ -11,8 +16,8 @@ services:
     environment:
       STATIC_HOST: twitter-subscriber
       ONEBOT_ORIGIN: napcat:3001
-      REDIS: redis://host.docker.internal:6369/1
-    command: npm run start
+      REDIS: redis://host.docker.internal:6379/1
+    command: npm run docker:start
 
   # backup:
   #   build:
@@ -22,3 +27,9 @@ services:
   #   environment:
   #     ONEBOT_ORIGIN: napcat
   #   command: npm run start:db
+
+volumes:
+  QQConfig:
+    external: true
+  NapcatConfig:
+    external: true

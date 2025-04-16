@@ -8,6 +8,7 @@
     "dev": "tsc --build --watch",
     "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch\" ",
     "build": "tsc --build",
+    "docker:start": "node ./dist/main.js",
     "start": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node ./dist/main.js",
     "watch": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node --watch ./dist/main.js"
   },
