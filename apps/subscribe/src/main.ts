@@ -21,10 +21,7 @@ const onebot = new OneBot(logger, { authKey: C.ONEBOT_AUTH_TOKEN, origin: C.ONEB
 
 const redisKey = "arona_twitter_bajp_sent";
 const redis = await createClient({ url: C.REDIS })
-  .on("error", (e) => logger.error(e))
   .on("connect", () => logger.info("Redis connected"))
-  .on("reconnecting", () => logger.info("Redis reconnecting"))
-  .on("ready", () => logger.info("Redis ready"))
   .connect();
 
 setInterval(
