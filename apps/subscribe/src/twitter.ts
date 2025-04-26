@@ -26,7 +26,7 @@ async function prepare() {
   return async () => {
     const id = await getUserId("blue_archivejp");
     const entries = await getUserTweets(id);
-    return entries
+    const result = entries
       .filter((e) => ["TimelineTimelineItem", "TimelineTimelineModule"].includes(e.content.entryType))
       .map((e) =>
         e.content.entryType === "TimelineTimelineItem"
@@ -37,6 +37,10 @@ async function prepare() {
       .filter((t) => t.itemType === "TimelineTweet")
       .map((t) => t.tweet_results.result.legacy)
       .map(getTweetContent);
+    if (!Array.isArray(result) || result.some((t) => typeof t.tweetId !== "string" || typeof t.text !== "string")) {
+      throw new Error(`Parsed entries don't have expected structure, raw: ${JSON.stringify(result)}`);
+    }
+    return result;
   };
 }
 

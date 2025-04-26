@@ -62,11 +62,7 @@ setInterval(
       }
     } catch (e) {
       Sentry.captureException(e);
-      if (e instanceof Error) {
-        logger.error(e.message);
-      } else {
-        logger.error(e);
-      }
+      logger.error(e);
     }
   },
   1000 * 5 * 60
