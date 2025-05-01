@@ -24,46 +24,46 @@ const redis = await createClient({ url: C.REDIS })
   .on("connect", () => logger.info("Redis connected"))
   .connect();
 
-setInterval(
-  async () => {
-    try {
-      // may contain more then 20 tweets (for example, self reply)
-      const timelineTweets = await getLast20TweetContent();
-      for (const tweet of timelineTweets) {
-        if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
-          logger.info("New tweet detected");
+async function trySendLatestTweet() {
+  try {
+    // may contain more then 20 tweets (for example, self reply)
+    const timelineTweets = await getLast20TweetContent();
+    for (const tweet of timelineTweets) {
+      if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
+        logger.info("New tweet detected");
 
-          const mediaList = await Promise.all(
-            tweet.media?.map(async (m) => {
-              const path = crypto.randomUUID();
-              await writeFile(join(C.STATIC_ROOT, path), await m.buffer);
-              return { url: `${origin}/${path}`, type: m.type };
-            }) || []
-          );
+        const mediaList = await Promise.all(
+          tweet.media?.map(async (m) => {
+            const path = crypto.randomUUID();
+            await writeFile(join(C.STATIC_ROOT, path), await m.buffer);
+            return { url: `${origin}/${path}`, type: m.type };
+          }) || []
+        );
 
-          // send msg and media for each tweet
-          await onebot.post("send_group_msg", {
-            group_id: C.GROUP_ID,
-            message: [{ type: "text", data: { text: tweet.text } }],
-          });
-          await Promise.all(
-            mediaList.map((media) =>
-              onebot.post("send_group_msg", {
-                group_id: C.GROUP_ID,
-                message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
-              })
-            )
-          );
-          logger.info("Send to group done");
+        // send msg and media for each tweet
+        await onebot.post("send_group_msg", {
+          group_id: C.GROUP_ID,
+          message: [{ type: "text", data: { text: tweet.text } }],
+        });
+        await Promise.all(
+          mediaList.map((media) =>
+            onebot.post("send_group_msg", {
+              group_id: C.GROUP_ID,
+              message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
+            })
+          )
+        );
+        logger.info("Send to group done");
 
-          // save to db
-          await redis.sAdd(redisKey, tweet.tweetId);
-        }
+        // save to db
+        await redis.sAdd(redisKey, tweet.tweetId);
       }
-    } catch (e) {
-      Sentry.captureException(e);
-      logger.error(e);
     }
-  },
-  1000 * 5 * 60
-);
+  } catch (e) {
+    Sentry.captureException(e);
+    logger.error(e);
+  }
+}
+
+trySendLatestTweet();
+setInterval(trySendLatestTweet, 1000 * 5 * 60);
