@@ -3,6 +3,7 @@ services:
     container_name: napcat
     image: mlikiowa/napcat-docker:v4.4.4
     ports:
+      - "3001:3001"
       - "6099:6099"
     volumes:
       - "QQConfig:/app/.config/QQ"
