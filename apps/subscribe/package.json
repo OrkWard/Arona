@@ -5,12 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc --build --watch",
-    "dev:start": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev\" \"pnpm:watch\" ",
+    "dev": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev-build\" \"pnpm:dev-start\" ",
+    "dev-build": "tsc --build --watch",
+    "dev-start": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node --watch ./dist/main.js",
     "build": "tsc --build",
-    "docker:start": "node ./dist/main.js",
     "start": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node ./dist/main.js",
-    "watch": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node --watch ./dist/main.js"
+    "docker-start": "node ./dist/main.js"
   },
   "keywords": [],
   "author": "",
@@ -20,16 +20,19 @@
     "@types/koa": "^2.15.0",
     "@types/node": "catalog:",
     "concurrently": "^9.1.2",
-    "typescript": "catalog:"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@koa/send": "^6.0.0",
     "@sentry/node": "^9.10.1",
+    "@trpc/client": "^11.1.2",
     "common": "workspace:*",
+    "got": "^14.4.5",
     "html-entities": "^2.5.2",
+    "https-proxy-agent": "^7.0.5",
     "koa": "^2.15.4",
     "onebot": "workspace:*",
     "redis": "^4.7.0",
-    "twitter-scraper": "workspace:*"
+    "trpc-server": "workspace:*"
   }
 }

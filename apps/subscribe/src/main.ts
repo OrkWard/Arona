@@ -1,15 +1,17 @@
 import "./sentry.js";
-import * as Sentry from "@sentry/node";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import assert from "node:assert";
+import * as Sentry from "@sentry/node";
 import { OneBot } from "onebot";
 import { createClient } from "redis";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { Logger } from "common";
 
 import { serverStatic } from "./serve.js";
-import { getLast20TweetContent } from "./twitter.js";
+import { type AppRouter } from "trpc-server/src/index.js";
 import { C } from "./config.js";
-import assert from "node:assert";
+import { get } from "./request.js";
 
 assert(C.STATIC_HOST);
 assert(C.ONEBOT_ORIGIN);
@@ -23,11 +25,11 @@ const redisKey = "arona_twitter_bajp_sent";
 const redis = await createClient({ url: C.REDIS })
   .on("connect", () => logger.info("Redis connected"))
   .connect();
+const trpc = createTRPCClient<AppRouter>({ links: [httpBatchLink({ url: C.TRPC_SERVER })] });
 
-async function trySendLatestTweet() {
+setInterval(async () => {
   try {
-    // may contain more then 20 tweets (for example, self reply)
-    const timelineTweets = await getLast20TweetContent();
+    const timelineTweets = await trpc.twitter.query({ username: "bluearchive_jp" });
     for (const tweet of timelineTweets) {
       if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
         logger.info("New tweet detected");
@@ -35,7 +37,7 @@ async function trySendLatestTweet() {
         const mediaList = await Promise.all(
           tweet.media?.map(async (m) => {
             const path = crypto.randomUUID();
-            await writeFile(join(C.STATIC_ROOT, path), await m.buffer);
+            await writeFile(join(C.STATIC_ROOT, path), await get(m.url).buffer());
             return { url: `${origin}/${path}`, type: m.type };
           }) || []
         );
@@ -63,7 +65,4 @@ async function trySendLatestTweet() {
     Sentry.captureException(e);
     logger.error(e);
   }
-}
-
-trySendLatestTweet();
-setInterval(trySendLatestTweet, 1000 * 5 * 60);
+}, 1000 * 5);
