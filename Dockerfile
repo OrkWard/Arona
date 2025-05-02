@@ -7,4 +7,4 @@ ENV DATABASE_URL file:/db/prod.db
 
 RUN npm install -g pnpm@9 \
     && pnpm install --prod false --frozen-lockfile \
-    && pnpm run --filter backup --filter subscribe build
+    && pnpm run --filter backup --filter subscribe --filter trpc-server build
