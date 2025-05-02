@@ -7,9 +7,9 @@ import { OneBot } from "onebot";
 import { createClient } from "redis";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { Logger } from "common";
+import { type AppRouter } from "trpc-server/src/index.js";
 
 import { serverStatic } from "./serve.js";
-import { type AppRouter } from "trpc-server/src/index.js";
 import { C } from "./config.js";
 import { get } from "./request.js";
 
@@ -29,7 +29,7 @@ const trpc = createTRPCClient<AppRouter>({ links: [httpBatchLink({ url: C.TRPC_S
 
 setInterval(async () => {
   try {
-    const timelineTweets = await trpc.twitter.query({ username: "bluearchive_jp" });
+    const timelineTweets = (await trpc.twitter.query({ username: "bluearchive_jp" })).slice(0, 3);
     for (const tweet of timelineTweets) {
       if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
         logger.info("New tweet detected");
