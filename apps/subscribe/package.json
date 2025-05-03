@@ -26,12 +26,13 @@
     "@koa/send": "^6.0.0",
     "@sentry/node": "^9.10.1",
     "@trpc/client": "^11.1.2",
-    "common": "workspace:*",
     "got": "^14.4.5",
     "html-entities": "^2.5.2",
     "https-proxy-agent": "^7.0.5",
     "koa": "^2.15.4",
     "onebot": "workspace:*",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
     "redis": "^4.7.0",
     "trpc-server": "workspace:*"
   }

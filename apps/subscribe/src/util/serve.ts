@@ -4,7 +4,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { C } from "./config.js";
 
 // setup file server
-export function serverStatic() {
+function serverStatic() {
   if (!existsSync(C.STATIC_ROOT)) {
     mkdirSync(C.STATIC_ROOT);
   }
@@ -17,3 +17,4 @@ export function serverStatic() {
 
   return `http://${C.STATIC_HOST}:${C.STATIC_PORT}`;
 }
+export const origin = serverStatic();

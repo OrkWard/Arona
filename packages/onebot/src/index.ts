@@ -1,9 +1,9 @@
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent, OneBotMessageEvent } from "./event.js";
 import WebSocket from "ws";
-import { Logger } from "common";
 import assert from "assert";
 import { throttle } from "./utils/index.js";
+import { pino, Logger } from "pino";
 
 let listenerCounter = 0;
 let requestCounter = 0;
@@ -28,30 +28,30 @@ type OneBotConfig = {
   authKey: string;
   // Event response timeout, in millisecond
   // timeout: number = 10_000;
+  logger?: Logger;
 };
 
 type EventCallback = (event: OneBotEvent) => void;
 
 class OneBot {
   private ws: WebSocket;
+  private logger: Logger;
   private listeners: Map<string, Map<number, EventCallback>> = new Map();
   private receiveQueue: Map<string, OneBotActionResponse> = new Map();
   /** Only use when connection not ready  */
   private sendQueue: string[] = [];
 
-  constructor(
-    private logger: Logger,
-    config: OneBotConfig
-  ) {
+  constructor(config: OneBotConfig) {
     const ws = new WebSocket(`ws://${config.origin}`, {
       headers: { authorization: `Bearer ${config.authKey}` },
     });
     this.ws = ws;
+    this.logger = pino();
     ws.on("error", (err) => {
-      logger.error(err);
+      this.logger.error(err);
     });
     ws.once("open", () => {
-      logger.info("Connected to", config.origin);
+      this.logger.info("Connected to", config.origin);
       this.sendQueue.forEach((msg) => {
         ws.send(msg);
         this.logger.debug(`Msg in queue sent: ${msg}`);
@@ -63,12 +63,12 @@ class OneBot {
 
       const parsedMsg = JSON.parse(message.toString("utf8"));
       if (isActionResponse(parsedMsg)) {
-        logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
+        this.logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
         assert(typeof parsedMsg.echo === "string", `Action Response should have 'echo': ${JSON.stringify(parsedMsg)}`);
         const id = parsedMsg.echo;
         this.receiveQueue.set(id, parsedMsg);
       } else if (isEvent(parsedMsg)) {
-        logger.debug(`Receive event: ${JSON.stringify(parsedMsg)}`);
+        this.logger.debug(`Receive event: ${JSON.stringify(parsedMsg)}`);
         const eventName = parsedMsg.post_type;
         const listeners = this.listeners.get(eventName);
         if (listeners) {
