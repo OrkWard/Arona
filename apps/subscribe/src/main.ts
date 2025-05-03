@@ -1,16 +1,13 @@
 import "./util/sentry.js";
-import assert from "node:assert";
 import * as Sentry from "@sentry/node";
 
-import { C } from "./util/config.js";
 import { logger } from "./util/logger.js";
-
-assert(C.STATIC_HOST);
-assert(C.ONEBOT_ORIGIN);
-assert(C.REDIS);
+import { subscribeTwitter, subscribeYoutube } from "./task.js";
 
 setInterval(async () => {
   try {
+    subscribeTwitter();
+    subscribeYoutube();
   } catch (e) {
     Sentry.captureException(e);
     logger.error(e);

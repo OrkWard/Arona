@@ -14,36 +14,46 @@ const redisKey = "arona_twitter_bajp_sent";
 
 const trpc = createTRPCClient<AppRouter>({ links: [httpBatchLink({ url: C.TRPC_SERVER })] });
 export async function subscribeTwitter() {
-  const timelineTweets = (await trpc.twitter.query({ username: "bluearchive_jp" })).slice(0, 3);
-  for (const tweet of timelineTweets) {
-    if (!(await redis.sIsMember(redisKey, tweet.tweetId))) {
-      logger.info("New tweet detected");
-
-      const mediaList = await Promise.all(
-        tweet.media?.map(async (m) => {
-          const path = crypto.randomUUID();
-          await writeFile(join(C.STATIC_ROOT, path), await get(m.url).buffer());
-          return { url: `${origin}/${path}`, type: m.type };
-        }) || []
-      );
-
-      // send msg and media for each tweet
-      await onebot.post("send_group_msg", {
-        group_id: C.GROUP_ID,
-        message: [{ type: "text", data: { text: tweet.text } }],
-      });
-      await Promise.all(
-        mediaList.map((media) =>
-          onebot.post("send_group_msg", {
-            group_id: C.GROUP_ID,
-            message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
-          })
-        )
-      );
-      logger.info("Send to group done");
-
-      // save to db
-      await redis.sAdd(redisKey, tweet.tweetId);
+  const tweets = await trpc.twitter.query({ username: "bluearchive_jp" });
+  for (const tweet of tweets.slice(0, 3)) {
+    if (await redis.sIsMember(redisKey, tweet.tweetId)) {
+      return;
     }
+    logger.info(`New tweet detected: ${tweet.text}`);
+
+    await onebot.post("send_group_msg", {
+      group_id: C.GROUP_ID,
+      message: [{ type: "text", data: { text: tweet.text } }],
+    });
+
+    const mediaList = await Promise.all(
+      tweet.media?.map(async (m) => {
+        const path = crypto.randomUUID();
+        await writeFile(join(C.STATIC_ROOT, path), await get(m.url).buffer());
+        return { url: `${origin}/${path}`, type: m.type };
+      }) || []
+    );
+    await Promise.all(
+      mediaList.map((media) =>
+        onebot.post("send_group_msg", {
+          group_id: C.GROUP_ID,
+          message: [{ type: media.type === "video" ? "video" : "image", data: { file: media.url } }],
+        })
+      )
+    );
+    logger.info("Send to group done");
+
+    // save to db
+    await redis.sAdd(redisKey, tweet.tweetId);
+  }
+}
+
+export async function subscribeYoutube() {
+  const videos = await trpc.youtube.query({ channelName: "BlueArchive_JP" });
+  for (const video of videos.slice(0, 3)) {
+    if (await redis.sIsMember(redisKey, video.videoId)) {
+      return;
+    }
+    logger.info(`New video detect: ${video.thumbnailUrl}`);
   }
 }
