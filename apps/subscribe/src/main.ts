@@ -4,12 +4,21 @@ import * as Sentry from "@sentry/node";
 import { logger } from "./util/logger.js";
 import { subscribeTwitter, subscribeYoutube } from "./task.js";
 
-setInterval(async () => {
-  try {
-    subscribeTwitter();
-    subscribeYoutube();
-  } catch (e) {
-    Sentry.captureException(e);
-    logger.error(e);
+function createTask(func: () => void) {
+  function safeCall() {
+    try {
+      func();
+    } catch (error) {
+      Sentry.captureException(error);
+      logger.error(error, `Error happen in ${func.name}`);
+    }
   }
-}, 1000 * 5);
+
+  return () => {
+    safeCall();
+    return setInterval(safeCall, 1000 * 5);
+  };
+}
+
+createTask(subscribeTwitter)();
+createTask(subscribeYoutube)();
