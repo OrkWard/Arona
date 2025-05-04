@@ -4,13 +4,22 @@ import * as Sentry from "@sentry/node";
 import { logger } from "./util/logger.js";
 import { subscribeTwitter, subscribeYoutube } from "./task.js";
 
-function createTask(func: () => void) {
-  function safeCall() {
+function createTask(func: () => Promise<void>) {
+  let isRunning = false;
+  async function safeCall() {
+    if (isRunning) {
+      logger.warn(`Skipping execution of ${func.name} because it's already running.`);
+      return;
+    }
+
     try {
-      func();
+      isRunning = true;
+      await func();
     } catch (error) {
       Sentry.captureException(error);
       logger.error(error, `Error happen in ${func.name}`);
+    } finally {
+      isRunning = false;
     }
   }
 
