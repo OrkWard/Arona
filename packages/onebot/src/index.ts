@@ -51,7 +51,7 @@ class OneBot {
       this.logger.error(err);
     });
     ws.once("open", () => {
-      this.logger.info("Connected to", config.origin);
+      this.logger.info(`Connected to ${config.origin}`);
       this.sendQueue.forEach((msg) => {
         ws.send(msg);
         this.logger.debug(`Msg in queue sent: ${msg}`);

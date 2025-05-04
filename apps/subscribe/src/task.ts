@@ -71,7 +71,7 @@ export async function subscribeYoutube() {
       );
       await onebot.post("send_group_msg", {
         group_id: C.GROUP_ID,
-        message: [{ type: "video", data: { file: `${origin}/${path}` } }],
+        message: [{ type: "video", data: { file: `${origin}/${path}.mp4` } }],
       });
       logger.info("YouTube video send to group done");
     }
