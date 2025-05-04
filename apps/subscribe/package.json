@@ -20,10 +20,10 @@
     "@types/koa": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "trpc-server": "workspace:*"
   },
   "dependencies": {
-    "@distube/ytdl-core": "catalog:",
     "@koa/send": "catalog:",
     "@sentry/node": "catalog:",
     "@trpc/client": "catalog:",
@@ -34,7 +34,6 @@
     "onebot": "workspace:*",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
-    "redis": "^5.0.0",
-    "trpc-server": "workspace:*"
+    "redis": "^5.0.0"
   }
 }

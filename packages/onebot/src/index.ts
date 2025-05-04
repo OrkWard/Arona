@@ -46,7 +46,7 @@ class OneBot {
       headers: { authorization: `Bearer ${config.authKey}` },
     });
     this.ws = ws;
-    this.logger = pino();
+    this.logger = config.logger ?? pino();
     ws.on("error", (err) => {
       this.logger.error(err);
     });
