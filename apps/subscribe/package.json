@@ -17,23 +17,24 @@
   "license": "ISC",
   "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a",
   "devDependencies": {
-    "@types/koa": "^2.15.0",
+    "@types/koa": "catalog:",
     "@types/node": "catalog:",
-    "concurrently": "^9.1.2",
+    "concurrently": "catalog:",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@koa/send": "^6.0.0",
-    "@sentry/node": "^9.10.1",
-    "@trpc/client": "^11.1.2",
-    "got": "^14.4.5",
+    "@distube/ytdl-core": "catalog:",
+    "@koa/send": "catalog:",
+    "@sentry/node": "catalog:",
+    "@trpc/client": "catalog:",
+    "got": "catalog:",
     "html-entities": "^2.5.2",
-    "https-proxy-agent": "^7.0.5",
-    "koa": "^2.15.4",
+    "https-proxy-agent": "catalog:",
+    "koa": "catalog:",
     "onebot": "workspace:*",
-    "pino": "^9.6.0",
-    "pino-pretty": "^13.0.0",
-    "redis": "^4.7.0",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:",
+    "redis": "^5.0.0",
     "trpc-server": "workspace:*"
   }
 }

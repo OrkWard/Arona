@@ -10,21 +10,21 @@
   },
   "dependencies": {
     "@radix-ui/themes": "catalog:",
-    "next": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "essence": "workspace:*",
-    "onebot": "workspace:*"
+    "next": "catalog:",
+    "onebot": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@eslint/eslintrc": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "typescript": "catalog:",
-    "eslint": "^9.19.0",
+    "eslint": "catalog:",
     "eslint-config-next": "catalog:",
-    "prettier": "catalog:"
+    "prettier": "catalog:",
+    "typescript": "~5.7.0"
   },
   "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a"
 }

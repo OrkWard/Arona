@@ -49,11 +49,11 @@ export async function subscribeTwitter() {
 }
 
 export async function subscribeYoutube() {
-  const videos = await trpc.youtube.query({ channelName: "BlueArchive_JP" });
+  const videos = await trpc.youtube.query({ channelId: "UCmgf8DJrAXFnU7j3u0kklUQ" });
   for (const video of videos.slice(0, 3)) {
     if (await redis.sIsMember(redisKey, video.videoId)) {
       return;
     }
-    logger.info(`New video detect: ${video.thumbnailUrl}`);
+    logger.info(`New video detect: https://www.youtube.com/watch?v=${video.videoId}`);
   }
 }

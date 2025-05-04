@@ -4,20 +4,40 @@ packages:
   - infra
   - external/web-scraper/*
 catalog:
-  "@eslint/eslintrc": ^3
+  "@aws-sdk/client-s3": ^3.741.0
+  "@distube/ytdl-core": ^4.16.9
+  "@eslint/eslintrc": ^3.2.0
+  "@koa/send": ^6.0.0
   "@prisma/client": 6.0.0
   "@radix-ui/themes": ^3.2.0
-  "@types/node": ^20
-  "@types/react": ^19
-  "@types/react-dom": ^19
+  "@trpc/client": ^11.1.2
+  "@trpc/server": ^11.1.2
+  "@types/koa": ^2.15.0
+  "@types/node": ^20.16.5
+  "@types/react": ^19.0.8
+  "@types/react-dom": ^19.0.3
   "@types/ws": ^8.5.12
+  "@sentry/node": ^9.15.0
+  acorn: ^8.12.1
+  acorn-walk: ^8.3.4
+  cheerio: ^1.0.0
+  concurrently: ^9.1.2
   dotenv: ^16.4.7
-  eslint-config-next: 15.1.6
-  next: 15.1.6
+  es-toolkit: ^1.32.0
+  eslint: ^9.19.0
+  eslint-config-next: ^15.1.6
+  googleapis: ^148.0.0
+  got: ^14.4.5
+  https-proxy-agent: ^7.0.5
+  koa: ^2.15.4
+  next: ^15.1.6
   picocolors: ^1.1.1
-  prettier: ^3.4.2
+  pino: ^9.6.0
+  pino-pretty: ^13.0.0
+  prettier: ^3.5.3
   prisma: ^6.0.0
   react: ^19.0.0
   react-dom: ^19.0.0
   typescript: ^5
   ws: ^8.18.0
+  zod: ^3.24.3
