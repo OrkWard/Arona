@@ -67,7 +67,7 @@ export async function subscribeYoutube() {
       logger.warn("Video length larger than 5:00, ignore");
     } else {
       execSync(
-        `yt-dlp -f "bestvideo[height<=480]+bestaudio/best[height<=400]" --merge-output-format mp4 -o "${join(C.STATIC_ROOT, path)}" ${link}`
+        `yt-dlp -f "bestvideo[height<=1080]+bestaudio/best[height<=1000]" --merge-output-format mp4 -o "${join(C.STATIC_ROOT, path)}" ${link}`
       );
       await onebot.post("send_group_msg", {
         group_id: C.GROUP_ID,
