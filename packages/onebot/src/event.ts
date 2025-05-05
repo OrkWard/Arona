@@ -28,7 +28,7 @@ export type OneBotMessageEvent = OneBotEventBase & {
         message: Message;
         raw_message: string;
         sender: {
-          user_id: string;
+          user_id: number;
           nickname: string;
           role: string;
           card?: string;
@@ -43,7 +43,7 @@ export type OneBotMessageEvent = OneBotEventBase & {
         message: Message;
         raw_message: string;
         sender: {
-          user_id: string;
+          user_id: number;
           nickname: string;
         };
       }

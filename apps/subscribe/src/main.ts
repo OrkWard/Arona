@@ -42,7 +42,7 @@ onebot.onMessage((msg) => {
     return;
   }
   command = msg.message[0].data.text.slice(1);
-  if (msg.sender.user_id !== C.ADMIN_ID.toString()) {
+  if (msg.sender.user_id !== C.ADMIN_ID) {
     logger.warn(`User ${msg.sender.user_id} send a command, ignore`);
     return;
   }
