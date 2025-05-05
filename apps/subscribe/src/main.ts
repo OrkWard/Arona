@@ -1,33 +1,61 @@
 import "./util/sentry.js";
-import * as Sentry from "@sentry/node";
-
+import { TwitterPlugin } from "./plugin/twitter.js";
+import { YouTubePlugin } from "./plugin/youtube.js";
+import { onebot } from "./onebot.js";
 import { logger } from "./util/logger.js";
-import { subscribeTwitter, subscribeYoutube } from "./task.js";
+import { AronaPlugin } from "./plugin/index.js";
+import { C } from "./config.js";
 
-function createTask(func: () => Promise<void>) {
-  let isRunning = false;
-  async function safeCall() {
-    if (isRunning) {
-      logger.warn(`Skipping execution of ${func.name} because it's already running.`);
-      return;
-    }
+const plugins = new Map<string, AronaPlugin>([
+  ["twitter", new TwitterPlugin()],
+  ["youtube", new YouTubePlugin()],
+]);
 
-    try {
-      isRunning = true;
-      await func();
-    } catch (error) {
-      Sentry.captureException(error);
-      logger.error(error, `Error happen in ${func.name}`);
-    } finally {
-      isRunning = false;
-    }
+async function activatePlugin(pluginName: string) {
+  const plugin = plugins.get(pluginName);
+  if (!plugin) {
+    logger.error(`Plugin ${pluginName} not found`);
+    return;
   }
-
-  return () => {
-    safeCall();
-    return setInterval(safeCall, 1000 * 5);
-  };
+  plugin.activate();
+  logger.info(`Plugin ${pluginName} activated`);
 }
 
-createTask(subscribeTwitter)();
-createTask(subscribeYoutube)();
+async function deactivatePlugin(pluginName: string) {
+  const plugin = plugins.get(pluginName);
+  if (!plugin) {
+    logger.error(`Plugin ${pluginName} not found`);
+    return;
+  }
+  plugin.deactivate();
+  logger.info(`Plugin ${pluginName} deactivated`);
+}
+
+onebot.onMessage((msg) => {
+  let command = "";
+  if (
+    !Array.isArray(msg.message) ||
+    !msg.message[0]?.type ||
+    !(msg.message[0].type === "text") ||
+    !msg.message[0].data.text.startsWith("/")
+  ) {
+    return;
+  }
+  command = msg.message[0].data.text.slice(1);
+  if (msg.sender.user_id !== C.ADMIN_ID.toString()) {
+    logger.warn(`User ${msg.sender.user_id} send a command, ignore`);
+    return;
+  }
+
+  const commands = command.split(" ");
+  switch (commands[0]) {
+    case "d":
+      deactivatePlugin(commands[1]);
+      break;
+    case "a":
+      activatePlugin(commands[1]);
+      break;
+  }
+});
+
+logger.info("Arona started");
