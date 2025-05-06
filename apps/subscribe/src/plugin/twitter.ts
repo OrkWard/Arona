@@ -67,6 +67,7 @@ export class TwitterPlugin implements AronaPlugin {
   deactivate(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
+      this.intervalId = null;
     }
   }
 }
