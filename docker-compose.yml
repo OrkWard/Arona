@@ -2,6 +2,7 @@ services:
   napcat:
     container_name: napcat
     image: mlikiowa/napcat-docker:v4.4.4
+    restart: on-failure:3
     ports:
       - "3001:3001"
       - "6099:6099"
@@ -12,7 +13,7 @@ services:
   web-scraper-trpc:
     build:
       context: .
-    restart: always
+    restart: on-failure:3
     working_dir: /arona/external/web-scraper/trpc-server
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -23,7 +24,7 @@ services:
   twitter-subscriber:
     build:
       context: .
-    restart: always
+    restart: on-failure:3
     working_dir: /arona/apps/subscribe
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -33,15 +34,6 @@ services:
       REDIS: redis://host.docker.internal:6379/1
       TRPC_SERVER: http://web-scraper-trpc:3000
     command: npm run docker-start
-
-  # backup:
-  #   build:
-  #     context: .
-  #   restart: always
-  #   working_dir: /arona/apps/backup
-  #   environment:
-  #     ONEBOT_ORIGIN: napcat
-  #   command: npm run start:db
 
 volumes:
   QQConfig:
