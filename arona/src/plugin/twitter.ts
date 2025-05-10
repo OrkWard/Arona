@@ -36,7 +36,7 @@ export class TwitterPlugin implements AronaPlugin {
         continue;
       }
       for (const media of tweet.media) {
-        const mediaId = randomUUID();
+        const mediaId = `${randomUUID()}.jpg`;
         await writeFile(join(C.STATIC_ROOT, mediaId), await get(media.url).buffer());
         await onebot.post("send_group_msg", {
           group_id: C.GROUP_ID,
