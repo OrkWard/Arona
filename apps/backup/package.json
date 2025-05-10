@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@prisma/client": "catalog:",
-    "onebot": "workspace:*",
-    "common": "workspace:*"
+    "onebot": "workspace:*"
   }
 }

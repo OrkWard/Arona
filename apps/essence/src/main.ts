@@ -1,7 +1,6 @@
 import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { OneBot } from "onebot";
-import { Logger } from "common";
 import C from "./config.json" with { type: "json" };
 import { createHash } from "node:crypto";
 

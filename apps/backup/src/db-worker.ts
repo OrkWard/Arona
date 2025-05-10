@@ -2,7 +2,6 @@ import assert from "assert";
 import { PrismaClient } from "@prisma/client";
 
 import { OneBot } from "onebot";
-import { Logger } from "common";
 import { C } from "./config.js";
 
 const prisma = new PrismaClient();
