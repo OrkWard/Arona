@@ -10,4 +10,4 @@ ENV DATABASE_URL file:/db/prod.db
 
 RUN npm install -g pnpm@9 \
     && pnpm install --prod false --frozen-lockfile \
-    && pnpm run --filter subscribe --filter trpc-server build
+    && pnpm run --filter arona --filter trpc-server build
