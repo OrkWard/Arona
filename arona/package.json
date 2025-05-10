@@ -7,9 +7,9 @@
   "scripts": {
     "dev": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev-build\" \"pnpm:dev-start\" ",
     "dev-build": "tsc --build --watch",
-    "dev-start": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node --watch ./dist/main.js",
+    "dev-start": "STATIC_HOST=host.docker.internal node --watch ./dist/main.js",
     "build": "tsc --build",
-    "start": "STATIC_HOST=$(tailscale status --peers=false | awk '{print $2}') node ./dist/main.js",
+    "start": "STATIC_HOST=host.docker.internal node ./dist/main.js",
     "docker-start": "node ./dist/main.js"
   },
   "keywords": [],
