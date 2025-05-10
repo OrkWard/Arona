@@ -1,7 +1,6 @@
 packages:
-  - packages/*
+  - onebot
   - apps/*
-  - infra
   - external/web-scraper/*
 catalog:
   "@aws-sdk/client-s3": ^3.741.0

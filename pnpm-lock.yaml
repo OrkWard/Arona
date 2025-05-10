@@ -69,9 +69,6 @@ catalogs:
     next:
       specifier: ^15.1.6
       version: 15.1.6
-    picocolors:
-      specifier: ^1.1.1
-      version: 1.1.1
     pino:
       specifier: ^9.6.0
       version: 9.6.0
@@ -104,12 +101,9 @@ importers:
       '@prisma/client':
         specifier: 'catalog:'
         version: 6.0.0(prisma@6.0.0)
-      common:
-        specifier: workspace:*
-        version: link:../../packages/common
       onebot:
         specifier: workspace:*
-        version: link:../../packages/onebot
+        version: link:../../onebot
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -126,9 +120,6 @@ importers:
       '@aws-sdk/client-s3':
         specifier: 'catalog:'
         version: 3.741.0
-      common:
-        specifier: workspace:*
-        version: link:../../packages/common
       dotenv:
         specifier: 'catalog:'
         version: 16.4.7
@@ -137,7 +128,7 @@ importers:
         version: 1.32.0
       onebot:
         specifier: workspace:*
-        version: link:../../packages/onebot
+        version: link:../../onebot
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -171,7 +162,7 @@ importers:
         version: 2.15.4
       onebot:
         specifier: workspace:*
-        version: link:../../packages/onebot
+        version: link:../../onebot
       pino:
         specifier: 'catalog:'
         version: 9.6.0
@@ -211,7 +202,7 @@ importers:
         version: 15.1.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       onebot:
         specifier: workspace:*
-        version: link:../../packages/onebot
+        version: link:../../onebot
       react:
         specifier: 'catalog:'
         version: 19.0.0
@@ -309,20 +300,7 @@ importers:
         specifier: ^5.6.2
         version: 5.7.2
 
-  packages/common:
-    dependencies:
-      picocolors:
-        specifier: 'catalog:'
-        version: 1.1.1
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.17.16
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-
-  packages/onebot:
+  onebot:
     dependencies:
       pino:
         specifier: 'catalog:'
