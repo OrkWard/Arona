@@ -1,5 +1,6 @@
 packages:
   - onebot
+  - arona
   - apps/*
   - external/web-scraper/*
 catalog:

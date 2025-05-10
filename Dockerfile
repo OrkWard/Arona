@@ -4,7 +4,7 @@ RUN pip install yt-dlp \
     && apt update \
     && apt install ffmpeg -y
 WORKDIR /arona
-COPY --parents pnpm-lock.yaml pnpm-workspace.yaml apps packages external/web-scraper packages/ ./
+COPY --parents pnpm-lock.yaml pnpm-workspace.yaml arona onebot external/web-scraper ./
 ENV NODE_ENV production
 ENV DATABASE_URL file:/db/prod.db
 
