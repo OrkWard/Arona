@@ -9,7 +9,7 @@ services:
       - ./onebot/lagrange.json:/app/data/appsettings.json
       - LagrangeData:/app/data
 
-  web-scraper-trpc:
+  scraper:
     build:
       context: .
     restart: on-failure:3
@@ -31,7 +31,7 @@ services:
       STATIC_HOST: arona
       ONEBOT_ORIGIN: lagrange:6099
       REDIS: redis://host.docker.internal:6379/1
-      TRPC_SERVER: http://web-scraper-trpc:3000
+      TRPC_SERVER: http://scraper:3000
     command: npm run docker-start
 
 volumes:

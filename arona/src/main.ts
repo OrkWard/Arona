@@ -5,10 +5,12 @@ import { onebot } from "./onebot.js";
 import { logger } from "./util/logger.js";
 import { AronaPlugin } from "./plugin/index.js";
 import { C } from "./config.js";
+import { Poke } from "./plugin/poke.js";
 
 const plugins = new Map<string, AronaPlugin>([
   ["twitter", new TwitterPlugin()],
   ["youtube", new YouTubePlugin()],
+  ["poke", new Poke()],
 ]);
 
 async function activatePlugin(pluginName: string) {

@@ -49,4 +49,23 @@ export type OneBotMessageEvent = OneBotEventBase & {
       }
   );
 
-export type OneBotEvent = OneBotMetaEvent | OneBotMessageEvent;
+export type OneBotNoticeEvent = OneBotEventBase & {
+  post_type: "notice";
+} & (
+    | {
+        notice_type: "notify";
+        sub_type: "poke";
+        group_id: number;
+        user_id: number;
+        target_id: number;
+      }
+    | {
+        notice_type: "group_increase";
+        sub_type: "approve" | "invite";
+        group_id: number;
+        operator_id: number;
+        user_id: number;
+      }
+  );
+
+export type OneBotEvent = OneBotMetaEvent | OneBotMessageEvent | OneBotNoticeEvent;

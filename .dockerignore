@@ -4,3 +4,5 @@
 **/*.db-journal
 **/.DS_Store
 **/tsconfig.tsbuildinfo
+**/static
+**/.gitignore

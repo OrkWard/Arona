@@ -32,6 +32,7 @@ type OneBotConfig = {
 };
 
 type EventCallback = (event: OneBotEvent) => void;
+type ExtractEvent<U extends { post_type: string }, TType extends string> = U extends { post_type: TType } ? U : never;
 
 class OneBot {
   private ws: WebSocket;
@@ -125,25 +126,28 @@ class OneBot {
     3000
   );
 
-  _on(eventName: string, callback: EventCallback): number {
+  on<T extends OneBotEvent["post_type"]>(
+    eventName: T,
+    callback: (event: ExtractEvent<OneBotEvent, T>) => void
+  ): number {
     if (this.listeners.get(eventName)) {
-      this.listeners.get(eventName)?.set(listenerCounter, callback);
+      this.listeners.get(eventName)?.set(listenerCounter, callback as EventCallback);
     } else {
-      this.listeners.set(eventName, new Map([[listenerCounter, callback]]));
+      this.listeners.set(eventName, new Map([[listenerCounter, callback as EventCallback]]));
     }
 
     return listenerCounter++;
   }
 
   onMessage(callback: (event: OneBotMessageEvent) => void): number {
-    return this._on("message", callback as EventCallback);
+    return this.on("message", callback);
   }
 
   onOpen(callback: () => void) {
     this.ws.on("open", callback);
   }
 
-  removeListener(eventName: string, listenerId: number) {
+  removeListener(eventName: OneBotEvent["post_type"], listenerId: number) {
     this.listeners.get(eventName)?.delete(listenerId);
   }
 
