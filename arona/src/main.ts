@@ -61,3 +61,4 @@ onebot.onMessage((msg) => {
 });
 
 logger.info("Arona started");
+activatePlugin("poke");

@@ -16,8 +16,8 @@ export class Poke implements AronaPlugin {
       }
 
       if (e.target_id === e.self_id) {
-        const faceId = (Math.floor(Math.random() * 16) + 1).toString().padStart(2, "0");
-        const fileName = `Operator_Portrait_Arona_${faceId}.png`;
+        const faceId = (Math.floor(Math.random() * 33) + 1).toString();
+        const fileName = `Arona_${faceId}.png`;
         await copyFile(join(import.meta.dirname, "..", "..", "assets", fileName), join(C.STATIC_ROOT, fileName));
 
         onebot.post("send_group_msg", {
