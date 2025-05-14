@@ -23,6 +23,13 @@ export class YouTubePlugin implements AronaPlugin {
       const link = `https://www.youtube.com/watch?v=${video.videoId}`;
       const path = video.videoId;
       logger.info(`New video detect: ${link}`);
+
+      const isLive = execSync(`yt-dlp --print is_live ${link}`).toString().includes("True");
+      if (isLive) {
+        logger.info("Video is live");
+        continue;
+      }
+
       const duration = Number.parseInt(execSync(`yt-dlp --print duration ${link}`).toString());
       if (isNaN(duration)) {
         throw new Error("Get video duration error");
