@@ -27,6 +27,7 @@ export class YouTubePlugin implements AronaPlugin {
       const isLive = execSync(`yt-dlp --print is_live ${link}`).toString().includes("True");
       if (isLive) {
         logger.info("Video is live");
+        await redis.sAdd(this.REDIS_YOUTUBE_SENT, video.videoId);
         continue;
       }
 
