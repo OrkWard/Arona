@@ -31,10 +31,16 @@ export class YouTubePlugin implements AronaPlugin {
         continue;
       }
 
-      const duration = Number.parseInt(execSync(`yt-dlp --print duration ${link}`).toString());
+      const videoInfo = execSync(`yt-dlp --print duration,uploader ${link}`).toString().split("\n");
+      const duration = Number.parseInt(videoInfo[0]);
+      const uploader = videoInfo[1];
       if (isNaN(duration)) {
         throw new Error("Get video duration error");
       }
+      if (!uploader.includes("Blue Archive")) {
+        throw new Error("Malformed video");
+      }
+
       if (duration > 300) {
         logger.warn("Video length larger than 5:00, ignore");
       } else {
