@@ -110,7 +110,7 @@ importers:
         version: 6.0.0
       typescript:
         specifier: 'catalog:'
-        version: 5.8.3
+        version: 5.7.2
 
   apps/essence:
     dependencies:
@@ -129,7 +129,7 @@ importers:
         version: 20.17.16
       typescript:
         specifier: 'catalog:'
-        version: 5.8.3
+        version: 5.7.2
 
   apps/zju-ba-page:
     dependencies:
@@ -292,7 +292,7 @@ importers:
         version: 20.17.16
       typescript:
         specifier: ^5.6.2
-        version: 5.7.2
+        version: 5.8.3
 
   onebot:
     dependencies:
