@@ -13,7 +13,7 @@ services:
     build:
       context: .
     restart: on-failure:3
-    working_dir: /arona/external/web-scraper/trpc-server
+    working_dir: /bin/external/web-scraper/trpc-server
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
@@ -24,7 +24,7 @@ services:
     build:
       context: .
     restart: on-failure:3
-    working_dir: /arona/arona
+    working_dir: /bin/arona
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
