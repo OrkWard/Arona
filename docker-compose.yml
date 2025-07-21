@@ -19,6 +19,8 @@ services:
     environment:
       REDIS: redis://host.docker.internal:6379/1
     command: npm run start
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<> /dev/tcp/localhost/3000 || exit 1"]
 
   arona:
     build:

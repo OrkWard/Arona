@@ -1,8 +1,5 @@
 # syntax=docker/dockerfile:1-labs
-FROM nikolaik/python-nodejs:python3.9-nodejs20
-# RUN pip install yt-dlp \
-#     && apt update \
-#     && apt install ffmpeg -y
+FROM node:22-bookworm
 WORKDIR /bin
 COPY --parents pnpm-lock.yaml pnpm-workspace.yaml .env arona onebot external/web-scraper ./
 ENV NODE_ENV production
