@@ -12,7 +12,6 @@
     "@radix-ui/themes": "catalog:",
     "essence": "workspace:*",
     "next": "catalog:",
-    "onebot": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
@@ -23,6 +22,7 @@
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",
     "eslint-config-next": "catalog:",
+    "onebot": "workspace:*",
     "prettier": "catalog:",
     "typescript": "~5.7.0"
   },
