@@ -1,4 +1,2 @@
-config.json filter=git-crypt diff=git-crypt
 config.ts filter=git-crypt diff=git-crypt
-lagrange.json filter=git-crypt diff=git-crypt
 .env filter=git-crypt diff=git-crypt
