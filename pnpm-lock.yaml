@@ -15,9 +15,6 @@ catalogs:
     '@koa/send':
       specifier: ^6.0.0
       version: 6.0.0
-    '@prisma/client':
-      specifier: 6.0.0
-      version: 6.0.0
     '@radix-ui/themes':
       specifier: ^3.2.0
       version: 3.2.0
@@ -75,9 +72,6 @@ catalogs:
     prettier:
       specifier: ^3.5.3
       version: 3.5.3
-    prisma:
-      specifier: ^6.0.0
-      version: 6.0.0
     react:
       specifier: ^19.0.0
       version: 19.0.0
@@ -93,24 +87,57 @@ catalogs:
 
 importers:
 
-  apps/backup:
+  apps/arona:
     dependencies:
-      '@prisma/client':
+      '@koa/send':
         specifier: 'catalog:'
-        version: 6.0.0(prisma@6.0.0)
+        version: 6.0.0
+      '@sentry/node':
+        specifier: 'catalog:'
+        version: 9.15.0
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.1.2(@trpc/server@11.1.2(typescript@5.8.3))(typescript@5.8.3)
+      got:
+        specifier: 'catalog:'
+        version: 14.4.7
+      html-entities:
+        specifier: ^2.5.2
+        version: 2.6.0
+      https-proxy-agent:
+        specifier: 'catalog:'
+        version: 7.0.6
+      koa:
+        specifier: 'catalog:'
+        version: 2.15.4
       onebot:
         specifier: workspace:*
         version: link:../../onebot
+      pino:
+        specifier: 'catalog:'
+        version: 9.6.0
+      pino-pretty:
+        specifier: 'catalog:'
+        version: 13.0.0
+      redis:
+        specifier: ^5.0.0
+        version: 5.0.0
     devDependencies:
+      '@types/koa':
+        specifier: 'catalog:'
+        version: 2.15.0
       '@types/node':
         specifier: 'catalog:'
         version: 20.17.16
-      prisma:
+      concurrently:
         specifier: 'catalog:'
-        version: 6.0.0
+        version: 9.1.2
+      trpc-server:
+        specifier: workspace:*
+        version: link:../../external/web-scraper/trpc-server
       typescript:
-        specifier: 'catalog:'
-        version: 5.7.2
+        specifier: ^5.8.3
+        version: 5.8.3
 
   apps/essence:
     dependencies:
@@ -142,9 +169,6 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.1.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      onebot:
-        specifier: workspace:*
-        version: link:../../onebot
       react:
         specifier: 'catalog:'
         version: 19.0.0
@@ -170,64 +194,15 @@ importers:
       eslint-config-next:
         specifier: 'catalog:'
         version: 15.1.6(eslint@9.19.0)(typescript@5.7.2)
+      onebot:
+        specifier: workspace:*
+        version: link:../../onebot
       prettier:
         specifier: 'catalog:'
         version: 3.5.3
       typescript:
         specifier: ~5.7.0
         version: 5.7.2
-
-  arona:
-    dependencies:
-      '@koa/send':
-        specifier: 'catalog:'
-        version: 6.0.0
-      '@sentry/node':
-        specifier: 'catalog:'
-        version: 9.15.0
-      '@trpc/client':
-        specifier: 'catalog:'
-        version: 11.1.2(@trpc/server@11.1.2(typescript@5.8.3))(typescript@5.8.3)
-      got:
-        specifier: 'catalog:'
-        version: 14.4.7
-      html-entities:
-        specifier: ^2.5.2
-        version: 2.6.0
-      https-proxy-agent:
-        specifier: 'catalog:'
-        version: 7.0.6
-      koa:
-        specifier: 'catalog:'
-        version: 2.15.4
-      onebot:
-        specifier: workspace:*
-        version: link:../onebot
-      pino:
-        specifier: 'catalog:'
-        version: 9.6.0
-      pino-pretty:
-        specifier: 'catalog:'
-        version: 13.0.0
-      redis:
-        specifier: ^5.0.0
-        version: 5.0.0
-    devDependencies:
-      '@types/koa':
-        specifier: 'catalog:'
-        version: 2.15.0
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.17.16
-      concurrently:
-        specifier: 'catalog:'
-        version: 9.1.2
-      trpc-server:
-        specifier: workspace:*
-        version: link:../external/web-scraper/trpc-server
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
 
   external/web-scraper/trpc-server:
     dependencies:
@@ -237,6 +212,9 @@ importers:
       '@trpc/server':
         specifier: ^11.1.2
         version: 11.1.2(typescript@5.8.3)
+      dotenv:
+        specifier: ^17.2.1
+        version: 17.2.1
       googleapis:
         specifier: ^148.0.0
         version: 148.0.0
@@ -910,30 +888,6 @@ packages:
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
-
-  '@prisma/client@6.0.0':
-    resolution: {integrity: sha512-tOBhG35ozqZ/5Y6B0TNOa6cwULUW8ijXqBXcgb12bfozqf6eGMyGs+jphywCsj6uojv5lAZZnxVSoLMVebIP+g==}
-    engines: {node: '>=18.18'}
-    peerDependencies:
-      prisma: '*'
-    peerDependenciesMeta:
-      prisma:
-        optional: true
-
-  '@prisma/debug@6.0.0':
-    resolution: {integrity: sha512-eUjoNThlDXdyJ1iQ2d7U6aTVwm59EwvODb5zFVNJEokNoSiQmiYWNzZIwZyDmZ+j51j42/0iTaHIJ4/aZPKFRg==}
-
-  '@prisma/engines-version@5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e':
-    resolution: {integrity: sha512-JmIds0Q2/vsOmnuTJYxY4LE+sajqjYKhLtdOT6y4imojqv5d/aeVEfbBGC74t8Be1uSp0OP8lxIj2OqoKbLsfQ==}
-
-  '@prisma/engines@6.0.0':
-    resolution: {integrity: sha512-ZZCVP3q22ifN6Ex6C8RIcTDBlRtMJS2H1ljV0knCiWNGArvvkEbE88W3uDdq/l4+UvyvHpGzdf9ZsCWSQR7ZQQ==}
-
-  '@prisma/fetch-engine@6.0.0':
-    resolution: {integrity: sha512-j2m+iO5RDPRI7SUc7sHo8wX7SA4iTkJ+18Sxch8KinQM46YiCQD1iXKN6qU79C1Fliw5Bw/qDyTHaTsa3JMerA==}
-
-  '@prisma/get-platform@6.0.0':
-    resolution: {integrity: sha512-PS6nYyIm9g8C03E4y7LknOfdCw/t2KyEJxntMPQHQZCOUgOpF82Ma60mdlOD08w90I3fjLiZZ0+MadenR3naDQ==}
 
   '@prisma/instrumentation@6.6.0':
     resolution: {integrity: sha512-M/a6njz3hbf2oucwdbjNKrSMLuyMCwgDrmTtkF1pm4Nm7CU45J/Hd6lauF2CDACTUYzu3ymcV7P0ZAhIoj6WRw==}
@@ -2380,6 +2334,10 @@ packages:
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
+  dotenv@17.2.1:
+    resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
+    engines: {node: '>=12'}
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -2645,11 +2603,6 @@ packages:
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
     engines: {node: '>= 0.6'}
-
-  fsevents@2.3.3:
-    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
-    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
-    os: [darwin]
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
@@ -3304,11 +3257,6 @@ packages:
   prettier@3.5.3:
     resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
     engines: {node: '>=14'}
-    hasBin: true
-
-  prisma@6.0.0:
-    resolution: {integrity: sha512-RX7KtbW7IoEByf7MR32JK1PkVYLVYFqeODTtiIX3cqekq1aKdsF3Eud4zp2sUShMLjvdb5Jow0LbUjRq5LVxPw==}
-    engines: {node: '>=18.18'}
     hasBin: true
 
   process-warning@4.0.1:
@@ -4757,31 +4705,6 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
-
-  '@prisma/client@6.0.0(prisma@6.0.0)':
-    optionalDependencies:
-      prisma: 6.0.0
-
-  '@prisma/debug@6.0.0': {}
-
-  '@prisma/engines-version@5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e': {}
-
-  '@prisma/engines@6.0.0':
-    dependencies:
-      '@prisma/debug': 6.0.0
-      '@prisma/engines-version': 5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e
-      '@prisma/fetch-engine': 6.0.0
-      '@prisma/get-platform': 6.0.0
-
-  '@prisma/fetch-engine@6.0.0':
-    dependencies:
-      '@prisma/debug': 6.0.0
-      '@prisma/engines-version': 5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e
-      '@prisma/get-platform': 6.0.0
-
-  '@prisma/get-platform@6.0.0':
-    dependencies:
-      '@prisma/debug': 6.0.0
 
   '@prisma/instrumentation@6.6.0(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -6502,6 +6425,8 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
+  dotenv@17.2.1: {}
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.1
@@ -6904,9 +6829,6 @@ snapshots:
   forwarded-parse@2.1.2: {}
 
   fresh@0.5.2: {}
-
-  fsevents@2.3.3:
-    optional: true
 
   function-bind@1.1.2: {}
 
@@ -7654,12 +7576,6 @@ snapshots:
   prelude-ls@1.2.1: {}
 
   prettier@3.5.3: {}
-
-  prisma@6.0.0:
-    dependencies:
-      '@prisma/engines': 6.0.0
-    optionalDependencies:
-      fsevents: 2.3.3
 
   process-warning@4.0.1: {}
 

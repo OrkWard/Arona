@@ -1,12 +1,6 @@
 VOLUME_NAME := LagrangeData
 
-.PHONY init
-
-init:
-	git submodule update --init --recursive
-	git crypt unlock
-	cd external/web-scraper/
-	git crypt unlock
+.PHONY build
 
 build:
 	docker compose pull

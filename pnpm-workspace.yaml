@@ -1,8 +1,8 @@
 packages:
   - onebot
-  - arona
   - apps/*
-  - external/web-scraper/*
+  - external/web-scraper/trpc-server
+  - external/web-scraper/twitter
 catalog:
   "@aws-sdk/client-s3": ^3.741.0
   "@eslint/eslintrc": ^3.2.0
