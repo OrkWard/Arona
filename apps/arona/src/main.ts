@@ -1,10 +1,10 @@
+import "dotenv/config";
 import "./util/sentry.js";
 import { TwitterPlugin } from "./plugin/twitter.js";
 import { YouTubePlugin } from "./plugin/youtube.js";
 import { onebot } from "./onebot.js";
 import { logger } from "./util/logger.js";
 import { AronaPlugin } from "./plugin/index.js";
-import { C } from "./config.js";
 import { Poke } from "./plugin/poke.js";
 
 const plugins = new Map<string, AronaPlugin>([
@@ -44,7 +44,7 @@ onebot.onMessage((msg) => {
     return;
   }
   command = msg.message[0].data.text.slice(1);
-  if (msg.sender.user_id !== C.ADMIN_ID) {
+  if (msg.sender.user_id !== parseInt(process.env.QQ_ADMIN_ID)) {
     logger.warn(`User ${msg.sender.user_id} send a command, ignore`);
     return;
   }

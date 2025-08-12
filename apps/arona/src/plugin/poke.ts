@@ -4,7 +4,6 @@ import { logger } from "../util/logger.js";
 import { AronaPlugin } from "./index.js";
 import { join } from "node:path";
 import { staticOrigin } from "./context.js";
-import { C } from "../config.js";
 
 export class Poke implements AronaPlugin {
   private listenerId: null | number = null;
@@ -18,7 +17,10 @@ export class Poke implements AronaPlugin {
       if (e.target_id === e.self_id) {
         const faceId = (Math.floor(Math.random() * 33) + 1).toString();
         const fileName = `Arona_${faceId}.png`;
-        await copyFile(join(import.meta.dirname, "..", "..", "assets", fileName), join(C.STATIC_ROOT, fileName));
+        await copyFile(
+          join(import.meta.dirname, "..", "..", "assets", fileName),
+          join(process.env.STATIC_ROOT, fileName)
+        );
 
         onebot.post("send_group_msg", {
           group_id: e.group_id,

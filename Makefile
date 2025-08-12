@@ -1,6 +1,9 @@
 VOLUME_NAME := LagrangeData
 
-.PHONY build
+.PHONY: build config
+
+config:
+	op inject --in-file example.env --out-file .env
 
 build:
 	docker compose pull

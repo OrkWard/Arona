@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { captureException } from "@sentry/node";
-import { C } from "../config.js";
+
 import { onebot } from "../onebot.js";
 import { logger as parentLogger } from "../util/logger.js";
 import { redis, staticOrigin, trpc } from "./context.js";
@@ -45,10 +45,10 @@ export class YouTubePlugin implements AronaPlugin {
         logger.warn("Video length larger than 5:00, ignore");
       } else {
         execSync(
-          `yt-dlp -f "bestvideo[height<=1080]+bestaudio/best[height<=1000]" --merge-output-format mp4 -o "${join(C.STATIC_ROOT, path)}" ${link}`
+          `yt-dlp -f "bestvideo[height<=1080]+bestaudio/best[height<=1000]" --merge-output-format mp4 -o "${join(process.env.STATIC_ROOT, path)}" ${link}`
         );
         await onebot.post("send_group_msg", {
-          group_id: C.GROUP_ID,
+          group_id: Number.parseInt(process.env.QQ_GROUP_ID),
           message: [{ type: "video", data: { file: `${staticOrigin}/${path}.mp4` } }],
         });
         logger.info("YouTube video send to group done");

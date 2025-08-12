@@ -1,6 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { captureException } from "@sentry/node";
-import { C } from "../config.js";
+
 import { onebot } from "../onebot.js";
 import { logger as parentLogger } from "../util/logger.js";
 import { redis, staticOrigin, trpc } from "./context.js";
@@ -25,10 +25,10 @@ export class TwitterPlugin implements AronaPlugin {
       logger.info(`New tweet detected: ${tweet.text.slice(0, tweet.text.indexOf("\n"))}`);
 
       await onebot.post("send_group_msg", {
-        group_id: C.GROUP_ID,
+        group_id: Number.parseInt(process.env.QQ_GROUP_ID),
         message: [{ type: "text", data: { text: tweet.text } }],
       });
-      // if text content sent with succuess, ignore the follow error
+      // if text content sent with success, ignore the follow error
       await redis.sAdd(this.REDIS_TWITTER_SENT, tweet.tweetId);
       logger.info(`New tweet text sent and save to cache: ${tweet.text.slice(0, tweet.text.indexOf("\n"))}`);
 
@@ -37,9 +37,9 @@ export class TwitterPlugin implements AronaPlugin {
       }
       for (const media of tweet.media) {
         const mediaId = `${randomUUID()}.jpg`;
-        await writeFile(join(C.STATIC_ROOT, mediaId), await get(media.url).buffer());
+        await writeFile(join(process.env.STATIC_ROOT, mediaId), await get(media.url).buffer());
         await onebot.post("send_group_msg", {
-          group_id: C.GROUP_ID,
+          group_id: Number.parseInt(process.env.QQ_GROUP_ID),
           message: [{ type: media.type === "video" ? "video" : "image", data: { file: `${staticOrigin}/${mediaId}` } }],
         });
       }
