@@ -150,9 +150,6 @@ importers:
       '@aws-sdk/client-s3':
         specifier: 'catalog:'
         version: 3.741.0
-      dotenv:
-        specifier: 'catalog:'
-        version: 16.6.1
       es-toolkit:
         specifier: 'catalog:'
         version: 1.32.0
@@ -221,9 +218,6 @@ importers:
       '@trpc/server':
         specifier: ^11.1.2
         version: 11.1.2(typescript@5.8.3)
-      dotenv:
-        specifier: ^17.2.1
-        version: 17.2.1
       googleapis:
         specifier: ^148.0.0
         version: 148.0.0
@@ -247,7 +241,7 @@ importers:
         version: 3.24.3
     devDependencies:
       '@types/node':
-        specifier: ^20.16.5
+        specifier: 'catalog:'
         version: 20.17.16
       typescript:
         specifier: ^5.8.3
@@ -275,7 +269,7 @@ importers:
         version: 7.0.6
     devDependencies:
       '@types/node':
-        specifier: ^20.16.5
+        specifier: 'catalog:'
         version: 20.17.16
       typescript:
         specifier: ^5.6.2
@@ -2345,10 +2339,6 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
-
-  dotenv@17.2.1:
-    resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
     engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
@@ -6439,8 +6429,6 @@ snapshots:
       domhandler: 5.0.3
 
   dotenv@16.6.1: {}
-
-  dotenv@17.2.1: {}
 
   dunder-proto@1.0.1:
     dependencies:

@@ -4,15 +4,14 @@
   "type": "module",
   "description": "",
   "scripts": {
-    "build": "tsc && node ./dist/main.js",
-    "config": "op inject --in-file example.env --out-file .env"
+    "build": "tsc && node --env-file .env ./dist/main.js",
+    "config": "op inject --in-file example.env --out-file .env -f"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
-    "dotenv": "catalog:",
     "es-toolkit": "catalog:",
     "onebot": "workspace:*"
   },

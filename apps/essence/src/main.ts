@@ -2,7 +2,6 @@ import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s
 import { symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { OneBot } from "onebot";
 import { createHash } from "node:crypto";
-import "dotenv/config";
 
 const onebot = new OneBot({ authKey: process.env.ONEBOT_AUTH_TOKEN, origin: process.env.ONEBOT_ORIGIN });
 const S3 = new S3Client({
