@@ -13,12 +13,13 @@ const logger = parentLogger.child({ module: "twitter" });
 
 export class TwitterPlugin implements AronaPlugin {
   private REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
+  private MAX_TWEETS_WHEN_START = 2;
   private intervalId: NodeJS.Timeout | null = null;
   private lock = false;
 
   private async subscribeTwitter() {
     const tweets = await trpc.twitter.query({ username: "bluearchive_jp" });
-    for (const tweet of tweets.slice(0, 3)) {
+    for (const tweet of tweets.slice(0, this.MAX_TWEETS_WHEN_START)) {
       if (await redis.sIsMember(this.REDIS_TWITTER_SENT, tweet.tweetId)) {
         continue;
       }

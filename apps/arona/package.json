@@ -1,22 +1,14 @@
 {
   "name": "arona",
-  "version": "1.1.0",
-  "description": "",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "config": "op inject --in-file example.env --out-file .env",
+    "config": "op inject --in-file example.env --out-file .env -f",
     "dev": "concurrently --names build,run --handle-input --default-input-target run \"pnpm:dev-build\" \"pnpm:dev-start\" ",
     "dev-build": "tsc --build --watch",
-    "dev-start": "STATIC_ROOT=$(realpath \"assets\") node --watch ./dist/main.js",
+    "dev-start": "STATIC_ROOT=$(realpath \"assets\") node --env-file .env --watch ./dist/main.js",
     "build": "tsc --build",
-    "start": "STATIC_ROOT=$(realpath \"assets\") node ./dist/main.js",
-    "docker-start": "node ./dist/main.js"
+    "start": "STATIC_ROOT=$(realpath \"assets\") node --env-file .env ./dist/main.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a",
   "devDependencies": {
     "@types/koa": "catalog:",
     "@types/node": "catalog:",
@@ -28,7 +20,6 @@
     "@koa/send": "catalog:",
     "@sentry/node": "catalog:",
     "@trpc/client": "catalog:",
-    "dotenv": "catalog:",
     "got": "catalog:",
     "html-entities": "^2.5.2",
     "https-proxy-agent": "catalog:",

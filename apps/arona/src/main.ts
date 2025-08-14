@@ -1,4 +1,3 @@
-import "dotenv/config";
 import "./util/sentry.js";
 import { TwitterPlugin } from "./plugin/twitter.js";
 import { YouTubePlugin } from "./plugin/youtube.js";
