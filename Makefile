@@ -1,7 +1,7 @@
 IMAGE_NAME := ghcr.io/orkward/arona
 GIT_TAG := $(shell git describe --tags --always)
 
-.PHONY: build config
+.PHONY: build config upload-sourcemap build-docker
 
 all: config build
 
@@ -11,11 +11,11 @@ config:
 build:
 	pnpm install && pnpm -F arona build
 
-upload-sourcemap: build
+upload-sourcemap: build config
 	sentry-cli sourcemaps inject apps/arona/dist
 	sentry-cli sourcemaps upload apps/arona/dist
 
-build-docker:
+build-docker: build upload-sourcemap
 	docker build \
         --build-arg GIT_TAG=$(GIT_TAG) \
         --platform linux/amd64,linux/arm64 \
