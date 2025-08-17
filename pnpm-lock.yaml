@@ -87,6 +87,8 @@ catalogs:
 
 importers:
 
+  .: {}
+
   apps/arona:
     dependencies:
       '@koa/send':
@@ -112,7 +114,7 @@ importers:
         version: 2.15.4
       onebot:
         specifier: workspace:*
-        version: link:../../onebot
+        version: link:../../packages/onebot
       pino:
         specifier: 'catalog:'
         version: 9.6.0
@@ -134,7 +136,7 @@ importers:
         version: 9.1.2
       trpc-server:
         specifier: workspace:*
-        version: link:../../external/web-scraper/trpc-server
+        version: link:../../packages/trpc-server
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -149,7 +151,7 @@ importers:
         version: 1.32.0
       onebot:
         specifier: workspace:*
-        version: link:../../onebot
+        version: link:../../packages/onebot
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -196,7 +198,7 @@ importers:
         version: 15.1.6(eslint@9.19.0)(typescript@5.7.2)
       onebot:
         specifier: workspace:*
-        version: link:../../onebot
+        version: link:../../packages/onebot
       prettier:
         specifier: 'catalog:'
         version: 3.5.3
@@ -204,7 +206,26 @@ importers:
         specifier: ~5.7.0
         version: 5.7.2
 
-  external/web-scraper/trpc-server:
+  packages/onebot:
+    dependencies:
+      pino:
+        specifier: 'catalog:'
+        version: 9.6.0
+      ws:
+        specifier: 'catalog:'
+        version: 8.18.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.17.16
+      '@types/ws':
+        specifier: 'catalog:'
+        version: 8.5.12
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
+  packages/trpc-server:
     dependencies:
       '@sentry/node':
         specifier: ^9.15.0
@@ -241,7 +262,7 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  external/web-scraper/twitter:
+  packages/twitter:
     dependencies:
       acorn:
         specifier: ^8.12.1
@@ -268,25 +289,6 @@ importers:
       typescript:
         specifier: ^5.6.2
         version: 5.8.3
-
-  onebot:
-    dependencies:
-      pino:
-        specifier: 'catalog:'
-        version: 9.6.0
-      ws:
-        specifier: 'catalog:'
-        version: 8.18.0
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.17.16
-      '@types/ws':
-        specifier: 'catalog:'
-        version: 8.5.12
-      typescript:
-        specifier: 'catalog:'
-        version: 5.7.2
 
 packages:
 
