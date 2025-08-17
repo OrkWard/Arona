@@ -1,7 +1,7 @@
 IMAGE_NAME := ghcr.io/orkward/arona
 GIT_TAG := $(shell git describe --tags --always)
 
-.PHONY: build config upload-sourcemap build-docker
+.PHONY: build config upload-sourcemap build-docker push
 
 all: config build
 
@@ -21,3 +21,7 @@ build-docker: build upload-sourcemap
         --platform linux/amd64,linux/arm64 \
         -t $(IMAGE_NAME):$(GIT_TAG) \
         -t $(IMAGE_NAME):latest .
+
+push: build-docker
+	docker push $(IMAGE_NAME):$(GIT_TAG)
+	docker push $(IMAGE_NAME):latest
