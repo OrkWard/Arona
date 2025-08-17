@@ -1,16 +1,23 @@
-VOLUME_NAME := LagrangeData
+IMAGE_NAME := ghcr.io/orkward/arona
+GIT_TAG := $(shell git describe --tags --always)
 
 .PHONY: build config
 
+all: config build
+
 config:
-	op inject --in-file example.env --out-file .env
+	op inject --in-file example.env --out-file .env -f
 
 build:
-	docker compose pull
-	docker compose create
-	@if ! docker volume inspect $(VOLUME_NAME) &>/dev/null; then \
-		echo "Docker volume '$(VOLUME_NAME)' not found. Creating it..."; \
-		docker volume create $(VOLUME_NAME); \
-	else \
-		echo "Docker volume '$(VOLUME_NAME)' already exists."; \
-	fi
+	pnpm install && pnpm -F arona build
+
+upload-sourcemap: build
+	sentry-cli sourcemaps inject apps/arona/dist
+	sentry-cli sourcemaps upload apps/arona/dist
+
+build-docker:
+	docker build \
+        --build-arg GIT_TAG=$(GIT_TAG) \
+        --platform linux/amd64,linux/arm64 \
+        -t $(IMAGE_NAME):$(GIT_TAG) \
+        -t $(IMAGE_NAME):latest .
