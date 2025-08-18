@@ -16,7 +16,7 @@ Arona 是一个 OneBot Application，由三个服务和一个站点组成。它�
 
 ### subscribe
 
-- 每 5 分钟获取 bluearchive_JP 账号的消息，发送至群内
+- 每 5 分钟获取 Blue_ArchiveJP 账号的消息，发送至群内
 
 ### essence
 

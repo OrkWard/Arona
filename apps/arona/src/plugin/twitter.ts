@@ -18,7 +18,7 @@ export class TwitterPlugin implements AronaPlugin {
   private lock = false;
 
   private async subscribeTwitter() {
-    const tweets = await trpc.twitter.query({ username: "bluearchive_jp" });
+    const tweets = await trpc.twitter.query({ username: "Blue_ArchiveJP" });
     for (const tweet of tweets.slice(0, this.MAX_TWEETS_WHEN_START)) {
       if (await redis.sIsMember(this.REDIS_TWITTER_SENT, tweet.tweetId)) {
         continue;
