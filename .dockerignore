@@ -6,4 +6,4 @@
 **/tsconfig.tsbuildinfo
 **/static
 **/.gitignore
-**/.env
+**/*.env

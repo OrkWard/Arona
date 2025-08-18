@@ -15,7 +15,7 @@ ENV STATIC_ROOT=/app/apps/arona/assets
 
 RUN npm install -g pnpm@9 \
     && pnpm install --prod false --frozen-lockfile \
-    && pnpm run --filter trpc-server arona twitter-scraper build
+    && pnpm run -r build
 
 WORKDIR /app/apps/arona
 CMD ["node", "./dist/main.js"]
