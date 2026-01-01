@@ -1,12 +1,8 @@
+import WebSocket from "ws";
+import { pino, Logger } from "pino";
 import type { OneBotActionRequest, OneBotActionResponse, OneBotActions } from "./action.js";
 import type { OneBotEvent, OneBotMessageEvent } from "./event.js";
-import WebSocket from "ws";
-import assert from "assert";
 import { throttle } from "./utils/index.js";
-import { pino, Logger } from "pino";
-
-let listenerCounter = 0;
-let requestCounter = 0;
 
 function isActionResponse(message: any): message is OneBotActionResponse {
   return "retcode" in message;
@@ -23,53 +19,73 @@ export class OneBotError extends Error {
   }
 }
 
-type OneBotConfig = {
-  origin: string;
-  authKey: string;
-  // Event response timeout, in millisecond
-  // timeout: number = 10_000;
-  logger?: Logger;
-};
-
 type EventCallback = (event: OneBotEvent) => void;
 type ExtractEvent<U extends { post_type: string }, TType extends string> = U extends { post_type: TType } ? U : never;
 
+/**
+ * When created, this class create a connection to onebot server immediately,
+ * and try to reconnect when close unexpectedly.
+ *
+ * this class expose two main interfaces:
+ * 1. message listener. For each OneBot event type, it manage a list of listeners,
+ *    exec them one by one when receving message. It also allow remove listener by
+ *    passing the id return by `on` function.
+ * 2. send action. When calling the `send` function, it will try to send the action
+ *    immediately if the connection is ready, and simply drop if not. But it won't
+ *    resolve until receving the message with the same id it send in the action.
+ *
+ * TODO: Implment send action global default timeout time
+ * TODO: Allow several retry before drop send task when connection is not ready
+ */
 class OneBot {
-  private ws: WebSocket;
-  private logger: Logger;
-  private listeners: Map<string, Map<number, EventCallback>> = new Map();
-  private receiveQueue: Map<string, OneBotActionResponse> = new Map();
-  /** Only use when connection not ready  */
-  private sendQueue: string[] = [];
+  private ws!: WebSocket;
+  private reconncetTimer: NodeJS.Timeout | null = null;
+  private shouldClose = false;
 
-  constructor(config: OneBotConfig) {
-    const ws = new WebSocket(`ws://${config.origin}`, {
-      headers: { authorization: `Bearer ${config.authKey}` },
+  private listeners: Map<string, Map<number, EventCallback>> = new Map();
+  private listenerCounter = 0;
+
+  private receiveQueue: Map<string, OneBotActionResponse> = new Map();
+  private requestCounter = 0;
+
+  private connect() {
+    const ws = new WebSocket(this.address, {
+      headers: { authorization: `Bearer ${this.authKey}` },
     });
-    this.ws = ws;
-    this.logger = config.logger ?? pino();
+
     ws.on("error", (err) => {
       this.logger.error(err);
+      ws.close();
     });
     ws.once("open", () => {
-      this.logger.info(`Connected to ${config.origin}`);
-      this.sendQueue.forEach((msg) => {
-        ws.send(msg);
-        this.logger.debug(`Msg in queue sent: ${msg}`);
-      });
-    });
+      if (this.reconncetTimer) clearTimeout(this.reconncetTimer);
 
+      this.logger.info(`Connected to ${this.address}`);
+    });
+    ws.on("close", () => {
+      this.logger.warn(`Connection closed. Reconnecting 5 seconds...`);
+      if (!this.shouldClose) this.reconnect();
+    });
     ws.on("message", (message) => {
-      assert(message instanceof Buffer, "In default message should be Node native buffer");
+      if (!(message instanceof Buffer)) {
+        this.logger.warn("Expect ws message as buffer");
+        return;
+      }
 
       const parsedMsg = JSON.parse(message.toString("utf8"));
+
       if (isActionResponse(parsedMsg)) {
         this.logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
-        assert(typeof parsedMsg.echo === "string", `Action Response should have 'echo': ${JSON.stringify(parsedMsg)}`);
+        if (typeof parsedMsg.echo !== "string") {
+          this.logger.warn(`Action Response should have 'echo': ${JSON.stringify(parsedMsg)}`);
+          return;
+        }
+
         const id = parsedMsg.echo;
         this.receiveQueue.set(id, parsedMsg);
       } else if (isEvent(parsedMsg)) {
         this.logger.debug(`Receive event: ${JSON.stringify(parsedMsg)}`);
+
         const eventName = parsedMsg.post_type;
         const listeners = this.listeners.get(eventName);
         if (listeners) {
@@ -79,13 +95,31 @@ class OneBot {
         }
       }
     });
+
+    this.ws = ws;
+  }
+
+  private reconnect() {
+    if (this.reconncetTimer) clearTimeout(this.reconncetTimer);
+
+    this.reconncetTimer = setTimeout(() => {
+      this.connect();
+    }, 5000);
+  }
+
+  constructor(
+    private address: string,
+    private authKey: string,
+    private logger: Logger = pino()
+  ) {
+    this.connect();
   }
 
   /**
    * @throws OneBotError
    */
   post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0]) {
-    const echo = (requestCounter++).toString();
+    const echo = (this.requestCounter++).toString();
     const payload = JSON.stringify({
       action: actionName,
       params: actionParams,
@@ -96,8 +130,7 @@ class OneBot {
       this.ws.send(payload);
       this.logger.debug(`Action sent: ${payload}`);
     } else {
-      this.sendQueue.push(payload);
-      this.logger.debug(`Action queued: ${payload}`);
+      this.logger.warn("Message dropped");
     }
 
     return new Promise<OneBotActions[T][1]>((resolve, reject) => {
@@ -131,20 +164,16 @@ class OneBot {
     callback: (event: ExtractEvent<OneBotEvent, T>) => void
   ): number {
     if (this.listeners.get(eventName)) {
-      this.listeners.get(eventName)?.set(listenerCounter, callback as EventCallback);
+      this.listeners.get(eventName)?.set(this.listenerCounter, callback as EventCallback);
     } else {
-      this.listeners.set(eventName, new Map([[listenerCounter, callback as EventCallback]]));
+      this.listeners.set(eventName, new Map([[this.listenerCounter, callback as EventCallback]]));
     }
 
-    return listenerCounter++;
+    return this.listenerCounter++;
   }
 
   onMessage(callback: (event: OneBotMessageEvent) => void): number {
     return this.on("message", callback);
-  }
-
-  onOpen(callback: () => void) {
-    this.ws.on("open", callback);
   }
 
   removeListener(eventName: OneBotEvent["post_type"], listenerId: number) {
@@ -152,6 +181,7 @@ class OneBot {
   }
 
   close() {
+    this.shouldClose = true;
     this.ws.close();
   }
 }
