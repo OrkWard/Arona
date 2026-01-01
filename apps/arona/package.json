@@ -13,8 +13,7 @@
     "@types/koa": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
-    "trpc-server": "workspace:*",
-    "typescript": "^5.8.3"
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@koa/send": "catalog:",

@@ -1,3 +1,0 @@
-[submodule "external/web-scraper"]
-	path = external/web-scraper
-	url = git@github.com:OrkWard/web-scraper.git

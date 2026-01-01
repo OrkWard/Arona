@@ -1,0 +1,9 @@
+{
+  "name": "wormface-openapi",
+  "type": "module",
+  "main": "./dist/index.js",
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/node": "catalog:"
+  }
+}
