@@ -31,11 +31,9 @@ type ExtractEvent<U extends { post_type: string }, TType extends string> = U ext
  *    exec them one by one when receving message. It also allow remove listener by
  *    passing the id return by `on` function.
  * 2. send action. When calling the `send` function, it will try to send the action
- *    immediately if the connection is ready, and simply drop if not. But it won't
- *    resolve until receving the message with the same id it send in the action.
- *
- * TODO: Implment send action global default timeout time
- * TODO: Allow several retry before drop send task when connection is not ready
+ *    immediately if the connection is ready, and retry up to MAX_RETRIES times if not.
+ *    It won't resolve until receving the message with the same id it send in the action,
+ *    or until the timeout is reached.
  */
 class OneBot {
   private ws!: WebSocket;
@@ -47,6 +45,10 @@ class OneBot {
 
   private receiveQueue: Map<string, OneBotActionResponse> = new Map();
   private requestCounter = 0;
+  
+  private readonly DEFAULT_TIMEOUT = 30000; // 30 seconds default timeout
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY = 1000; // 1 second between retries
 
   private connect() {
     const ws = new WebSocket(this.address, {
@@ -118,7 +120,7 @@ class OneBot {
   /**
    * @throws OneBotError
    */
-  post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0]) {
+  async post<T extends keyof OneBotActions>(actionName: T, actionParams: OneBotActions[T][0], timeout = this.DEFAULT_TIMEOUT) {
     const echo = (this.requestCounter++).toString();
     const payload = JSON.stringify({
       action: actionName,
@@ -126,28 +128,62 @@ class OneBot {
       echo: echo.toString(),
     } satisfies OneBotActionRequest);
 
-    if (this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(payload);
-      this.logger.debug(`Action sent: ${payload}`);
-    } else {
-      this.logger.warn("Message dropped");
+    // Retry logic for sending the message
+    let retries = 0;
+    let sent = false;
+    
+    while (retries < this.MAX_RETRIES && !sent) {
+      if (this.ws.readyState === WebSocket.OPEN) {
+        try {
+          this.ws.send(payload);
+          this.logger.debug(`Action sent: ${payload}`);
+          sent = true;
+        } catch (error) {
+          this.logger.warn(`Failed to send message (attempt ${retries + 1}/${this.MAX_RETRIES}):`, error);
+          retries++;
+          if (retries < this.MAX_RETRIES) {
+            await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+          }
+        }
+      } else {
+        this.logger.warn(`Connection not ready (attempt ${retries + 1}/${this.MAX_RETRIES})`);
+        retries++;
+        if (retries < this.MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+        }
+      }
+    }
+    
+    if (!sent) {
+      throw new OneBotError(`Failed to send action after ${this.MAX_RETRIES} attempts`);
     }
 
     return new Promise<OneBotActions[T][1]>((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout;
       const intervalId = setInterval(() => {
         const res = this.receiveQueue.get(echo);
         if (res) {
           if (res.status === "ok") {
             this.logger.debug(`Action Return: ${JSON.stringify(res)}`);
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
             resolve(res.data);
           } else if (res.status === "failed") {
             this.logger.debug(`Action Error: ${JSON.stringify(res)}`);
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
             reject(new OneBotError(`[${res.retcode}] ` + res.message));
           }
           this.receiveQueue.delete(echo);
-          clearInterval(intervalId);
         }
       }, 200);
+      
+      // Set timeout for the response
+      timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+        this.receiveQueue.delete(echo);
+        reject(new OneBotError(`Action timeout after ${timeout}ms`));
+      }, timeout);
     });
   }
 
