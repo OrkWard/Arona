@@ -16,9 +16,11 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@effect/platform": "^0.94.1",
+    "@effect/platform-node": "^0.104.0",
     "@koa/send": "catalog:",
     "@sentry/node": "catalog:",
-    "@trpc/client": "catalog:",
+    "effect": "^3.19.14",
     "got": "catalog:",
     "html-entities": "^2.5.2",
     "https-proxy-agent": "catalog:",

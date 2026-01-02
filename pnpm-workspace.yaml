@@ -7,8 +7,6 @@ catalog:
   "@koa/send": ^6.0.0
   "@prisma/client": 6.0.0
   "@radix-ui/themes": ^3.2.0
-  "@trpc/client": ^11.1.2
-  "@trpc/server": ^11.1.2
   "@types/koa": ^2.15.0
   "@types/node": ^20.16.5
   "@types/react": ^19.0.8
