@@ -48,71 +48,15 @@ class OneBot {
   private receiveQueue: Map<string, OneBotActionResponse> = new Map();
   private requestCounter = 0;
 
-  private connect() {
-    const ws = new WebSocket(this.address, {
-      headers: { authorization: `Bearer ${this.authKey}` },
-    });
-
-    ws.on("error", (err) => {
-      this.logger.error(err);
-      ws.close();
-    });
-    ws.once("open", () => {
-      if (this.reconncetTimer) clearTimeout(this.reconncetTimer);
-
-      this.logger.info(`Connected to ${this.address}`);
-    });
-    ws.on("close", () => {
-      this.logger.warn(`Connection closed. Reconnecting 5 seconds...`);
-      if (!this.shouldClose) this.reconnect();
-    });
-    ws.on("message", (message) => {
-      if (!(message instanceof Buffer)) {
-        this.logger.warn("Expect ws message as buffer");
-        return;
-      }
-
-      const parsedMsg = JSON.parse(message.toString("utf8"));
-
-      if (isActionResponse(parsedMsg)) {
-        this.logger.debug(`Receive action response: ${JSON.stringify(parsedMsg)}`);
-        if (typeof parsedMsg.echo !== "string") {
-          this.logger.warn(`Action Response should have 'echo': ${JSON.stringify(parsedMsg)}`);
-          return;
-        }
-
-        const id = parsedMsg.echo;
-        this.receiveQueue.set(id, parsedMsg);
-      } else if (isEvent(parsedMsg)) {
-        this.logger.debug(`Receive event: ${JSON.stringify(parsedMsg)}`);
-
-        const eventName = parsedMsg.post_type;
-        const listeners = this.listeners.get(eventName);
-        if (listeners) {
-          listeners.forEach((callback) => {
-            callback(parsedMsg);
-          });
-        }
-      }
-    });
-
-    this.ws = ws;
-  }
-
-  private reconnect() {
-    if (this.reconncetTimer) clearTimeout(this.reconncetTimer);
-
-    this.reconncetTimer = setTimeout(() => {
-      this.connect();
-    }, 5000);
-  }
-
   constructor(
     private address: string,
     private authKey: string,
     private logger: Logger = pino()
-  ) {
-    this.connect();
+  ) {}
+
+  // Multiple call won't success
+  start() {
+    if (!this.ws) this.connectNew();
   }
 
   /**
@@ -183,6 +127,72 @@ class OneBot {
   close() {
     this.shouldClose = true;
     this.ws.close();
+  }
+
+  // create a new ws connection to endpoint.
+  // when close unexpectedly, automatically reconnect in 5 seconds
+  private connectNew() {
+    const ws = new WebSocket(this.address, {
+      headers: { authorization: `Bearer ${this.authKey}` },
+    });
+
+    ws.on("error", (err) => {
+      this.logger.error("Connection error:");
+      this.logger.error(err);
+    });
+    ws.once("open", () => {
+      this.logger.info(`Connected to ${this.address}`);
+    });
+    ws.on("close", () => {
+      if (!this.shouldClose) {
+        this.logger.warn("Connection closed. Reconnecting 5 seconds...");
+        this.reconnect();
+      }
+      this.logger.info("Connection closed.");
+    });
+    ws.on("message", (message) => {
+      if (!(message instanceof Buffer)) {
+        this.logger.warn("Expect ws message as buffer");
+        return;
+      }
+
+      this.dispatch(JSON.parse(message.toString("utf8")));
+    });
+
+    this.ws = ws;
+  }
+
+  private dispatch(message: any) {
+    if (isActionResponse(message)) {
+      this.logger.debug(`Receive action response: ${JSON.stringify(message)}`);
+      if (typeof message.echo !== "string") {
+        this.logger.warn(`Action Response should have 'echo': ${JSON.stringify(message)}`);
+        return;
+      }
+
+      const id = message.echo;
+      this.receiveQueue.set(id, message);
+    } else if (isEvent(message)) {
+      this.logger.debug(`Receive event: ${JSON.stringify(message)}`);
+
+      const eventName = message.post_type;
+      const listeners = this.listeners.get(eventName);
+      if (listeners) {
+        listeners.forEach((callback) => {
+          callback(message);
+        });
+      }
+    }
+  }
+
+  // Set a timer that try connect after 5 seconds.
+  // Clear formal tiemr if set.
+  private reconnect() {
+    if (this.reconncetTimer) clearTimeout(this.reconncetTimer);
+
+    this.reconncetTimer = setTimeout(() => {
+      this.connectNew();
+    }, 5000);
   }
 }
 

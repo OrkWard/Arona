@@ -1,2 +1,3 @@
-export { PluginSystemLive, PluginSystem } from "./plugin-system.js";
-export { RedisLive, RedisService } from "./redis.js";
+export { RedisService } from "./redis.js";
+export { StaticService } from "./static.js";
+export { OneBotService } from "./onebot.js";
