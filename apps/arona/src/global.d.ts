@@ -12,5 +12,6 @@ namespace NodeJS {
     TRPC_SERVER: string;
     REDIS: string;
     SENTRY_DSN: string;
+    WORMFACE_ORIGIN: string;
   }
 }

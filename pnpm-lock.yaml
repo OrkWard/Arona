@@ -127,6 +127,9 @@ importers:
       redis:
         specifier: ^5.0.0
         version: 5.0.0
+      wormface-openapi:
+        specifier: workspace:*
+        version: link:../../packages/wormface-openapi
     devDependencies:
       '@types/koa':
         specifier: 'catalog:'

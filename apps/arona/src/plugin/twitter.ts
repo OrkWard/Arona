@@ -1,74 +1,90 @@
-import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { captureException } from "@sentry/node";
 
-import { onebot } from "../onebot.js";
-import { logger as parentLogger } from "../util/logger.js";
-import { redis, staticOrigin, trpc } from "./context.js";
-import { AronaPlugin } from "./index.js";
-import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { FileSystem } from "@effect/platform";
+import { Effect } from "effect";
+
+import { logger as parentLogger } from "../util/logger.js";
 import { get } from "../util/request.js";
+import { OneBotService, RedisService, StaticService, WormfaceService } from "../core/services/index.js";
+import { TwitterTweetEntry } from "wormface-openapi";
 
 const logger = parentLogger.child({ module: "twitter" });
 
-export class TwitterPlugin implements AronaPlugin {
-  private REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
-  private MAX_TWEETS_WHEN_START = 2;
-  private intervalId: NodeJS.Timeout | null = null;
-  private lock = false;
+const MAX_TWEETS_TO_PROCESS = 2;
+const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
 
-  private async subscribeTwitter() {
-    const tweets = await trpc.twitter.query({ username: "Blue_ArchiveJP" });
-    for (const tweet of tweets.slice(0, this.MAX_TWEETS_WHEN_START)) {
-      if (await redis.sIsMember(this.REDIS_TWITTER_SENT, tweet.tweetId)) {
-        continue;
-      }
-      logger.info(`New tweet detected: ${tweet.text.slice(0, tweet.text.indexOf("\n"))}`);
+const getTweet = (entry: TwitterTweetEntry) => entry.content?.itemContent?.tweetResults?.result;
 
-      await onebot.post("send_group_msg", {
-        group_id: Number.parseInt(process.env.QQ_GROUP_ID),
-        message: [{ type: "text", data: { text: tweet.text } }],
-      });
-      // if text content sent with success, ignore the follow error
-      await redis.sAdd(this.REDIS_TWITTER_SENT, tweet.tweetId);
-      logger.info(`New tweet text sent and save to cache: ${tweet.text.slice(0, tweet.text.indexOf("\n"))}`);
+export class TwitterPlugin {
+  subscribeTwitter() {
+    return Effect.gen(function* () {
+      const { client: redis } = yield* RedisService;
+      const onebot = yield* OneBotService;
+      const fs = yield* FileSystem.FileSystem;
+      const sta = yield* StaticService;
+      const { twitter } = yield* WormfaceService;
 
-      if (!tweet.media) {
-        continue;
-      }
-      for (const media of tweet.media) {
-        const mediaId = `${randomUUID()}.jpg`;
-        await writeFile(join(process.env.STATIC_ROOT, mediaId), await get(media.url).buffer());
-        await onebot.post("send_group_msg", {
-          group_id: Number.parseInt(process.env.QQ_GROUP_ID),
-          message: [{ type: media.type === "video" ? "video" : "image", data: { file: `${staticOrigin}/${mediaId}` } }],
-        });
-      }
-      logger.info("Tweet send to group done");
-    }
-  }
-  activate(): void {
-    if (!this.intervalId) {
-      this.intervalId = setInterval(() => {
-        if (!this.lock) {
-          this.lock = true;
-          this.subscribeTwitter()
-            .catch((e) => {
-              logger.error(e);
-              captureException(e);
-            })
-            .finally(() => {
-              this.lock = false;
-            });
+      const tweets = yield* twitter.getUserPosts({ username: "Blue_ArchiveJP" });
+      for (const entry of tweets.slice(0, MAX_TWEETS_TO_PROCESS)) {
+        const tweet = getTweet(entry);
+        if (!tweet?.restId || !tweet.legacy?.fullText) continue;
+
+        const tweetId = tweet.restId;
+
+        const isMember = yield* Effect.promise(() => redis.sIsMember(REDIS_TWITTER_SENT, tweetId));
+        if (isMember) {
+          continue;
         }
-      }, 5 * 1000);
-    }
-  }
 
-  deactivate(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
+        const text = tweet.legacy.fullText;
+        logger.info(`New tweet detected: ${text.slice(0, text.indexOf("\n"))}`);
+
+        yield* onebot.post("send_group_msg", {
+          group_id: Number.parseInt(process.env.QQ_GROUP_ID),
+          message: [{ type: "text", data: { text } }],
+        });
+
+        yield* Effect.promise(() => redis.sAdd(REDIS_TWITTER_SENT, tweetId));
+        logger.info(`New tweet text sent and save to cache: ${text.slice(0, text.indexOf("\n"))}`);
+
+        if (!tweet.legacy.entities?.media) {
+          continue;
+        }
+        for (const media of tweet.legacy.entities.media) {
+          const mediaUrl =
+            media.type === "video"
+              ? media.videoInfo?.variants?.find((v) => v.contentType === "video/mp4")?.url
+              : media.mediaUrlHttps;
+
+          if (!mediaUrl) continue;
+
+          const mediaId = `${randomUUID()}.${media.type === "video" ? "mp4" : "jpg"}`;
+
+          const effect = Effect.gen(function* () {
+            const buffer = yield* Effect.promise(() => get(mediaUrl).buffer());
+            yield* fs.writeFile(join(process.env.STATIC_ROOT, mediaId), buffer);
+
+            yield* onebot.post("send_group_msg", {
+              group_id: Number.parseInt(process.env.QQ_GROUP_ID),
+              message: [
+                { type: media.type === "video" ? "video" : "image", data: { file: `${sta.origin}/${mediaId}` } },
+              ],
+            });
+          });
+
+          yield* effect.pipe(
+            Effect.catchAll((e) =>
+              Effect.sync(() => {
+                logger.error(`Failed to process media ${mediaUrl}: ${e}`);
+                captureException(e);
+              })
+            )
+          );
+        }
+        logger.info("Tweet send to group done");
+      }
+    });
   }
 }
