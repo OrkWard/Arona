@@ -7,7 +7,7 @@ WORKDIR /app
 COPY --parents pnpm-lock.yaml pnpm-workspace.yaml package.json \
     apps/arona \
     packages/onebot \
-    external/web-scraper/twitter external/web-scraper/trpc-server \
+    packages/wormface-openapi \
     ./
 
 ENV NODE_ENV=production
