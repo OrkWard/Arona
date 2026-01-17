@@ -1,7 +1,7 @@
 import { Context, Layer, Effect } from "effect";
 import { OneBot, OneBotActions, OneBotError } from "onebot";
 
-export class OneBotService extends Context.Tag("onebot")<
+export class OneBotService extends Context.Tag("OneBotService")<
   OneBotService,
   {
     readonly post: <T extends keyof OneBotActions>(
@@ -10,7 +10,7 @@ export class OneBotService extends Context.Tag("onebot")<
     ) => Effect.Effect<OneBotActions[T][1], OneBotError>;
   }
 >() {
-  static readonly makeLive = (ob: OneBot) =>
+  static makeLive = (ob: OneBot) =>
     Layer.succeed(
       OneBotService,
       OneBotService.of({

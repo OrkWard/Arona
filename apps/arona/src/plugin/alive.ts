@@ -1,20 +1,20 @@
-import { OneBotMetaEvent } from "onebot/src/event.js";
-import { captureException, captureMessage } from "@sentry/node";
+import { captureMessage } from "@sentry/node";
 import { Effect } from "effect";
 
-export class AlivePlugin {
-  /** only report 5 times */
-  private reportCount = 0;
+import type { EventPlugin } from "../types.js";
 
-  onMeta(event: OneBotMetaEvent) {
-    if (event.meta_event_type === "heartbeat" && !event.status.online && this.reportCount < 5) {
-      captureMessage("bot status inormal", {
-        level: "fatal",
-        extra: event,
-      });
-      this.reportCount += 1;
-    }
+let reportCount = 0;
+const MAX_REPORTS = 5;
 
-    return Effect.void;
-  }
-}
+export const AlivePlugin: EventPlugin = {
+  onMeta: (event) =>
+    Effect.sync(() => {
+      if (event.meta_event_type === "heartbeat" && !event.status.online && reportCount < MAX_REPORTS) {
+        captureMessage("Bot status abnormal", {
+          level: "fatal",
+          extra: event,
+        });
+        reportCount += 1;
+      }
+    }),
+};
