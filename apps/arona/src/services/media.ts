@@ -41,7 +41,7 @@ export class MediaService extends Context.Tag("MediaService")<MediaService, Medi
 
         getMediaTarget: (filename) => ({
           path: join(config.assetsDir, filename),
-          url: `${config.baseUrl}/assets/${filename}`,
+          url: `${config.baseUrl}/media/${filename}`,
         }),
       })
     );

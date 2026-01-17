@@ -14,8 +14,6 @@ function assertEnv(name: string): string {
   return value;
 }
 
-const qqGroupId = parseInt(assertEnv("QQ_GROUP_ID"));
-
 const arona = new Arona({
   onebotOrigin: assertEnv("ONEBOT_ORIGIN"),
   onebotAuthToken: assertEnv("ONEBOT_AUTH_TOKEN"),
@@ -28,6 +26,8 @@ const arona = new Arona({
 
 arona.add("poke", PokePlugin);
 arona.add("alive", AlivePlugin);
+
+const qqGroupId = parseInt(assertEnv("QQ_GROUP_ID"));
 
 arona.cron(
   "twitter",

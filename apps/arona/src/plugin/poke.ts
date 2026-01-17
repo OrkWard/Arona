@@ -1,5 +1,4 @@
 import { Effect } from "effect";
-import { Random } from "effect/Random";
 
 import { logger } from "../util/logger.js";
 import { OneBotService, MediaService } from "../services/index.js";
@@ -13,11 +12,10 @@ export const PokePlugin: EventPlugin = {
       }
 
       if (event.target_id === event.self_id) {
-        const random = yield* Random;
         const media = yield* MediaService;
         const onebot = yield* OneBotService;
 
-        const faceId = (Math.floor((yield* random.next) * 33) + 1).toString();
+        const faceId = (Math.floor(Math.random() * 33) + 1).toString();
         const fileName = `Arona_${faceId}.png`;
 
         const url = media.getAssetUrl(fileName);
