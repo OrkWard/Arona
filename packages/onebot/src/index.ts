@@ -74,7 +74,7 @@ class OneBot {
       this.ws.send(payload);
       this.logger.debug(`Action sent: ${payload}`);
     } else {
-      this.logger.warn("Message dropped");
+      throw new OneBotError("Message dropped");
     }
 
     return new Promise<OneBotActions[T][1]>((resolve, reject) => {

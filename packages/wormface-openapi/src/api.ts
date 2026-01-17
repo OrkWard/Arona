@@ -12,7 +12,7 @@
  */
 
 import { Configuration } from "./configuration.js";
-import url from "node:url";
+import * as url from "node:url";
 
 const BASE_PATH = "//localhost:8080/".replace(/\/+$/, "");
 
@@ -119,31 +119,31 @@ export interface TwitterMedia {
    * @type {string}
    * @memberof TwitterMedia
    */
-  displayUrl?: string;
+  display_url?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterMedia
    */
-  expandedUrl?: string;
+  expanded_url?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterMedia
    */
-  idStr?: string;
+  id_str?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterMedia
    */
-  mediaUrlHttps?: string;
+  media_url_https?: string;
   /**
    *
    * @type {TwitterOriginalInfo}
    * @memberof TwitterMedia
    */
-  originalInfo?: TwitterOriginalInfo;
+  original_info?: TwitterOriginalInfo;
   /**
    *
    * @type {TwitterSizes}
@@ -167,7 +167,7 @@ export interface TwitterMedia {
    * @type {TwitterMediaVideoInfo}
    * @memberof TwitterMedia
    */
-  videoInfo?: TwitterMediaVideoInfo;
+  video_info?: TwitterMediaVideoInfo;
 }
 /**
  *
@@ -180,13 +180,13 @@ export interface TwitterMediaVideoInfo {
    * @type {Array<number>}
    * @memberof TwitterMediaVideoInfo
    */
-  aspectRatio?: Array<number>;
+  aspect_ratio?: Array<number>;
   /**
    *
    * @type {number}
    * @memberof TwitterMediaVideoInfo
    */
-  durationMillis?: number;
+  duration_millis?: number;
   /**
    *
    * @type {Array<TwitterMediaVideoInfoVariants>}
@@ -205,7 +205,7 @@ export interface TwitterMediaVideoInfoVariants {
    * @type {string}
    * @memberof TwitterMediaVideoInfoVariants
    */
-  contentType?: string;
+  content_type?: string;
   /**
    *
    * @type {string}
@@ -324,7 +324,7 @@ export interface TwitterTimelineTweetItem {
    * @type {TwitterTimelineTweetItemTweetResults}
    * @memberof TwitterTimelineTweetItem
    */
-  tweetResults?: TwitterTimelineTweetItemTweetResults;
+  tweet_results?: TwitterTimelineTweetItemTweetResults;
 }
 /**
  *
@@ -350,13 +350,13 @@ export interface TwitterTimelineTweetLegacy {
    * @type {number}
    * @memberof TwitterTimelineTweetLegacy
    */
-  bookmarkCount?: number;
+  bookmark_count?: number;
   /**
    *
    * @type {string}
    * @memberof TwitterTimelineTweetLegacy
    */
-  createdAt?: string;
+  created_at?: string;
   /**
    *
    * @type {TwitterTweetEntities}
@@ -368,55 +368,55 @@ export interface TwitterTimelineTweetLegacy {
    * @type {number}
    * @memberof TwitterTimelineTweetLegacy
    */
-  favoriteCount?: number;
+  favorite_count?: number;
   /**
    *
    * @type {string}
    * @memberof TwitterTimelineTweetLegacy
    */
-  fullText?: string;
+  full_text?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterTimelineTweetLegacy
    */
-  idStr?: string;
+  id_str?: string;
   /**
    *
    * @type {boolean}
    * @memberof TwitterTimelineTweetLegacy
    */
-  isQuoteStatus?: boolean;
+  is_quote_status?: boolean;
   /**
    *
    * @type {number}
    * @memberof TwitterTimelineTweetLegacy
    */
-  quoteCount?: number;
+  quote_count?: number;
   /**
    *
    * @type {number}
    * @memberof TwitterTimelineTweetLegacy
    */
-  replyCount?: number;
+  reply_count?: number;
   /**
    *
    * @type {number}
    * @memberof TwitterTimelineTweetLegacy
    */
-  retweetCount?: number;
+  retweet_count?: number;
   /**
    *
    * @type {TwitterTimelineTweetItemTweetResults}
    * @memberof TwitterTimelineTweetLegacy
    */
-  retweetedStatusResult?: TwitterTimelineTweetItemTweetResults;
+  retweeted_status_result?: TwitterTimelineTweetItemTweetResults;
   /**
    *
    * @type {string}
    * @memberof TwitterTimelineTweetLegacy
    */
-  userIdStr?: string;
+  user_id_str?: string;
 }
 /**
  *
@@ -441,7 +441,7 @@ export interface TwitterTimelineTweetResult {
    * @type {string}
    * @memberof TwitterTimelineTweetResult
    */
-  restId?: string;
+  rest_id?: string;
   /**
    *
    * @type {string}
@@ -466,7 +466,7 @@ export interface TwitterTimelineTweetResultCore {
    * @type {TwitterUserResult}
    * @memberof TwitterTimelineTweetResultCore
    */
-  userResults?: TwitterUserResult;
+  user_results?: TwitterUserResult;
 }
 /**
  *
@@ -503,7 +503,7 @@ export interface TwitterTweetEntities {
    * @type {Array<TwitterUserMention>}
    * @memberof TwitterTweetEntities
    */
-  userMentions?: Array<TwitterUserMention>;
+  user_mentions?: Array<TwitterUserMention>;
 }
 /**
  *
@@ -598,13 +598,13 @@ export interface TwitterURLElement {
    * @type {string}
    * @memberof TwitterURLElement
    */
-  displayUrl?: string;
+  display_url?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterURLElement
    */
-  expandedUrl?: string;
+  expanded_url?: string;
   /**
    *
    * @type {string}
@@ -623,31 +623,31 @@ export interface TwitterUserLegacy {
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  canDm?: boolean;
+  can_dm?: boolean;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  canMediaTag?: boolean;
+  can_media_tag?: boolean;
   /**
    *
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  createdAt?: string;
+  created_at?: string;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  defaultProfile?: boolean;
+  default_profile?: boolean;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  defaultProfileImage?: boolean;
+  default_profile_image?: boolean;
   /**
    *
    * @type {string}
@@ -665,19 +665,19 @@ export interface TwitterUserLegacy {
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  fastFollowersCount?: number;
+  fast_followers_count?: number;
   /**
    *
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  favouritesCount?: number;
+  favourites_count?: number;
   /**
    *
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  followersCount?: number;
+  followers_count?: number;
   /**
    *
    * @type {boolean}
@@ -689,25 +689,25 @@ export interface TwitterUserLegacy {
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  friendsCount?: number;
+  friends_count?: number;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  hasCustomTimelines?: boolean;
+  has_custom_timelines?: boolean;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  isTranslator?: boolean;
+  is_translator?: boolean;
   /**
    *
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  listedCount?: number;
+  listed_count?: number;
   /**
    *
    * @type {string}
@@ -719,7 +719,7 @@ export interface TwitterUserLegacy {
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  mediaCount?: number;
+  media_count?: number;
   /**
    *
    * @type {string}
@@ -731,55 +731,55 @@ export interface TwitterUserLegacy {
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  normalFollowersCount?: number;
+  normal_followers_count?: number;
   /**
    *
    * @type {Array<string>}
    * @memberof TwitterUserLegacy
    */
-  pinnedTweetIdsStr?: Array<string>;
+  pinned_tweet_ids_str?: Array<string>;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  possiblySensitive?: boolean;
+  possibly_sensitive?: boolean;
   /**
    *
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  profileBannerUrl?: string;
+  profile_banner_url?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  profileImageUrlHttps?: string;
+  profile_image_url_https?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  profileInterstitialType?: string;
+  profile_interstitial_type?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  screenName?: string;
+  screen_name?: string;
   /**
    *
    * @type {number}
    * @memberof TwitterUserLegacy
    */
-  statusesCount?: number;
+  statuses_count?: number;
   /**
    *
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  translatorType?: string;
+  translator_type?: string;
   /**
    *
    * @type {string}
@@ -797,19 +797,19 @@ export interface TwitterUserLegacy {
    * @type {string}
    * @memberof TwitterUserLegacy
    */
-  verifiedType?: string;
+  verified_type?: string;
   /**
    *
    * @type {boolean}
    * @memberof TwitterUserLegacy
    */
-  wantRetweets?: boolean;
+  want_retweets?: boolean;
   /**
    *
    * @type {Array<any>}
    * @memberof TwitterUserLegacy
    */
-  withheldInCountries?: Array<any>;
+  withheld_in_countries?: Array<any>;
 }
 /**
  *
@@ -822,7 +822,7 @@ export interface TwitterUserMention {
    * @type {string}
    * @memberof TwitterUserMention
    */
-  idStr?: string;
+  id_str?: string;
   /**
    *
    * @type {Array<number>}
@@ -840,7 +840,7 @@ export interface TwitterUserMention {
    * @type {string}
    * @memberof TwitterUserMention
    */
-  screenName?: string;
+  screen_name?: string;
 }
 /**
  *
@@ -853,7 +853,7 @@ export interface TwitterUserResult {
    * @type {boolean}
    * @memberof TwitterUserResult
    */
-  hasGraduatedAccess?: boolean;
+  has_graduated_access?: boolean;
   /**
    *
    * @type {string}
@@ -865,7 +865,7 @@ export interface TwitterUserResult {
    * @type {boolean}
    * @memberof TwitterUserResult
    */
-  isBlueVerified?: boolean;
+  is_blue_verified?: boolean;
   /**
    *
    * @type {TwitterUserLegacy}
@@ -877,19 +877,19 @@ export interface TwitterUserResult {
    * @type {string}
    * @memberof TwitterUserResult
    */
-  parodyCommentaryFanLabel?: string;
+  parody_commentary_fan_label?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterUserResult
    */
-  profileImageShape?: string;
+  profile_image_shape?: string;
   /**
    *
    * @type {string}
    * @memberof TwitterUserResult
    */
-  restId?: string;
+  rest_id?: string;
 }
 /**
  *
@@ -1120,12 +1120,13 @@ export const YoutubeApiFp = function (configuration?: Configuration) {
         options
       );
       return async (fetch: FetchAPI = globalThis.fetch, basePath: string = BASE_PATH) => {
-        const response = await fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options);
-        if (response.status >= 200 && response.status < 300) {
-          return response.json();
-        } else {
-          throw response;
-        }
+        return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
+          if (response.status >= 200 && response.status < 300) {
+            return response.json();
+          } else {
+            throw response;
+          }
+        });
       };
     },
   };

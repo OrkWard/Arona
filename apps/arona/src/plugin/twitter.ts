@@ -34,6 +34,8 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
         continue;
       }
       logger.info(`New Tweet detected: [${tweetId}] ${text?.slice(20)}`);
+      yield* Effect.promise(() => redis.sAdd(REDIS_TWITTER_SENT, tweetId));
+      logger.info("Tweet record add to redis");
 
       if (text) {
         yield* onebot.post("send_group_msg", {
@@ -54,7 +56,6 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
         }
       }
 
-      yield* Effect.promise(() => redis.sAdd(REDIS_TWITTER_SENT, tweetId));
       logger.info("Tweet sent to group done");
     }
   }),

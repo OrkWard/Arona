@@ -31,18 +31,18 @@ export class WormfaceService extends Context.Tag("WormfaceService")<WormfaceServ
                     if (tweet.content?.entryType === "TimelineTimelineItem") {
                       result.push({
                         id: tweet.entryId!,
-                        text: tweet.content.itemContent?.tweetResults?.result?.legacy?.fullText,
-                        media: tweet.content.itemContent?.tweetResults?.result?.legacy?.entities?.media?.map(
-                          (m) => m.mediaUrlHttps!
+                        text: tweet.content.itemContent?.tweet_results?.result?.legacy?.full_text,
+                        media: tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map(
+                          (m) => m.media_url_https!
                         ),
                       });
                     } else if (tweet.content?.entryType === "TimelineTimelineModule") {
                       result.push(
                         ...(tweet.content?.items?.map((i) => ({
                           id: i.entryId!,
-                          text: i.item?.itemContent?.tweetResults?.result?.legacy?.fullText,
-                          media: i.item?.itemContent?.tweetResults?.result?.legacy?.entities?.media?.map(
-                            (m) => m.mediaUrlHttps!
+                          text: i.item?.itemContent?.tweet_results?.result?.legacy?.full_text,
+                          media: i.item?.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map(
+                            (m) => m.media_url_https!
                           ),
                         })) || [])
                       );
