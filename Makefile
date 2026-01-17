@@ -2,7 +2,7 @@ IMAGE_NAME := ghcr.io/orkward/arona
 GIT_TAG := $(shell git describe --tags --always)
 swagger_url := https://raw.githubusercontent.com/OrkWard/wormface/master/internal/server/docs/swagger.yaml
 
-.PHONY: build config upload-sourcemap build-docker push
+.PHONY: build config upload-sourcemap build-docker push generate-api
 
 all: config build
 
@@ -26,3 +26,10 @@ build-docker: build upload-sourcemap
 push: build-docker
 	docker push $(IMAGE_NAME):$(GIT_TAG)
 	docker push $(IMAGE_NAME):latest
+
+generate-api:
+	swagger-codegen generate \
+		-i $(swagger_url) \
+		-l typescript-fetch \
+		-o packages/wormface-openapi/src \
+		--additional-properties=modelPropertyNaming=original

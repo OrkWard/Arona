@@ -51,12 +51,12 @@ export class Arona {
     );
   }
 
-  add(name: string, plugin: EventPlugin) {
-    this.eventPlugins.set(name, { plugin, enabled: true });
+  add(name: string, plugin: EventPlugin, enabled = true) {
+    this.eventPlugins.set(name, { plugin, enabled });
   }
 
-  cron(name: string, plugin: CronPlugin) {
-    this.cronPlugins.set(name, { plugin, enabled: true, fiber: null });
+  cron(name: string, plugin: CronPlugin, enabled = true) {
+    this.cronPlugins.set(name, { plugin, enabled, fiber: null });
   }
 
   start() {
@@ -161,7 +161,9 @@ export class Arona {
   ) {
     const scheduled = entry.plugin.task.pipe(
       Effect.provide(this.layer),
-      Effect.catchAll((e) => Effect.sync(() => logger.error({ msg: "Cron task error", plugin: name, error: e }))),
+      Effect.catchAll((e) =>
+        Effect.sync(() => logger.error({ msg: "Cron task error", plugin: name, error: e.message }))
+      ),
       Effect.repeat(Schedule.spaced(Duration.millis(entry.plugin.interval)))
     );
 
@@ -169,11 +171,13 @@ export class Arona {
     logger.info({ msg: "Cron fiber started", name });
   }
 
-  private runEffect(effect: Effect.Effect<void, unknown, Services>, pluginName: string) {
+  private runEffect(effect: Effect.Effect<void, Error, Services>, pluginName: string) {
     Effect.runPromise(
       effect.pipe(
         Effect.provide(this.layer),
-        Effect.catchAll((e) => Effect.sync(() => logger.error({ msg: "Plugin error", plugin: pluginName, error: e })))
+        Effect.catchAll((e) =>
+          Effect.sync(() => logger.error({ msg: "Plugin error", plugin: pluginName, error: e.message }))
+        )
       )
     );
   }

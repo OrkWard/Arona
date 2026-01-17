@@ -41,9 +41,8 @@ arona.cron(
   createYouTubePlugin({
     qqGroupId,
     youtubeChannelId: process.env.YOUTUBE_CHANNEL_ID ?? "UCmgf8DJrAXFnU7j3u0kklUQ",
-  })
+  }),
+  false
 );
 
 arona.start();
-
-logger.info("Arona started");

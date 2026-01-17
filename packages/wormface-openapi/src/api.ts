@@ -57,7 +57,7 @@ export class BaseAPI {
   constructor(
     configuration?: Configuration,
     protected basePath: string = BASE_PATH,
-    protected fetch: FetchAPI = fetch
+    protected fetch: FetchAPI = globalThis.fetch
   ) {
     if (configuration) {
       this.configuration = configuration;
