@@ -2,7 +2,7 @@ IMAGE_NAME := ghcr.io/orkward/arona
 GIT_TAG := $(shell git describe --tags --always)
 swagger_url := https://raw.githubusercontent.com/OrkWard/wormface/master/internal/server/docs/swagger.yaml
 
-.PHONY: build config upload-sourcemap build-docker push generate-api
+.PHONY: build config upload-sourcemap docker push generate-api
 
 all: config build
 
