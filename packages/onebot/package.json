@@ -4,10 +4,6 @@
   "description": "",
   "type": "module",
   "main": "./dist/index.js",
-  "scripts": {
-    "dev": "tsc --build -w",
-    "build": "rm -rf dist && tsc --build"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",

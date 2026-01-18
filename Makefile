@@ -12,18 +12,17 @@ config:
 build:
 	pnpm install && pnpm -F arona build
 
-upload-sourcemap: build config
+upload-sourcemap: build
 	sentry-cli sourcemaps inject apps/arona/dist
 	sentry-cli sourcemaps upload apps/arona/dist
 
-build-docker: build upload-sourcemap
+docker:
 	docker build \
         --build-arg GIT_TAG=$(GIT_TAG) \
-        --platform linux/amd64,linux/arm64 \
         -t $(IMAGE_NAME):$(GIT_TAG) \
         -t $(IMAGE_NAME):latest .
 
-push: build-docker
+push: docker
 	docker push $(IMAGE_NAME):$(GIT_TAG)
 	docker push $(IMAGE_NAME):latest
 

@@ -64,14 +64,13 @@ export class Arona {
     this.onebot.on("message", (event) => this.handleMessage(event));
     this.onebot.on("notice", (event) => this.handleNotice(event));
     this.onebot.on("meta_event", (event) => this.handleMeta(event));
+    logger.info("Arona started");
 
     for (const [name, entry] of this.cronPlugins) {
       if (entry.enabled) {
         this.startCronFiber(name, entry);
       }
     }
-
-    logger.info("Arona started");
   }
 
   private setupStatic() {
@@ -164,7 +163,7 @@ export class Arona {
       Effect.catchAll((e) =>
         Effect.sync(() => logger.error({ msg: "Cron task error", plugin: name, error: e.message }))
       ),
-      Effect.repeat(Schedule.spaced(Duration.millis(entry.plugin.interval)))
+      Effect.schedule(Schedule.spaced(Duration.millis(entry.plugin.interval)))
     );
 
     entry.fiber = Effect.runFork(scheduled);
