@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { Command } from "@effect/platform";
 
 import { logger as parentLogger } from "../util/logger.js";
-import { OneBotService, RedisService, MediaService, WormfaceService } from "../services/index.js";
+import { OneBotService, RedisService, S3Service, WormfaceService } from "../services/index.js";
 import type { CronPlugin } from "../types.js";
 
 const logger = parentLogger.child({ module: "youtube" });
@@ -21,7 +21,7 @@ export const createYouTubePlugin = (config: YouTubePluginConfig): CronPlugin => 
     const { youtube } = yield* WormfaceService;
     const { client: redis } = yield* RedisService;
     const onebot = yield* OneBotService;
-    const media = yield* MediaService;
+    const media = yield* S3Service;
 
     const videos = yield* youtube.getChannelVideos({ channel: config.youtubeChannelId });
 
@@ -64,7 +64,8 @@ export const createYouTubePlugin = (config: YouTubePluginConfig): CronPlugin => 
       } else {
         // Get target path for download
         const filename = `${videoId}.mp4`;
-        const target = media.getMediaTarget(filename);
+        // const target = media.getMediaTarget(filename);
+        const target = { path: "TODO", url: "TODO" };
 
         // Download video
         const downloadCmd = Command.make(

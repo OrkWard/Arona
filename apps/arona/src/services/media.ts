@@ -1,9 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
-import { writeFile } from "node:fs/promises";
 import { Context, Effect, Layer } from "effect";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-export interface MediaServiceShape {
+export interface S3ServiceShape {
   /**
    * Save a buffer as a media file.
    * @returns Full URL to access the saved media
@@ -11,38 +10,55 @@ export interface MediaServiceShape {
   readonly saveMedia: (buffer: Buffer, ext: string) => Effect.Effect<string, Error>;
 
   /**
-   * Get URL for a permanent asset (e.g., "Arona_1.png").
-   * Assets are served from the assets directory.
+   * Get URL for a sticker (e.g., "Arona_1.png").
    */
-  readonly getAssetUrl: (name: string) => string;
-
-  /**
-   * Get the target path for saving media directly (e.g., for yt-dlp).
-   * @returns Object with path (full file path) and url (full URL to access)
-   */
-  readonly getMediaTarget: (filename: string) => { path: string; url: string };
+  readonly getStickerUrl: (name: string) => string;
 }
 
-export class MediaService extends Context.Tag("MediaService")<MediaService, MediaServiceShape>() {
-  static makeLive = (config: { assetsDir: string; baseUrl: string }) =>
-    Layer.succeed(
-      MediaService,
-      MediaService.of({
-        saveMedia: (buffer, ext) =>
-          Effect.gen(function* () {
-            const id = randomUUID();
-            const filename = `${id}.${ext}`;
-            const filepath = join(config.assetsDir, filename);
-            yield* Effect.promise(() => writeFile(filepath, buffer));
-            return `${config.baseUrl}/media/${filename}`;
-          }),
+export class S3Service extends Context.Tag("MediaService")<S3Service, S3ServiceShape>() {
+  static makeLive = (config: {
+    endpoint: string;
+    ak: string;
+    sk: string;
+    stickerBucket: string;
+    mediaBucket: string;
+  }) =>
+    Layer.effect(
+      S3Service,
+      Effect.gen(function* () {
+        const S3 = new S3Client({
+          region: "auto",
+          endpoint: config.endpoint,
+          credentials: {
+            accessKeyId: config.ak,
+            secretAccessKey: config.sk,
+          },
+          forcePathStyle: true,
+        });
 
-        getAssetUrl: (name) => `${config.baseUrl}/assets/${name}`,
+        return S3Service.of({
+          saveMedia: (buffer, ext) =>
+            Effect.gen(function* () {
+              const id = randomUUID();
+              const filename = `${id}.${ext}`;
 
-        getMediaTarget: (filename) => ({
-          path: join(config.assetsDir, filename),
-          url: `${config.baseUrl}/media/${filename}`,
-        }),
+              yield* Effect.tryPromise({
+                try: () =>
+                  S3.send(
+                    new PutObjectCommand({
+                      Bucket: config.mediaBucket,
+                      Key: filename,
+                      Body: buffer,
+                    })
+                  ),
+                catch: (e) => e as Error,
+              });
+
+              return `${config.endpoint}/${config.mediaBucket}/${filename}`;
+            }),
+
+          getStickerUrl: (name) => `${config.endpoint}/${config.stickerBucket}/${name}`,
+        });
       })
     );
 }

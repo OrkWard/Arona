@@ -2,7 +2,7 @@ import { Effect } from "effect";
 
 import { logger as parentLogger } from "../util/logger.js";
 import { get } from "../util/request.js";
-import { OneBotService, RedisService, MediaService, WormfaceService } from "../services/index.js";
+import { OneBotService, RedisService, S3Service, WormfaceService } from "../services/index.js";
 import type { CronPlugin } from "../types.js";
 
 const logger = parentLogger.child({ module: "twitter" });
@@ -21,7 +21,7 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
   task: Effect.gen(function* () {
     const { client: redis } = yield* RedisService;
     const onebot = yield* OneBotService;
-    const media = yield* MediaService;
+    const media = yield* S3Service;
     const { twitter } = yield* WormfaceService;
 
     const tweets = yield* twitter.getUserPosts({ username: config.twitterUsername });

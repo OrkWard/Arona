@@ -1,25 +1,25 @@
 import { Effect, Layer, Schedule, Duration, Fiber } from "effect";
+import { NodeContext, NodeFileSystem } from "@effect/platform-node";
 import { createClient } from "redis";
-import Koa from "koa";
-import { send } from "@koa/send";
+
 import { OneBot, OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
-import { RedisService, MediaService, OneBotService, WormfaceService } from "./services/index.js";
+import { RedisService, S3Service, OneBotService, WormfaceService } from "./services/index.js";
 import { logger } from "./util/logger.js";
 import type { EventPlugin, CronPlugin, Services } from "./types.js";
-import { NodeContext } from "@effect/platform-node";
 
 export interface AronaConfig {
   // OneBot
   onebotOrigin: string;
   onebotAuthToken: string;
+  adminId: number;
 
   // Redis
   redisUrl: string;
 
-  // Media server
-  assetsDir: string;
-  serverPort: number;
-  baseUrl: string;
+  // S3 server
+  s3Endpoint: string;
+  s3Ak: string;
+  s3Sk: string;
 
   // Wormface
   wormfaceOrigin: string;
@@ -37,30 +37,38 @@ export class Arona {
 
   constructor(private config: AronaConfig) {
     this.onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger);
-    this.setupStatic();
 
     this.layer = Layer.mergeAll(
       RedisService.makeLive(this.setupRedis()),
-      MediaService.makeLive({
-        assetsDir: config.assetsDir,
-        baseUrl: config.baseUrl,
+      S3Service.makeLive({
+        endpoint: config.s3Endpoint,
+        ak: config.s3Ak,
+        sk: config.s3Sk,
+        mediaBucket: "media",
+        stickerBucket: "sticker",
       }),
       OneBotService.makeLive(this.onebot),
       WormfaceService.makeLive(config.wormfaceOrigin),
       NodeContext.layer
-    );
+    )
+      .pipe(Layer.provide(NodeFileSystem.layer))
+      .pipe(Layer.orDie);
   }
 
+  /** add event plugin */
   add(name: string, plugin: EventPlugin, enabled = true) {
     this.eventPlugins.set(name, { plugin, enabled });
   }
 
+  /** add cron plugin */
   cron(name: string, plugin: CronPlugin, enabled = true) {
     this.cronPlugins.set(name, { plugin, enabled, fiber: null });
   }
 
+  /** Start handle onebot event and cronjob. Should only call once. */
   start() {
     this.onebot.start();
+    // TODO: we don't have stop() so ignore the return id
     this.onebot.on("message", (event) => this.handleMessage(event));
     this.onebot.on("notice", (event) => this.handleNotice(event));
     this.onebot.on("meta_event", (event) => this.handleMeta(event));
@@ -73,20 +81,9 @@ export class Arona {
     }
   }
 
-  private setupStatic() {
-    const app = new Koa();
-    app.use(async (ctx) => {
-      if (ctx.path.startsWith("/assets/")) {
-        await send(ctx, ctx.path.replace("/assets/", ""), { root: this.config.assetsDir });
-      } else {
-        ctx.status = 404;
-      }
-    });
-    app.listen(this.config.serverPort, () => {
-      logger.info({ msg: "Media server started", port: this.config.serverPort });
-    });
-  }
-
+  /** Setup redis client. Since this is just a client it could be called multiple times.
+   * @returns client object
+   */
   private setupRedis() {
     const client = createClient({ url: this.config.redisUrl });
     client.on("error", (err) => logger.error({ msg: "Redis error", error: err }));
@@ -96,7 +93,25 @@ export class Arona {
     return client;
   }
 
+  /** Dispatch message to plugin. If this is a switch command, don't dispatch. */
   private handleMessage(event: OneBotMessageEvent) {
+    const text = event.message?.[0].type === "text" ? event.message[0].data.text : "";
+    const sender = event.sender.user_id;
+    const switchMatchResult = text.match(/^\/(on|off) (\w+)$/);
+    if (switchMatchResult && sender === this.config.adminId) {
+      const [_, command, pluginName] = switchMatchResult as [string, "on" | "off", string];
+      logger.info(`admin command targetStatus=${command} plugin=${pluginName}`);
+      switch (command) {
+        case "on":
+          this.enable(pluginName);
+          break;
+        case "off":
+          this.disable(pluginName);
+          break;
+      }
+      return;
+    }
+
     for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMessage) continue;
       this.runEffect(plugin.onMessage(event), name);

@@ -9,21 +9,19 @@
     "start": "node --env-file .env ./dist/main.js"
   },
   "devDependencies": {
-    "@types/koa": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "catalog:",
     "@effect/platform": "^0.94.1",
     "@effect/platform-node": "^0.104.0",
-    "@koa/send": "catalog:",
     "@sentry/node": "catalog:",
     "effect": "^3.19.14",
     "got": "catalog:",
     "html-entities": "^2.5.2",
     "https-proxy-agent": "catalog:",
-    "koa": "catalog:",
     "onebot": "workspace:*",
     "pino": "catalog:",
     "pino-pretty": "catalog:",

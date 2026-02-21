@@ -4,7 +4,6 @@ import { createTwitterPlugin } from "./plugin/twitter.js";
 import { createYouTubePlugin } from "./plugin/youtube.js";
 import { PokePlugin } from "./plugin/poke.js";
 import { AlivePlugin } from "./plugin/alive.js";
-import { logger } from "./util/logger.js";
 
 function assertEnv(name: string): string {
   const value = process.env[name];
@@ -17,11 +16,12 @@ function assertEnv(name: string): string {
 const arona = new Arona({
   onebotOrigin: assertEnv("ONEBOT_ORIGIN"),
   onebotAuthToken: assertEnv("ONEBOT_AUTH_TOKEN"),
+  s3Endpoint: assertEnv("MINIO_ENDPOINT"),
+  s3Ak: assertEnv("MINIO_AK"),
+  s3Sk: assertEnv("MINIO_SK"),
+  adminId: Number(assertEnv("QQ_ADMIN_ID")),
   redisUrl: assertEnv("REDIS"),
-  assetsDir: assertEnv("STATIC_ROOT"),
-  serverPort: parseInt(assertEnv("STATIC_PORT")),
-  baseUrl: `http://${assertEnv("STATIC_HOST")}:${assertEnv("STATIC_PORT")}`,
-  wormfaceOrigin: process.env.WORMFACE_ORIGIN ?? "http://localhost:8080",
+  wormfaceOrigin: assertEnv("WORMFACE_ORIGIN"),
 });
 
 arona.add("poke", PokePlugin);
@@ -29,20 +29,7 @@ arona.add("alive", AlivePlugin);
 
 const qqGroupId = parseInt(assertEnv("QQ_GROUP_ID"));
 
-arona.cron(
-  "twitter",
-  createTwitterPlugin({
-    qqGroupId,
-    twitterUsername: process.env.TWITTER_USERNAME ?? "Blue_ArchiveJP",
-  })
-);
-arona.cron(
-  "youtube",
-  createYouTubePlugin({
-    qqGroupId,
-    youtubeChannelId: process.env.YOUTUBE_CHANNEL_ID ?? "UCmgf8DJrAXFnU7j3u0kklUQ",
-  }),
-  false
-);
+arona.cron("twitter", createTwitterPlugin({ qqGroupId, twitterUsername: "Blue_ArchiveJP" }));
+arona.cron("youtube", createYouTubePlugin({ qqGroupId, youtubeChannelId: "UCmgf8DJrAXFnU7j3u0kklUQ" }), false);
 
 arona.start();

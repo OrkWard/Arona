@@ -1,9 +1,9 @@
 import type { Effect } from "effect";
 import type { OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
-import type { MediaService, OneBotService, RedisService, WormfaceService } from "./services/index.js";
+import type { S3Service, OneBotService, RedisService, WormfaceService } from "./services/index.js";
 import { NodeContext } from "@effect/platform-node";
 
-export type Services = RedisService | MediaService | OneBotService | WormfaceService | NodeContext.NodeContext;
+export type Services = RedisService | S3Service | OneBotService | WormfaceService | NodeContext.NodeContext;
 
 export interface EventPlugin {
   onMessage?: (event: OneBotMessageEvent) => Effect.Effect<void, Error, Services>;
