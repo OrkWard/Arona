@@ -4,6 +4,7 @@ import { createClient } from "redis";
 
 import { OneBot, OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
 import { RedisService, S3Service, OneBotService, WormfaceService } from "./services/index.js";
+import { RedisClient } from "./services/redis.js";
 import { logger } from "./util/logger.js";
 import type { EventPlugin, CronPlugin, Services } from "./types.js";
 
@@ -27,6 +28,7 @@ export interface AronaConfig {
 
 export class Arona {
   private onebot: OneBot;
+  private redis: RedisClient;
   private layer: Layer.Layer<Services, never, never>;
 
   private eventPlugins = new Map<string, { plugin: EventPlugin; enabled: boolean }>();
@@ -37,9 +39,17 @@ export class Arona {
 
   constructor(private config: AronaConfig) {
     this.onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger);
+    this.redis = (() => {
+      const client = createClient({ url: config.redisUrl });
+      client.on("error", (err) => logger.error({ msg: "Redis error", error: err }));
+      client.connect().then(() => {
+        logger.info("Redis connected");
+      });
+      return client;
+    })();
 
     this.layer = Layer.mergeAll(
-      RedisService.makeLive(this.setupRedis()),
+      RedisService.makeLive(this.redis),
       S3Service.makeLive({
         endpoint: config.s3Endpoint,
         ak: config.s3Ak,
@@ -79,18 +89,6 @@ export class Arona {
         this.startCronFiber(name, entry);
       }
     }
-  }
-
-  /** Setup redis client. Since this is just a client it could be called multiple times.
-   * @returns client object
-   */
-  private setupRedis() {
-    const client = createClient({ url: this.config.redisUrl });
-    client.on("error", (err) => logger.error({ msg: "Redis error", error: err }));
-    client.connect().then(() => {
-      logger.info("Redis connected");
-    });
-    return client;
   }
 
   /** Dispatch message to plugin. If this is a switch command, don't dispatch. */

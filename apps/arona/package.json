@@ -21,7 +21,6 @@
     "effect": "^3.19.14",
     "got": "catalog:",
     "html-entities": "^2.5.2",
-    "https-proxy-agent": "catalog:",
     "onebot": "workspace:*",
     "pino": "catalog:",
     "pino-pretty": "catalog:",

@@ -4,28 +4,31 @@ import { logger } from "../util/logger.js";
 import { OneBotService, S3Service } from "../services/index.js";
 import type { EventPlugin } from "../types.js";
 
-export const PokePlugin: EventPlugin = {
-  onNotice: (event) =>
-    Effect.gen(function* () {
-      if (event.sub_type !== "poke") {
-        return;
-      }
+/** 响应 poke 事件，在群聊中发送一张随机的表情 */
+export function createPokePlugin(): EventPlugin {
+  return {
+    onNotice: (event) =>
+      Effect.gen(function* () {
+        if (event.sub_type !== "poke") {
+          return;
+        }
 
-      if (event.target_id === event.self_id) {
-        const media = yield* S3Service;
-        const onebot = yield* OneBotService;
+        if (event.target_id === event.self_id) {
+          const media = yield* S3Service;
+          const onebot = yield* OneBotService;
 
-        const faceId = (Math.floor(Math.random() * 33) + 1).toString();
-        const fileName = `Arona_${faceId}.png`;
+          const faceId = (Math.floor(Math.random() * 33) + 1).toString();
+          const fileName = `Arona_${faceId}.png`;
 
-        const url = media.getStickerUrl(fileName);
+          const url = media.getStickerUrl(fileName);
 
-        yield* onebot.post("send_group_msg", {
-          group_id: event.group_id,
-          message: [{ type: "image", data: { file: url } }],
-        });
+          yield* onebot.post("send_group_msg", {
+            group_id: event.group_id,
+            message: [{ type: "image", data: { file: url } }],
+          });
 
-        logger.info("Arona was poked");
-      }
-    }),
-};
+          logger.info("Arona was poked");
+        }
+      }),
+  };
+}

@@ -21,7 +21,6 @@ catalog:
   eslint-config-next: ^15.1.6
   googleapis: ^148.0.0
   got: ^14.4.5
-  https-proxy-agent: ^7.0.5
   next: ^15.1.6
   picocolors: ^1.1.1
   pino: ^9.6.0

@@ -1,11 +1,12 @@
 import { Effect } from "effect";
 
 import { logger as parentLogger } from "../util/logger.js";
-import { get } from "../util/request.js";
+import { got } from "got";
 import { OneBotService, RedisService, S3Service, WormfaceService } from "../services/index.js";
 import type { CronPlugin } from "../types.js";
 
 const logger = parentLogger.child({ module: "twitter" });
+const { get } = got;
 
 const MAX_TWEETS_TO_PROCESS = 2;
 const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
