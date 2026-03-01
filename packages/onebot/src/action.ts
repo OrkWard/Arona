@@ -72,26 +72,30 @@ export type OneBotActions = {
   get_msg: [
     { message_id: number },
     {
-      time: number;
-      message_type: "private" | "group";
+      group: boolean;
+      group_id: number;
       message_id: number;
       real_id: number;
-      sender: {};
+      message_type: "private" | "group";
+      time: number;
+      sender: {
+        nickname: string;
+        user_id: number;
+      };
       message: Message;
+      raw_message: string;
     },
   ];
   get_essence_msg_list: [
     { group_id: number },
     {
-      msg_seq: number;
-      msg_random: number;
       sender_id: number;
       sender_nick: string;
+      sender_time: number;
       operator_id: number;
       operator_nick: string;
-      message_id: number;
       operator_time: number;
-      content: MessageSegment[];
+      message_id: number;
     }[],
   ];
 };

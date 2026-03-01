@@ -1,25 +1,19 @@
 {
   "name": "essence",
-  "version": "1.0.0",
   "type": "module",
-  "description": "",
   "scripts": {
-    "build": "tsc && node --env-file .env ./dist/main.js",
+    "dev": "tsc --build --watch",
+    "main": "node --env-file .env ./dist/main.js",
     "config": "op inject --in-file example.env --out-file .env -f"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
+    "@henrygd/queue": "^1.2.0",
     "es-toolkit": "catalog:",
     "onebot": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:"
-  },
-  "exports": {
-    ".": "./essence.json"
   }
 }

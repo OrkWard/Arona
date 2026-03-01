@@ -1,28 +1,77 @@
-import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { symlinkSync, unlinkSync, writeFileSync } from "node:fs";
-import { OneBot } from "onebot";
 import { createHash } from "node:crypto";
+import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { OneBot } from "onebot";
+import { newQueue } from "@henrygd/queue";
 
-const onebot = new OneBot({ authKey: process.env.ONEBOT_AUTH_TOKEN, origin: process.env.ONEBOT_ORIGIN });
+// ======================== Functions ==========================
+function assertEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+async function headObject(id: string) {
+  try {
+    await S3.send(new HeadObjectCommand({ Bucket: bucket, Key: id }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function pubObject(id: string, buffer: ArrayBuffer, type = "image/jpg") {
+  await S3.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: id,
+      ContentType: type,
+      Body: Buffer.from(buffer),
+    })
+  );
+
+  return `${endpoint}/${bucket}/${id}`;
+}
+
+// ======================= Env ==========================
+const endpoint = assertEnv("MINIO_ENDPOINT");
+const ak = assertEnv("MINIO_AK");
+const sk = assertEnv("MINIO_SK");
+const bucket = "essence";
+const onebot_origin = assertEnv("ONEBOT_ORIGIN");
+const auth = assertEnv("ONEBOT_AUTH_TOKEN");
+const group = Number(assertEnv("QQ_GROUP_ID"));
+
+// ====================== globals =====================
 const S3 = new S3Client({
   region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: endpoint,
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    accessKeyId: ak,
+    secretAccessKey: sk,
   },
+  forcePathStyle: true,
 });
+const queue = newQueue(5);
+const encoder = new TextEncoder();
+const onebot = new OneBot(onebot_origin, auth);
 
-onebot.onOpen(async () => {
-  const msgList = await onebot.post("get_essence_msg_list", { group_id: Number(process.env.QQ_GROUP_ID) });
+// ===================== main ====================
+onebot.start();
+onebot.on("meta_event", async () => {
+  const essenceList = await onebot.post("get_essence_msg_list", { group_id: group });
+  const essenceMsgs = await queue
+    .all(essenceList.map((e) => onebot.post("get_msg", { message_id: e.message_id })))
+    .then(async (l) => Promise.all(l.map((m) => onebot.post("get_msg", { message_id: m.message_id }))));
 
   const images: { id: string; url: string }[] = [];
-  msgList.forEach((msg) => {
-    msg.content = msg.content.map((seg) => {
+  essenceMsgs.forEach((msg) => {
+    msg.message.map((seg) => {
       if (seg.type === "image") {
         const id = createHash("sha256").update(seg.data.url).digest("hex");
         images.push({ id, url: seg.data.url });
-        seg.data.url = `https://r2.orkward.dev/${id}`;
+        seg.data.url = `${endpoint}/${bucket}/${id}`;
       }
       return seg;
     });
@@ -30,54 +79,40 @@ onebot.onOpen(async () => {
 
   console.info(`Start fetch and upload, count: ${images.length}`);
 
-  await Promise.all(
+  await queue.all(
     images.map(async ({ id, url }) => {
-      if (
-        await S3.send(
-          new HeadObjectCommand({
-            Bucket: process.env.R2_BUCKET,
-            Key: id,
-          })
-        ).then(
-          () => true,
-          (e) => false
-        )
-      ) {
+      // 去重
+      if (await headObject(id)) {
         return;
       }
 
       const buffer = await fetch(url).then((resp) => resp.arrayBuffer());
+      // 空文件
       if (buffer.byteLength === 0) {
         console.warn(`[Get Image]: resp null, url: ${url}`);
         return;
       }
+
+      // JSON 返回
       const view = new Uint8Array(buffer, 0, 1);
       if (view[0] === "{".charCodeAt(0)) {
         console.warn(`[Get Image]: resp is json, content: ${new TextDecoder("utf-8").decode(buffer)}`);
         return;
       }
 
-      await S3.send(
-        new PutObjectCommand({
-          Bucket: process.env.R2_BUCKET,
-          Key: id,
-          ContentType: "image/jpg",
-          Body: Buffer.from(buffer),
-        })
-      );
+      await pubObject(id, buffer);
     })
   );
 
   console.info("Start write file");
-  const fileName = `./essence-${new Date().getTime()}.json`;
-  const linkName = "./essence.json";
-  writeFileSync(fileName, JSON.stringify(msgList, undefined, "  "));
-  try {
-    unlinkSync(linkName);
-  } catch {}
-  symlinkSync(fileName, linkName);
-
-  console.info("Write essence success");
+  console.info(
+    "result: ",
+    await pubObject(
+      `${new Date().getTime()}-snapshot.txt`,
+      encoder.encode(JSON.stringify(essenceMsgs, undefined, "  ")).buffer,
+      "text/plain; charset=utf-8"
+    )
+  );
 
   onebot.close();
 });

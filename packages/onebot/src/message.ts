@@ -10,7 +10,7 @@ type MessageType = {
   };
   image: {
     file?: string;
-    type?: string;
+    type?: "flash" | "show"; // flash 是闪照
     url: string;
   };
   record: {

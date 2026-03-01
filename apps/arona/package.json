@@ -18,7 +18,7 @@
     "@effect/platform": "^0.94.1",
     "@effect/platform-node": "^0.104.0",
     "@sentry/node": "catalog:",
-    "effect": "^3.19.14",
+    "effect": "catalog:",
     "got": "catalog:",
     "html-entities": "^2.5.2",
     "onebot": "workspace:*",
