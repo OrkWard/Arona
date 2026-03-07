@@ -26,6 +26,5 @@ WORKDIR /app
 COPY --from=builder /app/pruned .
 
 ENV NODE_ENV=production
-ENV STATIC_ROOT=/app/assets
 
 CMD ["node", "dist/index.js"]
