@@ -26,7 +26,6 @@
     "onebot": "workspace:*",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
-    "redis": "^5.0.0",
-    "wormface-openapi": "workspace:*"
+    "redis": "^5.0.0"
   }
 }

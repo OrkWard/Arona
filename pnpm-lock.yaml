@@ -86,9 +86,6 @@ importers:
       redis:
         specifier: ^5.0.0
         version: 5.0.0
-      wormface-openapi:
-        specifier: workspace:*
-        version: link:../../packages/wormface-openapi
     devDependencies:
       '@hey-api/openapi-ts':
         specifier: 0.94.0
@@ -140,15 +137,6 @@ importers:
       '@types/ws':
         specifier: 'catalog:'
         version: 8.5.12
-      typescript:
-        specifier: 'catalog:'
-        version: 5.7.2
-
-  packages/wormface-openapi:
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.17.16
       typescript:
         specifier: 'catalog:'
         version: 5.7.2

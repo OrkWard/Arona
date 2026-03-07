@@ -1,7 +1,7 @@
 import "./util/sentry.js";
 import { Arona } from "./arona.js";
 import { createTwitterPlugin } from "./plugin/twitter.js";
-import { createYouTubePlugin } from "./plugin/youtube.js";
+// import { createYouTubePlugin } from "./plugin/youtube.js";
 import { createPokePlugin } from "./plugin/poke.js";
 import { createAlivePlugin } from "./plugin/alive.js";
 
@@ -22,6 +22,7 @@ const arona = new Arona({
   adminId: Number(assertEnv("QQ_ADMIN_ID")),
   redisUrl: assertEnv("REDIS"),
   wormfaceOrigin: assertEnv("WORMFACE_ORIGIN"),
+  mlOrigin: assertEnv("MACHINE_LEARNING_ORIGIN"),
 });
 
 arona.add("poke", createPokePlugin());
