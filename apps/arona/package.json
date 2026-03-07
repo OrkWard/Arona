@@ -4,9 +4,9 @@
   "scripts": {
     "config": "op inject --in-file example.env --out-file .env -f",
     "dev:build": "tsc --build --watch",
-    "dev:start": "STATIC_ROOT=$(realpath \"assets\") node --env-file .env --watch ./dist/main.js",
+    "dev:start": "node --watch ./dist/main.js",
     "build": "tsc --build",
-    "start": "node --env-file .env ./dist/main.js"
+    "start": "node ./dist/main.js"
   },
   "devDependencies": {
     "@types/node": "catalog:",
