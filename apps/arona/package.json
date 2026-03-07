@@ -3,12 +3,14 @@
   "type": "module",
   "scripts": {
     "config": "op inject --in-file example.env --out-file .env -f",
+    "openapi-ts": "openapi-ts",
     "dev:build": "tsc --build --watch",
     "dev:start": "node --watch ./dist/main.js",
     "build": "tsc --build",
     "start": "node ./dist/main.js"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "0.94.0",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
     "typescript": "catalog:"
