@@ -66,9 +66,7 @@
             "title": "Perceptual Hash"
           },
           "pdqhash": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Pdqhash"
+            "$ref": "#/components/schemas/PdqHashResult"
           }
         },
         "type": "object",
@@ -93,6 +91,59 @@
           "url"
         ],
         "title": "ImageUrlRequest"
+      },
+      "PdqHashResult": {
+        "properties": {
+          "original": {
+            "type": "string",
+            "title": "Original"
+          },
+          "rotated_90": {
+            "type": "string",
+            "title": "Rotated 90"
+          },
+          "rotated_180": {
+            "type": "string",
+            "title": "Rotated 180"
+          },
+          "rotated_270": {
+            "type": "string",
+            "title": "Rotated 270"
+          },
+          "flipped_vertical": {
+            "type": "string",
+            "title": "Flipped Vertical"
+          },
+          "flipped_horizontal": {
+            "type": "string",
+            "title": "Flipped Horizontal"
+          },
+          "rotated_90_flipped": {
+            "type": "string",
+            "title": "Rotated 90 Flipped"
+          },
+          "rotated_270_flipped": {
+            "type": "string",
+            "title": "Rotated 270 Flipped"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "original",
+          "rotated_90",
+          "rotated_180",
+          "rotated_270",
+          "flipped_vertical",
+          "flipped_horizontal",
+          "rotated_90_flipped",
+          "rotated_270_flipped",
+          "quality"
+        ],
+        "title": "PdqHashResult"
       },
       "ValidationError": {
         "properties": {

@@ -3,7 +3,7 @@ import { NodeContext, NodeFileSystem } from "@effect/platform-node";
 import { createClient } from "redis";
 
 import { OneBot, OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
-import { RedisService, S3Service, OneBotService, WormfaceService, MlService } from "./services/index.js";
+import { RedisService, S3Service, OneBotService, WormfaceService, MlService, DbService } from "./services/index.js";
 import { RedisClient } from "./services/redis.js";
 import { logger } from "./util/logger.js";
 import type { EventPlugin, CronPlugin, Services } from "./types.js";
@@ -27,6 +27,9 @@ export interface AronaConfig {
 
   // Arona-Machine-Learning
   mlOrigin: string;
+
+  // MongoDB
+  mongoUrl: string;
 }
 
 export class Arona {
@@ -63,6 +66,7 @@ export class Arona {
       OneBotService.makeLive(this.onebot),
       WormfaceService.makeLive(config.wormfaceOrigin),
       MlService.makeLive(config.mlOrigin),
+      DbService.makeLive(config.mongoUrl),
       NodeContext.layer
     )
       .pipe(Layer.provide(NodeFileSystem.layer))

@@ -6,6 +6,7 @@ export type {
   HttpValidationError,
   ImageHashResponse,
   ImageUrlRequest,
+  PdqHashResult,
   ProcessImageGetImageHashPostData,
   ProcessImageGetImageHashPostError,
   ProcessImageGetImageHashPostErrors,

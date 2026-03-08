@@ -16,9 +16,21 @@ class ImageUrlRequest(BaseModel):
     url: HttpUrl
 
 
+class PdqHashResult(BaseModel):
+    original: str
+    rotated_90: str
+    rotated_180: str
+    rotated_270: str
+    flipped_vertical: str
+    flipped_horizontal: str
+    rotated_90_flipped: str
+    rotated_270_flipped: str
+    quality: float
+
+
 class ImageHashResponse(BaseModel):
     perceptual_hash: str
-    pdqhash: dict
+    pdqhash: PdqHashResult
 
 
 @app.post("/get-image-hash", response_model=ImageHashResponse)
@@ -46,17 +58,17 @@ async def process_image(request: ImageUrlRequest):
     # Convert hash vectors to hex strings
     hash_hex_list = [hv.hex() for hv in hash_vectors]
 
-    pdqhash_result = {
-        "original": hash_hex_list[0],
-        "rotated_90": hash_hex_list[1],
-        "rotated_180": hash_hex_list[2],
-        "rotated_270": hash_hex_list[3],
-        "flipped_vertical": hash_hex_list[4],
-        "flipped_horizontal": hash_hex_list[5],
-        "rotated_90_flipped": hash_hex_list[6],
-        "rotated_270_flipped": hash_hex_list[7],
-        "quality": quality,
-    }
+    pdqhash_result = PdqHashResult(
+        original=hash_hex_list[0],
+        rotated_90=hash_hex_list[1],
+        rotated_180=hash_hex_list[2],
+        rotated_270=hash_hex_list[3],
+        flipped_vertical=hash_hex_list[4],
+        flipped_horizontal=hash_hex_list[5],
+        rotated_90_flipped=hash_hex_list[6],
+        rotated_270_flipped=hash_hex_list[7],
+        quality=float(quality),
+    )
 
     return ImageHashResponse(
         perceptual_hash=phash,

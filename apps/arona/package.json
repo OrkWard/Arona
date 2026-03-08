@@ -26,6 +26,7 @@
     "onebot": "workspace:*",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
-    "redis": "^5.0.0"
+    "redis": "^5.0.0",
+    "mongodb": "^6.0.0"
   }
 }

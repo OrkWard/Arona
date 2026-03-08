@@ -22,12 +22,7 @@ export type ImageHashResponse = {
    * Perceptual Hash
    */
   perceptual_hash: string;
-  /**
-   * Pdqhash
-   */
-  pdqhash: {
-    [key: string]: unknown;
-  };
+  pdqhash: PdqHashResult;
 };
 
 /**
@@ -38,6 +33,48 @@ export type ImageUrlRequest = {
    * Url
    */
   url: string;
+};
+
+/**
+ * PdqHashResult
+ */
+export type PdqHashResult = {
+  /**
+   * Original
+   */
+  original: string;
+  /**
+   * Rotated 90
+   */
+  rotated_90: string;
+  /**
+   * Rotated 180
+   */
+  rotated_180: string;
+  /**
+   * Rotated 270
+   */
+  rotated_270: string;
+  /**
+   * Flipped Vertical
+   */
+  flipped_vertical: string;
+  /**
+   * Flipped Horizontal
+   */
+  flipped_horizontal: string;
+  /**
+   * Rotated 90 Flipped
+   */
+  rotated_90_flipped: string;
+  /**
+   * Rotated 270 Flipped
+   */
+  rotated_270_flipped: string;
+  /**
+   * Quality
+   */
+  quality: number;
 };
 
 /**

@@ -4,6 +4,8 @@ import { createTwitterPlugin } from "./plugin/twitter.js";
 // import { createYouTubePlugin } from "./plugin/youtube.js";
 import { createPokePlugin } from "./plugin/poke.js";
 import { createAlivePlugin } from "./plugin/alive.js";
+import { createMarsPlugin } from "./plugin/mars.js";
+import { createBackupPlugin } from "./plugin/backup.js";
 
 function assertEnv(name: string): string {
   const value = process.env[name];
@@ -23,10 +25,19 @@ const arona = new Arona({
   redisUrl: assertEnv("REDIS"),
   wormfaceOrigin: assertEnv("WORMFACE_ORIGIN"),
   mlOrigin: assertEnv("MACHINE_LEARNING_ORIGIN"),
+  mongoUrl: assertEnv("MONGO_URL"),
 });
 
 arona.add("poke", createPokePlugin());
 arona.add("alive", createAlivePlugin());
+arona.add(
+  "mars",
+  createMarsPlugin({
+    phashThreshold: Number(process.env["PHASH_THRESHOLD"] ?? "10"),
+    pdqThreshold: Number(process.env["PDQ_THRESHOLD"] ?? "10"),
+  })
+);
+arona.add("backup", createBackupPlugin({ groupId: parseInt(assertEnv("QQ_GROUP_ID")) }));
 arona.cron(
   "twitter",
   createTwitterPlugin({ qqGroupId: parseInt(assertEnv("QQ_GROUP_ID")), twitterUsername: "Blue_ArchiveJP" })

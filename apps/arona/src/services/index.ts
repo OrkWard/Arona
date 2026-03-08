@@ -3,3 +3,4 @@ export { S3Service } from "./media.js";
 export { OneBotService } from "./onebot.js";
 export { WormfaceService } from "./wormface.js";
 export { MlService } from "./ml.js";
+export { DbService } from "./db.js";
