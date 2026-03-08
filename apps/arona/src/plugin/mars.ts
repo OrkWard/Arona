@@ -115,10 +115,12 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
   return {
     onMessage: (event) =>
       Effect.gen(function* () {
+        logger.debug({ msg: "Mars plugin received message", message: event.message });
         const onebot = yield* OneBotService;
 
         const textSeg = findTextSegment(event.message);
         const match = textSeg?.data.text.trim().match(COMMAND_REGEX);
+        logger.debug({ msg: "Mars command check", text: textSeg?.data.text, match: !!match });
         if (!match) return;
 
         // 必须是对图片的回复
@@ -152,7 +154,7 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
             results.push(`看起来第${i + 1}张图片没有人发过`);
           } else {
             results.push(
-              `火星了！第${i + i}张图片最早由${result.msg.sender}在${result.msg.ctime.toLocaleDateString("zh-CN")}发过，已经被发过${result.count}次了`
+              `火星了！第${i + 1}张图片最早由${result.msg.sender}在${result.msg.ctime.toLocaleDateString("zh-CN")}发过，已经被发过${result.count}次了`
             );
           }
         }
