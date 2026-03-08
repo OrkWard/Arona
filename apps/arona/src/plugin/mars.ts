@@ -157,7 +157,7 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
           } else {
             results.push(
               `火星了！第${i + 1}张图片最早由${result.msg.sender}在${result.msg.ctime.toLocaleString("zh-CN")}发过，已经被发过${result.count}次了` +
-                (result.count > 1 ? `（${[...new Set(result.senders)].join("、")}都很喜欢这张图片）` : "")
+                (result.count > 1 ? `（${result.senders.join("、")}都很喜欢这张图片）` : "")
             );
           }
         }
