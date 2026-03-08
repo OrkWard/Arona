@@ -13,9 +13,10 @@ const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
 
 export interface TwitterPluginConfig {
   twitterUsername: string;
+  groupId: number | number[];
 }
 
-export const createTwitterPlugin = (config: TwitterPluginConfig, groupId: number): CronPlugin => ({
+export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => ({
   interval: 10_000,
 
   task: Effect.gen(function* () {
@@ -37,26 +38,30 @@ export const createTwitterPlugin = (config: TwitterPluginConfig, groupId: number
       yield* Effect.promise(() => redis.sAdd(REDIS_TWITTER_SENT, tweetId));
       logger.info("Tweet record add to redis");
 
-      if (text) {
-        yield* onebot.post("send_group_msg", {
-          group_id: groupId,
-          message: [{ type: "text", data: { text } }],
-        });
-      }
+      const targetGroups = Array.isArray(config.groupId) ? config.groupId : [config.groupId];
 
-      if (tweetMedia) {
-        for (const mediaUrl of tweetMedia) {
-          const buffer = yield* Effect.promise(() => get(mediaUrl).buffer());
-          const url = yield* media.saveMedia(buffer, "jpg");
-
+      for (const groupId of targetGroups) {
+        if (text) {
           yield* onebot.post("send_group_msg", {
             group_id: groupId,
-            message: [{ type: "image", data: { file: url } }],
+            message: [{ type: "text", data: { text } }],
           });
+        }
+
+        if (tweetMedia) {
+          for (const mediaUrl of tweetMedia) {
+            const buffer = yield* Effect.promise(() => get(mediaUrl).buffer());
+            const url = yield* media.saveMedia(buffer, "jpg");
+
+            yield* onebot.post("send_group_msg", {
+              group_id: groupId,
+              message: [{ type: "image", data: { file: url } }],
+            });
+          }
         }
       }
 
-      logger.info("Tweet sent to group done");
+      logger.info("Tweet sent to groups done");
     }
   }),
 });

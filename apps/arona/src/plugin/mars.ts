@@ -45,11 +45,12 @@ function processImage(imageUrl: string, config: MarsPluginConfig) {
       pdqhash.rotated_270_flipped,
     ];
 
-    // Find similar images
+    // Find similar images (excluding the current image itself)
     const similarImages = yield* db.findSimilarImages(
       {
         perceptualHash: hashResponse.perceptual_hash,
         pdqHashes: pdqHashes,
+        excludeUrl: minioUrl,
       },
       {
         phashThreshold: config.phashThreshold,
@@ -70,6 +71,7 @@ function processImage(imageUrl: string, config: MarsPluginConfig) {
       count: similarImages.length,
       // 找最旧的一条
       msg: similarImages.toSorted((a, b) => +a.ctime - +b.ctime)[0],
+      senders: similarImages.map((img) => img.sender),
     };
   });
 }
@@ -139,7 +141,7 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
           yield* sendReply(event, "Arona 在目标消息中没有找到图片！");
           return;
         } else {
-          yield* sendReply(event, `Arona 对${imageSegs.length}张图片进行检测……`);
+          yield* sendReply(event, `Arona 正在对${imageSegs.length}张图片进行检测……`);
         }
 
         const results: string[] = [];
@@ -151,10 +153,11 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
 
           const result = yield* processImage(imgSeg.data.url, config);
           if (!result) {
-            results.push(`看起来第${i + 1}张图片没有人发过`);
+            results.push(`看起来第${i + 1}张图片以前没有老师发过`);
           } else {
             results.push(
-              `火星了！第${i + 1}张图片最早由${result.msg.sender}在${result.msg.ctime.toLocaleDateString("zh-CN")}发过，已经被发过${result.count}次了`
+              `火星了！第${i + 1}张图片最早由${result.msg.sender}在${result.msg.ctime.toLocaleString("zh-CN")}发过，已经被发过${result.count}次了` +
+                (result.count > 1 ? `（${[...new Set(result.senders)].join("、")}都很喜欢这张图片）` : "")
             );
           }
         }

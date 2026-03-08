@@ -14,8 +14,8 @@ export interface AronaConfig {
   onebotAuthToken: string;
   adminId: number;
 
-  // Target group (bot only processes messages from this group)
-  groupId: number;
+  // Target groups (bot only processes messages from these groups)
+  groupId: number | number[];
 
   // Redis
   redisUrl: string;
@@ -104,8 +104,9 @@ export class Arona {
 
   /** Dispatch message to plugin. If this is a switch command, don't dispatch. */
   private handleMessage(event: OneBotMessageEvent) {
-    // Only process messages from the target group
-    if (event.message_type !== "group" || event.group_id !== this.config.groupId) {
+    // Only process messages from the target groups
+    const allowedGroups = Array.isArray(this.config.groupId) ? this.config.groupId : [this.config.groupId];
+    if (event.message_type !== "group" || !allowedGroups.includes(event.group_id)) {
       return;
     }
 

@@ -32,7 +32,7 @@ export interface SimilarImageResult {
 export interface DbServiceShape {
   readonly saveMessage: (data: Omit<MessageDoc, "_id" | "createdAt">) => Effect.Effect<void, Error>;
   readonly findSimilarImages: (
-    params: { perceptualHash: string; pdqHashes: string[] },
+    params: { perceptualHash: string; pdqHashes: string[]; excludeUrl?: string },
     config: { phashThreshold: number; pdqThreshold: number }
   ) => Effect.Effect<SimilarImageResult[], Error>;
 }
@@ -105,10 +105,15 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
               catch: (e) => new Error(`Failed to save message: ${e}`),
             }).pipe(Effect.map(() => undefined)),
 
-          findSimilarImages: ({ perceptualHash, pdqHashes }, { phashThreshold, pdqThreshold }) =>
+          findSimilarImages: ({ perceptualHash, pdqHashes, excludeUrl }, { phashThreshold, pdqThreshold }) =>
             Effect.gen(function* () {
+              const query: Record<string, unknown> = { type: "image", perceptualHash: { $exists: true } };
+              if (excludeUrl) {
+                query.imageUrl = { $ne: excludeUrl };
+              }
+
               const images = yield* Effect.tryPromise({
-                try: () => collection.find({ type: "image", perceptualHash: { $exists: true } }).toArray(),
+                try: () => collection.find(query).toArray(),
                 catch: (e) => new Error(`Failed to query images: ${e}`),
               });
 

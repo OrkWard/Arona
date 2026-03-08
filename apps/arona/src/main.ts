@@ -15,6 +15,15 @@ function assertEnv(name: string): string {
   return value;
 }
 
+function parseGroupIds(value: string): number | number[] {
+  if (value.includes(",")) {
+    return value.split(",").map((id) => Number(id.trim()));
+  }
+  return Number(value);
+}
+
+const groupId = parseGroupIds(assertEnv("QQ_GROUP_ID"));
+
 const arona = new Arona({
   onebotOrigin: assertEnv("ONEBOT_ORIGIN"),
   onebotAuthToken: assertEnv("ONEBOT_AUTH_TOKEN"),
@@ -22,7 +31,7 @@ const arona = new Arona({
   s3Ak: assertEnv("MINIO_AK"),
   s3Sk: assertEnv("MINIO_SK"),
   adminId: Number(assertEnv("QQ_ADMIN_ID")),
-  groupId: Number(assertEnv("QQ_GROUP_ID")),
+  groupId,
   redisUrl: assertEnv("REDIS"),
   wormfaceOrigin: assertEnv("WORMFACE_ORIGIN"),
   mlOrigin: assertEnv("MACHINE_LEARNING_ORIGIN"),
@@ -39,7 +48,7 @@ arona.add(
   })
 );
 arona.add("backup", createBackupPlugin());
-arona.cron("twitter", createTwitterPlugin({ twitterUsername: "Blue_ArchiveJP" }, Number(assertEnv("QQ_GROUP_ID"))));
+arona.cron("twitter", createTwitterPlugin({ twitterUsername: "Blue_ArchiveJP", groupId }));
 // arona.cron("youtube", createYouTubePlugin({ qqGroupId, youtubeChannelId: "UCmgf8DJrAXFnU7j3u0kklUQ" }), false);
 
 arona.start();
