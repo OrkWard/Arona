@@ -7,8 +7,8 @@ WORKDIR /app
 COPY --parents pnpm-lock.yaml pnpm-workspace.yaml package.json \
     apps/arona/package.json \
     packages/onebot/package.json \
-    packages/wormface-openapi/package.json \
     ./
+
 RUN npm install -g pnpm@9 \
     && pnpm install --prod false --frozen-lockfile
 

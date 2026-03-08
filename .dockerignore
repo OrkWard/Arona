@@ -3,7 +3,6 @@
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
 
-!apps/arona/assets/
 !apps/arona/src/
 !apps/arona/package.json
 !apps/arona/tsconfig.json
@@ -11,7 +10,3 @@
 !packages/onebot/src/
 !packages/onebot/package.json
 !packages/onebot/tsconfig.json
-
-!packages/wormface-openapi/src/
-!packages/wormface-openapi/package.json
-!packages/wormface-openapi/tsconfig.json
