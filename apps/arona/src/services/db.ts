@@ -1,4 +1,4 @@
-import { Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer, Scope } from "effect";
 import { MongoClient, Db, Collection, ObjectId } from "mongodb";
 
 export interface MessageDoc {
@@ -56,14 +56,28 @@ function hammingDistance(a: string, b: string): number {
 
 export class DbService extends Context.Tag("DbService")<DbService, DbServiceShape>() {
   static makeLive = (mongoUrl: string) =>
-    Layer.effect(
+    Layer.scoped(
       DbService,
       Effect.gen(function* () {
-        const client = new MongoClient(mongoUrl);
+        const client = new MongoClient(mongoUrl, { maxConnecting: 20 });
         yield* Effect.tryPromise({
           try: () => client.connect(),
           catch: (e) => new Error(`Failed to connect to MongoDB: ${e}`),
         });
+
+        yield* Scope.addFinalizer(
+          yield* Effect.scope,
+          Effect.tryPromise({
+            try: () => client.close(),
+            catch: (e) => new Error(`Failed to close MongoDB connection: ${e}`),
+          }).pipe(
+            Effect.catchAll((e) =>
+              Effect.sync(() => {
+                console.error("Error closing MongoDB connection:", e);
+              })
+            )
+          )
+        );
 
         const db: Db = client.db("arona");
         const collection: Collection<MessageDoc> = db.collection(COLLECTION_NAME);
