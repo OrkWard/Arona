@@ -22,6 +22,7 @@ const arona = new Arona({
   s3Ak: assertEnv("MINIO_AK"),
   s3Sk: assertEnv("MINIO_SK"),
   adminId: Number(assertEnv("QQ_ADMIN_ID")),
+  groupId: Number(assertEnv("QQ_GROUP_ID")),
   redisUrl: assertEnv("REDIS"),
   wormfaceOrigin: assertEnv("WORMFACE_ORIGIN"),
   mlOrigin: assertEnv("MACHINE_LEARNING_ORIGIN"),
@@ -37,11 +38,8 @@ arona.add(
     pdqThreshold: Number(process.env["PDQ_THRESHOLD"] ?? "10"),
   })
 );
-arona.add("backup", createBackupPlugin({ groupId: parseInt(assertEnv("QQ_GROUP_ID")) }));
-arona.cron(
-  "twitter",
-  createTwitterPlugin({ qqGroupId: parseInt(assertEnv("QQ_GROUP_ID")), twitterUsername: "Blue_ArchiveJP" })
-);
+arona.add("backup", createBackupPlugin());
+arona.cron("twitter", createTwitterPlugin({ twitterUsername: "Blue_ArchiveJP" }, Number(assertEnv("QQ_GROUP_ID"))));
 // arona.cron("youtube", createYouTubePlugin({ qqGroupId, youtubeChannelId: "UCmgf8DJrAXFnU7j3u0kklUQ" }), false);
 
 arona.start();

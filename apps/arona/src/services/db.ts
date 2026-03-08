@@ -65,7 +65,7 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
           catch: (e) => new Error(`Failed to connect to MongoDB: ${e}`),
         });
 
-        const db: Db = client.db();
+        const db: Db = client.db("arona");
         const collection: Collection<MessageDoc> = db.collection(COLLECTION_NAME);
 
         // 建索引

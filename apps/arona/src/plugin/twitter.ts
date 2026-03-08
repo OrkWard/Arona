@@ -12,11 +12,10 @@ const MAX_TWEETS_TO_PROCESS = 2;
 const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
 
 export interface TwitterPluginConfig {
-  qqGroupId: number;
   twitterUsername: string;
 }
 
-export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => ({
+export const createTwitterPlugin = (config: TwitterPluginConfig, groupId: number): CronPlugin => ({
   interval: 10_000,
 
   task: Effect.gen(function* () {
@@ -40,7 +39,7 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
 
       if (text) {
         yield* onebot.post("send_group_msg", {
-          group_id: config.qqGroupId,
+          group_id: groupId,
           message: [{ type: "text", data: { text } }],
         });
       }
@@ -51,7 +50,7 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
           const url = yield* media.saveMedia(buffer, "jpg");
 
           yield* onebot.post("send_group_msg", {
-            group_id: config.qqGroupId,
+            group_id: groupId,
             message: [{ type: "image", data: { file: url } }],
           });
         }
