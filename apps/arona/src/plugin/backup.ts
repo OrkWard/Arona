@@ -42,21 +42,20 @@ export function createBackupPlugin(): EventPlugin {
 function processTextMessage(event: OneBotMessageEvent, text: string, segmentIndex: number) {
   return Effect.gen(function* () {
     const db = yield* DbService;
-    const messageId = `${event.message_id}-${segmentIndex}`;
+    const messageId = event.message_id;
     if (event.message_type !== "group") return;
 
     yield* db.saveMessage({
       messageId,
-      rawMessageId: event.message_id,
       segmentIndex,
       groupId: event.group_id,
       senderId: event.sender.user_id,
-      sender: event.sender.nickname,
+      sender: event.sender.card || event.sender.nickname,
       type: "text",
       content: text,
     });
 
-    logger.debug({ msg: "Text message saved", messageId });
+    logger.debug({ msg: "Text message saved", messageId, segmentIndex });
   });
 }
 
@@ -67,8 +66,7 @@ function processImageMessage(event: OneBotMessageEvent, imageUrl: string, segmen
     const ml = yield* MlService;
     const db = yield* DbService;
 
-    const messageId = `${event.message_id}-${segmentIndex}`;
-
+    const messageId = event.message_id;
     const buffer = yield* Effect.tryPromise({
       try: () => get(imageUrl).buffer(),
       catch: (e) => new Error(`Failed to download image: ${e}`),
@@ -85,11 +83,10 @@ function processImageMessage(event: OneBotMessageEvent, imageUrl: string, segmen
     // Save to database
     yield* db.saveMessage({
       messageId,
-      rawMessageId: event.message_id,
       segmentIndex,
       groupId: event.group_id,
       senderId: event.sender.user_id,
-      sender: event.sender.nickname,
+      sender: event.sender.card || event.sender.nickname,
       type: "image",
       content: imageUrl, // Original URL
       imageUrl: minioUrl, // Minio URL
@@ -98,6 +95,6 @@ function processImageMessage(event: OneBotMessageEvent, imageUrl: string, segmen
       pdqHashQuality: pdqhash.quality,
     });
 
-    logger.info({ msg: "Image message saved", messageId, phash: hashResponse.perceptual_hash });
+    logger.info({ msg: "Image message saved", messageId, segmentIndex, phash: hashResponse.perceptual_hash });
   });
 }

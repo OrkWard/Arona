@@ -16,7 +16,7 @@ interface MarsPluginConfig {
   pdqThreshold: number;
 }
 
-function processImage(imageUrl: string, config: MarsPluginConfig) {
+function processImage(currentMsgId: number, imageUrl: string, config: MarsPluginConfig) {
   return Effect.gen(function* () {
     const s3 = yield* S3Service;
     const ml = yield* MlService;
@@ -50,7 +50,7 @@ function processImage(imageUrl: string, config: MarsPluginConfig) {
       {
         perceptualHash: hashResponse.perceptual_hash,
         pdqHashes: pdqHashes,
-        excludeUrl: minioUrl,
+        currentMsgId,
       },
       {
         phashThreshold: config.phashThreshold,
@@ -151,7 +151,7 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
 
           logger.info(`Processing image ${i + 1}/${imageSegs.length} for mars command`);
 
-          const result = yield* processImage(imgSeg.data.url, config);
+          const result = yield* processImage(repliedMsg.message_id, imgSeg.data.url, config);
           if (!result) {
             results.push(`看起来第${i + 1}张图片以前没有老师发过`);
           } else {

@@ -2,9 +2,7 @@ import { Context, Effect, Layer, Scope } from "effect";
 import { MongoClient, Db, Collection, ObjectId } from "mongodb";
 
 export interface MessageDoc {
-  _id?: ObjectId;
-  messageId: string;
-  rawMessageId: number;
+  messageId: number;
   segmentIndex: number;
   groupId: number;
   senderId: number;
@@ -32,7 +30,7 @@ export interface SimilarImageResult {
 export interface DbServiceShape {
   readonly saveMessage: (data: Omit<MessageDoc, "_id" | "createdAt">) => Effect.Effect<void, Error>;
   readonly findSimilarImages: (
-    params: { perceptualHash: string; pdqHashes: string[]; excludeUrl?: string },
+    params: { perceptualHash: string; pdqHashes: string[]; currentMsgId?: number },
     config: { phashThreshold: number; pdqThreshold: number }
   ) => Effect.Effect<SimilarImageResult[], Error>;
 }
@@ -85,7 +83,7 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
         // 建索引
         yield* Effect.tryPromise({
           try: async () => {
-            await collection.createIndex({ messageId: 1 }, { unique: true });
+            await collection.createIndex({ messageId: 1, segmentIndex: 1 }, { unique: true });
             await collection.createIndex({ perceptualHash: 1 });
             await collection.createIndex({ pdqHashOriginal: 1 });
             await collection.createIndex({ createdAt: 1 });
@@ -105,11 +103,11 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
               catch: (e) => new Error(`Failed to save message: ${e}`),
             }).pipe(Effect.map(() => undefined)),
 
-          findSimilarImages: ({ perceptualHash, pdqHashes, excludeUrl }, { phashThreshold, pdqThreshold }) =>
+          findSimilarImages: ({ perceptualHash, pdqHashes, currentMsgId }, { phashThreshold, pdqThreshold }) =>
             Effect.gen(function* () {
               const query: Record<string, unknown> = { type: "image", perceptualHash: { $exists: true } };
-              if (excludeUrl) {
-                query.imageUrl = { $ne: excludeUrl };
+              if (currentMsgId) {
+                query.messageId = { $ne: currentMsgId };
               }
 
               const images = yield* Effect.tryPromise({
