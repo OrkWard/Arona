@@ -13,8 +13,8 @@ export interface EventPlugin {
 }
 
 export interface CronPlugin {
-  /** The task to run on each interval */
+  /** Cron expression for the task schedule */
+  cron: string;
+  /** The task to run on each schedule */
   task: Effect.Effect<void, Error, Services>;
-  /** Interval in milliseconds */
-  interval: number;
 }

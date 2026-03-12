@@ -1,6 +1,7 @@
-import { Effect, Layer, Schedule, Duration, Fiber } from "effect";
+import { Effect, Layer } from "effect";
 import { NodeContext, NodeFileSystem } from "@effect/platform-node";
 import { createClient } from "redis";
+import cron, { type ScheduledTask } from "node-cron";
 
 import { OneBot, OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
 import { RedisService, S3Service, OneBotService, WormfaceService, MlService, DbService } from "./services/index.js";
@@ -41,10 +42,7 @@ export class Arona {
   private layer: Layer.Layer<Services, never, never>;
 
   private eventPlugins = new Map<string, { plugin: EventPlugin; enabled: boolean }>();
-  private cronPlugins = new Map<
-    string,
-    { plugin: CronPlugin; enabled: boolean; fiber: Fiber.RuntimeFiber<unknown, unknown> | null }
-  >();
+  private cronPlugins = new Map<string, { plugin: CronPlugin; enabled: boolean; task: ScheduledTask | null }>();
 
   constructor(private config: AronaConfig) {
     this.onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger);
@@ -83,7 +81,10 @@ export class Arona {
 
   /** add cron plugin */
   cron(name: string, plugin: CronPlugin, enabled = true) {
-    this.cronPlugins.set(name, { plugin, enabled, fiber: null });
+    if (!cron.validate(plugin.cron)) {
+      throw new Error(`Invalid cron expression for plugin ${name}: ${plugin.cron}`);
+    }
+    this.cronPlugins.set(name, { plugin, enabled, task: null });
   }
 
   /** Start handle onebot event and cronjob. Should only call once. */
@@ -97,7 +98,7 @@ export class Arona {
 
     for (const [name, entry] of this.cronPlugins) {
       if (entry.enabled) {
-        this.startCronFiber(name, entry);
+        this.startCronTask(name, entry);
       }
     }
   }
@@ -158,9 +159,7 @@ export class Arona {
     const cronEntry = this.cronPlugins.get(name);
     if (cronEntry) {
       cronEntry.enabled = true;
-      if (!cronEntry.fiber) {
-        this.startCronFiber(name, cronEntry);
-      }
+      this.startCronTask(name, cronEntry);
       logger.info({ msg: "Cron plugin enabled", name });
     }
   }
@@ -176,28 +175,24 @@ export class Arona {
     const cronEntry = this.cronPlugins.get(name);
     if (cronEntry) {
       cronEntry.enabled = false;
-      if (cronEntry.fiber) {
-        Effect.runFork(Fiber.interrupt(cronEntry.fiber));
-        cronEntry.fiber = null;
+      if (cronEntry.task) {
+        cronEntry.task.stop();
       }
       logger.info({ msg: "Cron plugin disabled", name });
     }
   }
 
-  private startCronFiber(
-    name: string,
-    entry: { plugin: CronPlugin; enabled: boolean; fiber: Fiber.RuntimeFiber<unknown, unknown> | null }
-  ) {
-    const scheduled = entry.plugin.task.pipe(
-      Effect.provide(this.layer),
-      Effect.catchAll((e) =>
-        Effect.sync(() => logger.error({ msg: "Cron task error", plugin: name, error: e.message }))
-      ),
-      Effect.schedule(Schedule.spaced(Duration.millis(entry.plugin.interval)))
-    );
+  private startCronTask(name: string, entry: { plugin: CronPlugin; enabled: boolean; task: ScheduledTask | null }) {
+    if (entry.task) {
+      entry.task.start();
+      logger.info({ msg: "Cron task started", name, cron: entry.plugin.cron });
+      return;
+    }
 
-    entry.fiber = Effect.runFork(scheduled);
-    logger.info({ msg: "Cron fiber started", name });
+    entry.task = cron.schedule(entry.plugin.cron, () => {
+      void this.runEffect(entry.plugin.task, name);
+    });
+    logger.info({ msg: "Cron task scheduled", name, cron: entry.plugin.cron });
   }
 
   private runEffect(effect: Effect.Effect<void, Error, Services>, pluginName: string) {

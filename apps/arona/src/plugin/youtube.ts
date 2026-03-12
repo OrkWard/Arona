@@ -15,7 +15,7 @@ export interface YouTubePluginConfig {
 }
 
 export const createYouTubePlugin = (config: YouTubePluginConfig): CronPlugin => ({
-  interval: 10_000,
+  cron: "*/10 * * * * *",
 
   task: Effect.gen(function* () {
     const { youtube } = yield* WormfaceService;

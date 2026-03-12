@@ -17,7 +17,7 @@ export interface TwitterPluginConfig {
 }
 
 export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => ({
-  interval: 10_000,
+  cron: "*/10 * * * * *",
 
   task: Effect.gen(function* () {
     const { client: redis } = yield* RedisService;
