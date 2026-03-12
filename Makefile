@@ -1,5 +1,4 @@
 IMAGE_NAME := ghcr.io/orkward/arona
-GIT_TAG := $(shell git describe --tags --always)
 
 .PHONY: build config upload-sourcemap docker push
 
@@ -16,11 +15,7 @@ upload-sourcemap: build
 	sentry-cli sourcemaps upload apps/arona/dist
 
 docker:
-	docker build \
-        --build-arg GIT_TAG=$(GIT_TAG) \
-        -t $(IMAGE_NAME):$(GIT_TAG) \
-        -t $(IMAGE_NAME):latest .
+	docker build -t $(IMAGE_NAME):latest .
 
 push: docker
-	docker push $(IMAGE_NAME):$(GIT_TAG)
 	docker push $(IMAGE_NAME):latest

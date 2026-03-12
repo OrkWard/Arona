@@ -18,8 +18,6 @@ RUN pnpm --filter arona run build \
 
 # prod
 FROM node:22-bookworm-slim
-ARG GIT_TAG
-LABEL org.opencontainers.image.version=$GIT_TAG
 LABEL org.opencontainers.image.source="https://github.com/OrkWard/Arona"
 
 WORKDIR /app

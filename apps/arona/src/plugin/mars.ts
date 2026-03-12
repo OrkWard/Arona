@@ -9,7 +9,7 @@ import type { Message, OneBotMessageEvent } from "onebot";
 const logger = parentLogger.child({ module: "mars" });
 const { get } = got;
 
-const COMMAND_REGEX = /^\/(火星|煋|old|mars|m)$/;
+const COMMAND_REGEX = /^\/(火星|煋|晗|old|mars|m)$/;
 
 interface MarsPluginConfig {
   phashThreshold: number;
@@ -157,7 +157,19 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
           } else {
             results.push(
               `火星了！第${i + 1}张图片最早由${result.msg.sender}在${result.msg.ctime.toLocaleString("zh-CN")}发过，已经被发过${result.count}次了` +
-                (result.count > 1 ? `（${result.senders.join("、")}都很喜欢这张图片）` : "")
+                (result.count > 1
+                  ? `（${Object.entries(
+                      result.senders.reduce(
+                        (acc, cur) => {
+                          acc[cur] = (acc[cur] ?? 0) + 1;
+                          return acc;
+                        },
+                        {} as Record<string, number>
+                      )
+                    )
+                      .map(([key, value]) => `${key}x${value}`)
+                      .join("、")}都很喜欢这张图片）`
+                  : "")
             );
           }
         }
