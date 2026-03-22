@@ -85,7 +85,7 @@ class OneBot {
             this.logger.debug(`Action Return: ${JSON.stringify(res)}`);
             resolve(res.data);
           } else if (res.status === "failed") {
-            this.logger.debug(`Action Error: ${JSON.stringify(res)}`);
+            this.logger.trace(`Action Error: ${JSON.stringify(res)}`);
             reject(new OneBotError(`[${res.retcode}] ` + res.message));
           }
           this.receiveQueue.delete(echo);
