@@ -45,7 +45,7 @@ export class Arona {
   private cronPlugins = new Map<string, { plugin: CronPlugin; enabled: boolean; task: ScheduledTask | null }>();
 
   constructor(private config: AronaConfig) {
-    this.onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger);
+    this.onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger.child({ module: "onebot" }));
     this.redis = (() => {
       const client = createClient({ url: config.redisUrl });
       client.on("error", (err) => logger.error({ msg: "Redis error", error: err }));
