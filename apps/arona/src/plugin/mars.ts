@@ -16,7 +16,7 @@ interface MarsPluginConfig {
   pdqThreshold: number;
 }
 
-function processImage(currentMsgId: number, imageUrl: string, config: MarsPluginConfig) {
+function processImage(currentMsgId: number, imageUrl: string, groupId: number, config: MarsPluginConfig) {
   return Effect.gen(function* () {
     const s3 = yield* S3Service;
     const ml = yield* MlService;
@@ -46,7 +46,7 @@ function processImage(currentMsgId: number, imageUrl: string, config: MarsPlugin
     ];
 
     // Find similar images (excluding the current image itself)
-    const similarImages = yield* db.findSimilarImages(
+    const similarImages = (yield* db.findSimilarImages(
       {
         perceptualHash: hashResponse.perceptual_hash,
         pdqHashes: pdqHashes,
@@ -56,7 +56,7 @@ function processImage(currentMsgId: number, imageUrl: string, config: MarsPlugin
         phashThreshold: config.phashThreshold,
         pdqThreshold: config.pdqThreshold,
       }
-    );
+    )).filter((image) => image.group === groupId);
 
     if (similarImages.length === 0) {
       return null;
@@ -151,7 +151,7 @@ export function createMarsPlugin(config: MarsPluginConfig): EventPlugin {
 
           logger.info(`Processing image ${i + 1}/${imageSegs.length} for mars command`);
 
-          const result = yield* processImage(repliedMsg.message_id, imgSeg.data.url, config);
+          const result = yield* processImage(repliedMsg.message_id, imgSeg.data.url, repliedMsg.group_id, config);
           if (!result) {
             results.push(`看起来第${i + 1}张图片以前没有老师发过`);
           } else {

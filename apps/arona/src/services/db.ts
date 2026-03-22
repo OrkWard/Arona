@@ -18,6 +18,7 @@ export interface MessageDoc {
 
 export interface SimilarImageResult {
   sender: string;
+  group: number;
   ctime: Date;
   imageUrl: string;
   perceptualHash: string;
@@ -137,6 +138,7 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
                 if (phashMatch || pdqMatch) {
                   results.push({
                     sender: img.sender,
+                    group: img.groupId,
                     ctime: img.createdAt,
                     imageUrl: img.imageUrl!,
                     perceptualHash: img.perceptualHash,
