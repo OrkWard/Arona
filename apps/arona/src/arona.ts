@@ -1,4 +1,5 @@
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Exit, Cause } from "effect";
+import * as Sentry from "@sentry/node";
 import { NodeContext, NodeFileSystem } from "@effect/platform-node";
 import { createClient } from "redis";
 import cron, { type ScheduledTask } from "node-cron";
@@ -105,6 +106,8 @@ export class Arona {
 
   /** Dispatch message to plugin. If this is a switch command, don't dispatch. */
   private handleMessage(event: OneBotMessageEvent) {
+    logger.debug({ msg: "Received onebot message", content: JSON.stringify(event) });
+
     // Only process messages from the target groups
     const allowedGroups = Array.isArray(this.config.groupId) ? this.config.groupId : [this.config.groupId];
     if (event.message_type !== "group" || !allowedGroups.includes(event.group_id)) {
@@ -196,13 +199,23 @@ export class Arona {
   }
 
   private runEffect(effect: Effect.Effect<void, Error, Services>, pluginName: string) {
-    Effect.runPromise(
-      effect.pipe(
-        Effect.provide(this.layer),
-        Effect.catchAll((e) =>
-          Effect.sync(() => logger.error({ msg: "Plugin error", plugin: pluginName, error: e.message }))
-        )
-      )
-    );
+    void Effect.runPromiseExit(effect.pipe(Effect.provide(this.layer))).then((exit) => {
+      if (Exit.isFailure(exit)) {
+        const cause = exit.cause;
+        const pretty = Cause.pretty(cause);
+
+        logger.error({
+          msg: "Plugin error",
+          plugin: pluginName,
+          error: pretty,
+        });
+
+        Sentry.withScope((scope) => {
+          scope.setTag("plugin", pluginName);
+          scope.setExtra("fullCause", pretty);
+          Sentry.captureException(cause);
+        });
+      }
+    });
   }
 }

@@ -1,5 +1,5 @@
 import { Context, Effect, Layer, Scope } from "effect";
-import { MongoClient, Db, Collection, ObjectId } from "mongodb";
+import { MongoClient, Db, Collection } from "mongodb";
 
 export interface MessageDoc {
   messageId: number;
@@ -61,14 +61,14 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
         const client = new MongoClient(mongoUrl, { maxConnecting: 20 });
         yield* Effect.tryPromise({
           try: () => client.connect(),
-          catch: (e) => new Error(`Failed to connect to MongoDB: ${e}`),
+          catch: (e) => new Error("Failed to connect to MongoDB", { cause: e }),
         });
 
         yield* Scope.addFinalizer(
           yield* Effect.scope,
           Effect.tryPromise({
             try: () => client.close(),
-            catch: (e) => new Error(`Failed to close MongoDB connection: ${e}`),
+            catch: (e) => new Error("Failed to close MongoDB connection", { cause: e }),
           }).pipe(
             Effect.catchAll((e) =>
               Effect.sync(() => {
@@ -90,7 +90,7 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
             await collection.createIndex({ createdAt: 1 });
             await collection.createIndex({ type: 1, createdAt: -1 });
           },
-          catch: (e) => new Error(`Failed to create indexes: ${e}`),
+          catch: (e) => new Error("Failed to create indexes", { cause: e }),
         });
 
         return DbService.of({
@@ -101,7 +101,7 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
                   ...data,
                   createdAt: new Date(),
                 }),
-              catch: (e) => new Error(`Failed to save message: ${e}`),
+              catch: (e) => new Error("Failed to save message", { cause: e }),
             }).pipe(Effect.map(() => undefined)),
 
           findSimilarImages: ({ perceptualHash, pdqHashes, currentMsgId }, { phashThreshold, pdqThreshold }) =>
@@ -113,7 +113,7 @@ export class DbService extends Context.Tag("DbService")<DbService, DbServiceShap
 
               const images = yield* Effect.tryPromise({
                 try: () => collection.find(query).toArray(),
-                catch: (e) => new Error(`Failed to query images: ${e}`),
+                catch: (e) => new Error("Failed to query images", { cause: e }),
               });
 
               const results: SimilarImageResult[] = [];

@@ -29,7 +29,7 @@ export class WormfaceService extends Context.Tag("WormfaceService")<WormfaceServ
             Effect.promise(() => getTwitterByUserNamePosts({ client, path: { userName: params.username } })).pipe(
               Effect.flatMap((res) => {
                 if (typeof res.error !== "undefined") {
-                  return Effect.fail(new Error(res.error));
+                  return Effect.fail(new Error(`Wormface Twitter API error: ${res.error}`));
                 }
                 const result = [] as { text?: string; media?: string[]; id: string }[];
                 res.data.forEach((tweet) => {
@@ -67,7 +67,7 @@ export class WormfaceService extends Context.Tag("WormfaceService")<WormfaceServ
             ).pipe(
               Effect.flatMap((res) => {
                 if (typeof res.error !== "undefined") {
-                  return Effect.fail(new Error(res.error));
+                  return Effect.fail(new Error(`Wormface YouTube API error: ${res.error}`));
                 }
                 return Effect.succeed(res.data);
               })

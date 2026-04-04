@@ -17,7 +17,7 @@ export class MlService extends Context.Tag("MlService")<MlService, MlServiceShap
           Effect.promise(() => processImageGetImageHashPost({ client, body: { url } })).pipe(
             Effect.flatMap((res) => {
               if (typeof res.error !== "undefined") {
-                return Effect.fail(new Error(JSON.stringify(res.error)));
+                return Effect.fail(new Error(`ML API returned error: ${JSON.stringify(res.error)}`));
               }
               return Effect.succeed(res.data);
             })

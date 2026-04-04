@@ -72,7 +72,7 @@ class OneBot {
 
     if (this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(payload);
-      this.logger.debug(`Action sent: ${payload}`);
+      this.logger.trace(`Action sent: ${payload}`);
     } else {
       throw new OneBotError("Message dropped");
     }
@@ -164,7 +164,7 @@ class OneBot {
 
   private dispatch(message: any) {
     if (isActionResponse(message)) {
-      this.logger.debug(`Receive action response: ${JSON.stringify(message)}`);
+      this.logger.trace(`Receive action response: ${JSON.stringify(message)}`);
       if (typeof message.echo !== "string") {
         this.logger.warn(`Action Response should have 'echo': ${JSON.stringify(message)}`);
         return;
@@ -173,7 +173,7 @@ class OneBot {
       const id = message.echo;
       this.receiveQueue.set(id, message);
     } else if (isEvent(message)) {
-      this.logger.debug(`Receive event: ${JSON.stringify(message)}`);
+      this.logger.trace(`Receive event: ${JSON.stringify(message)}`);
 
       const eventName = message.post_type;
       const listeners = this.listeners.get(eventName);

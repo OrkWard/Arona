@@ -24,7 +24,7 @@ function processImage(currentMsgId: number, imageUrl: string, groupId: number, c
 
     const buffer = yield* Effect.tryPromise({
       try: () => get(imageUrl).buffer(),
-      catch: (e) => new Error(`Failed to download image: ${e}`),
+      catch: (e) => new Error(`Failed to download image`, { cause: e }),
     });
 
     const minioUrl = yield* s3.saveMedia(buffer, "jpg");
