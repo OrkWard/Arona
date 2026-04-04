@@ -49,9 +49,11 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
         }
 
         if (tweetMedia) {
+          logger.info(`Media counts: ${tweetMedia.length}`);
           for (const mediaUrl of tweetMedia) {
             const buffer = yield* Effect.promise(() => get(mediaUrl).buffer());
             const url = yield* media.saveMedia(buffer, "jpg");
+            logger.info(`Saved url: ${url}`);
 
             yield* onebot.post("send_group_msg", {
               group_id: groupId,
