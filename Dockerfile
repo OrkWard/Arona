@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1-labs
 
 # builder
-FROM node:22-bookworm AS builder
+FROM node:22-bookworm@sha256:80fdb3f57c815e1b638d221f30a826823467c4a56c8f6a8d7aa091cd9b1675ea AS builder
 
 WORKDIR /app
 COPY --parents pnpm-lock.yaml pnpm-workspace.yaml package.json \
@@ -9,7 +9,8 @@ COPY --parents pnpm-lock.yaml pnpm-workspace.yaml package.json \
     packages/onebot/package.json \
     ./
 
-RUN npm install -g pnpm@9 \
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm install -g pnpm@9 \
     && pnpm install --prod false --frozen-lockfile
 
 COPY . .

@@ -1,4 +1,4 @@
-IMAGE_NAME := ghcr.io/orkward/arona
+IMAGE_NAME := localhost:5000/arona
 
 .PHONY: build config upload-sourcemap docker push
 
