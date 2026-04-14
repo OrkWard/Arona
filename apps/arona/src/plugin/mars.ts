@@ -64,7 +64,7 @@ function processImage(currentMsgId: number, imageUrl: string, groupId: number, c
 
     similarImages.forEach((img) => {
       const matchInfo = img.matchType === "phash" ? `pHash距离: ${img.phashDistance}` : `PDQ距离: ${img.pdqDistance}`;
-      logger.info(`Match result for ${minioUrl}: ${matchInfo}`);
+      logger.info(`Match result for ${minioUrl}: ${matchInfo}, img: ${img.imageUrl}`);
     });
 
     return {
