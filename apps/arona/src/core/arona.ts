@@ -56,6 +56,7 @@ export class Arona {
       return;
     }
 
+    // handle switch command
     const text = event.message?.[0].type === "text" ? event.message[0].data.text : "";
     const sender = event.sender.user_id;
     const switchMatchResult = text.match(/^\/(on|off) (\w+)$/);
@@ -73,26 +74,51 @@ export class Arona {
       return;
     }
 
-    for (const [_, { plugin, enabled }] of this.eventPlugins) {
+    // handle normal message
+    for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMessage) continue;
-      plugin.onMessage(event);
+      plugin.onMessage(event).catch((e) => {
+        logger.error({ msg: "Event plugin error", plugin: name, error: e, event });
+        Sentry.withScope((scope) => {
+          scope.setTag("plugin_name", name);
+          scope.setContext("event", event);
+          Sentry.captureException(e);
+        });
+      });
     }
   }
 
+  // handle notice event
   private handleNotice(event: OneBotNoticeEvent) {
-    for (const [_, { plugin, enabled }] of this.eventPlugins) {
+    for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onNotice) continue;
-      plugin.onNotice(event);
+      plugin.onNotice(event).catch((e) => {
+        logger.error({ msg: "Event plugin error", plugin: name, error: e, event });
+        Sentry.withScope((scope) => {
+          scope.setTag("plugin_name", name);
+          scope.setContext("event", event);
+          Sentry.captureException(e);
+        });
+      });
     }
   }
 
+  // handle meta event
   private handleMeta(event: OneBotMetaEvent) {
-    for (const [_, { plugin, enabled }] of this.eventPlugins) {
+    for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMeta) continue;
-      plugin.onMeta(event);
+      plugin.onMeta(event).catch((e) => {
+        logger.error({ msg: "Event plugin error", plugin: name, error: e, event });
+        Sentry.withScope((scope) => {
+          scope.setTag("plugin_name", name);
+          scope.setContext("event", event);
+          Sentry.captureException(e);
+        });
+      });
     }
   }
 
+  // admin enable
   private enable(name: string) {
     const eventEntry = this.eventPlugins.get(name);
     if (eventEntry) {
@@ -109,6 +135,7 @@ export class Arona {
     }
   }
 
+  // admin disable
   private disable(name: string) {
     const eventEntry = this.eventPlugins.get(name);
     if (eventEntry) {
@@ -135,19 +162,13 @@ export class Arona {
     }
 
     entry.task = cron.schedule(entry.plugin.cron, () => {
-      // TODO: catch
-      // logger.error({
-      //   msg: "Plugin error",
-      //   plugin: pluginName,
-      //   error: pretty,
-      // });
-
-      // Sentry.withScope((scope) => {
-      //   scope.setTag("plugin", pluginName);
-      //   scope.setExtra("fullCause", pretty);
-      //   Sentry.captureException(cause);
-      // });
-      entry.plugin.task();
+      entry.plugin.task().catch((e) => {
+        logger.error({ msg: "Cron plugin error", plugin: name, error: e });
+        Sentry.withScope((scope) => {
+          scope.setTag("plugin_name", name);
+          Sentry.captureException(e);
+        });
+      });
     });
     logger.info({ msg: "Cron task scheduled", name, cron: entry.plugin.cron });
   }
