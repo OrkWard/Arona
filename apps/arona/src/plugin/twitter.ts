@@ -4,7 +4,7 @@ import { logger as parentLogger } from "../util/logger.js";
 
 const logger = parentLogger.child({ module: "twitter" });
 
-const MAX_TWEETS_TO_PROCESS = 2;
+const MAX_TWEETS_TO_PROCESS = 10;
 const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
 const TWITTER_USERNAME = "Blue_ArchiveJP";
 
@@ -45,13 +45,18 @@ export class TwitterPlugin extends CronPlugin {
 
           await this.onebot.post("send_group_msg", {
             group_id: groupId,
-            message: [
-              { type: "text", data: { text: tweet.text } },
-              ...media.map((url) => ({ type: "image" as const, data: { file: url } })),
-            ],
+            message: [{ type: "text", data: { text: tweet.text } }],
           });
+
+          await Promise.all(
+            media.map((url) =>
+              this.onebot.post("send_group_msg", {
+                group_id: groupId,
+                message: [{ type: "image", data: { file: url } }],
+              })
+            )
+          );
         } else if (tweet.type === "conversation") {
-          let lastMsgId: string | undefined;
           for (const singleTweet of tweet.items) {
             const media = await Promise.all(
               singleTweet.media.map(async (url) => {
@@ -62,21 +67,28 @@ export class TwitterPlugin extends CronPlugin {
               })
             );
 
-            const msg = await this.onebot.post("send_group_msg", {
+            await this.onebot.post("send_group_msg", {
               group_id: groupId,
-              message: [
-                ...(lastMsgId ? [{ type: "reply" as const, data: { id: lastMsgId } }] : []),
-                { type: "text", data: { text: singleTweet.text } },
-                ...media.map((url) => ({ type: "image" as const, data: { file: url } })),
-              ],
+              message: [{ type: "text", data: { text: singleTweet.text } }],
             });
-            logger.info(`Sent msg: ${msg}`);
-            lastMsgId = msg.message_id.toString();
+
+            await Promise.all(
+              media.map((url) =>
+                this.onebot.post("send_group_msg", {
+                  group_id: groupId,
+                  message: [{ type: "image", data: { file: url } }],
+                })
+              )
+            );
           }
         }
       }
 
       logger.info("Tweet sent to groups done");
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
     }
   }
 }
