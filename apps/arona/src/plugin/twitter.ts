@@ -46,7 +46,7 @@ export class TwitterPlugin extends CronPlugin {
       const isMember = await redis.sIsMember(REDIS_TWITTER_SENT, tweetId);
       if (isMember) continue;
 
-      logger.info(`New Tweet detected: [${tweetId}] ${tweet}`);
+      logger.info(`New Tweet detected: [${tweetId}] ${JSON.stringify(tweet, undefined, "  ")}`);
       await redis.sAdd(REDIS_TWITTER_SENT, tweetId);
       logger.info("Tweet record add to redis");
 

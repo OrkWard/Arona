@@ -78,7 +78,8 @@ export class Arona {
     for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMessage) continue;
       plugin.onMessage(event).catch((e) => {
-        logger.error({ msg: "Event plugin error", plugin: name, error: e, event });
+        logger.error({ msg: "Event plugin error", plugin: name, event });
+        console.error(e);
         Sentry.withScope((scope) => {
           scope.setTag("plugin_name", name);
           scope.setContext("event", event);
@@ -93,7 +94,8 @@ export class Arona {
     for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onNotice) continue;
       plugin.onNotice(event).catch((e) => {
-        logger.error({ msg: "Event plugin error", plugin: name, error: e, event });
+        logger.error({ msg: "Event plugin error", plugin: name, event });
+        console.error(e);
         Sentry.withScope((scope) => {
           scope.setTag("plugin_name", name);
           scope.setContext("event", event);
@@ -108,7 +110,8 @@ export class Arona {
     for (const [name, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMeta) continue;
       plugin.onMeta(event).catch((e) => {
-        logger.error({ msg: "Event plugin error", plugin: name, error: e, event });
+        logger.error({ msg: "Event plugin error", plugin: name, event });
+        console.error(e);
         Sentry.withScope((scope) => {
           scope.setTag("plugin_name", name);
           scope.setContext("event", event);
@@ -163,7 +166,8 @@ export class Arona {
 
     entry.task = cron.schedule(entry.plugin.cron, () => {
       entry.plugin.task().catch((e) => {
-        logger.error({ msg: "Cron plugin error", plugin: name, error: e });
+        logger.error({ msg: "Cron plugin error", plugin: name });
+        console.error(e);
         Sentry.withScope((scope) => {
           scope.setTag("plugin_name", name);
           Sentry.captureException(e);
