@@ -6,7 +6,7 @@ import { stableHash } from "stable-hash";
 
 const logger = parentLogger.child({ module: "twitter" });
 
-const MAX_TWEETS_TO_PROCESS = 10;
+const MAX_TWEETS_TO_PROCESS = 2;
 const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
 const TWITTER_USERNAME = "Blue_ArchiveJP";
 
