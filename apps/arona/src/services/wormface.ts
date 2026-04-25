@@ -5,7 +5,7 @@ import { AppConfig } from "./config.js";
 import { logger } from "../util/logger.js";
 import { maxBy } from "es-toolkit";
 
-type Tweet =
+export type Tweet =
   | { type: "post"; text: string; image: string[]; video: string[]; id: string }
   | {
       type: "conversation";
