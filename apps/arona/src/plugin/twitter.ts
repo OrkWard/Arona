@@ -16,6 +16,26 @@ export interface TwitterPluginConfig {
 export class TwitterPlugin extends CronPlugin {
   cron = "*/10 * * * * *";
 
+  private async sendImage(url: string, groupId: number) {
+    const buffer = await ky.get(url).arrayBuffer();
+    const savedUrl = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
+    logger.info(`Saved url: ${savedUrl}`);
+    this.onebot.post("send_group_msg", {
+      group_id: groupId,
+      message: [{ type: "image", data: { file: savedUrl } }],
+    });
+  }
+
+  private async sendVideo(url: string, groupId: number) {
+    const buffer = await ky.get(url).arrayBuffer();
+    const savedUrl = await this.s3.saveMedia(Buffer.from(buffer), "mp4");
+    logger.info(`Saved url: ${savedUrl}`);
+    this.onebot.post("send_group_msg", {
+      group_id: groupId,
+      message: [{ type: "video", data: { file: savedUrl } }],
+    });
+  }
+
   async task() {
     const tweets = await this.wormface.getUserPosts(TWITTER_USERNAME);
     const redis = await this.redis.getClient();
@@ -34,52 +54,20 @@ export class TwitterPlugin extends CronPlugin {
 
       for (const groupId of targetGroups) {
         if (tweet.type === "post") {
-          const media = await Promise.all(
-            tweet.media.map(async (url) => {
-              const buffer = await ky.get(url).arrayBuffer();
-              const savedUrl = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
-              logger.info(`Saved url: ${savedUrl}`);
-              return savedUrl;
-            })
-          );
-
           await this.onebot.post("send_group_msg", {
             group_id: groupId,
             message: [{ type: "text", data: { text: tweet.text } }],
           });
-
-          await Promise.all(
-            media.map((url) =>
-              this.onebot.post("send_group_msg", {
-                group_id: groupId,
-                message: [{ type: "image", data: { file: url } }],
-              })
-            )
-          );
+          await Promise.all(tweet.image.map((url) => this.sendImage(url, groupId)));
+          await Promise.all(tweet.video.map((url) => this.sendVideo(url, groupId)));
         } else if (tweet.type === "conversation") {
           for (const singleTweet of tweet.items) {
-            const media = await Promise.all(
-              singleTweet.media.map(async (url) => {
-                const buffer = await ky.get(url).arrayBuffer();
-                const savedUrl = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
-                logger.info(`Saved url: ${savedUrl}`);
-                return savedUrl;
-              })
-            );
-
             await this.onebot.post("send_group_msg", {
               group_id: groupId,
               message: [{ type: "text", data: { text: singleTweet.text } }],
             });
-
-            await Promise.all(
-              media.map((url) =>
-                this.onebot.post("send_group_msg", {
-                  group_id: groupId,
-                  message: [{ type: "image", data: { file: url } }],
-                })
-              )
-            );
+            await Promise.all(singleTweet.image.map((url) => this.sendImage(url, groupId)));
+            await Promise.all(singleTweet.video.map((url) => this.sendVideo(url, groupId)));
           }
         }
       }

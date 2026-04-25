@@ -2,7 +2,7 @@ import { defineConfig } from "@hey-api/openapi-ts";
 
 export default defineConfig([
   {
-    input: "https://raw.githubusercontent.com/OrkWard/wormface/master/internal/server/docs/swagger.yaml",
+    input: "https://raw.githubusercontent.com/OrkWard/wormface/refs/heads/master/internal/server/docs/swagger.yaml",
     output: {
       path: "src/codegen/wormface",
       importFileExtension: ".js",

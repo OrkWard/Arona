@@ -3,19 +3,19 @@ packages:
   - apps/*
 
 catalog:
-  "@aws-sdk/client-s3": 3.741.0
-  "@eslint/eslintrc": ^3.2.0
-  "@prisma/client": 6.0.0
-  "@radix-ui/themes": ^3.2.0
-  "@sentry/node": ^9.15.0
-  "@types/node": ^20.19.33
-  "@types/react": ^19.0.8
-  "@types/react-dom": ^19.0.3
-  "@types/ws": ^8.5.12
+  '@aws-sdk/client-s3': 3.741.0
+  '@eslint/eslintrc': ^3.2.0
+  '@prisma/client': 6.0.0
+  '@radix-ui/themes': ^3.2.0
+  '@sentry/node': ^9.15.0
+  '@types/node': ^20.19.33
+  '@types/react': ^19.0.8
+  '@types/react-dom': ^19.0.3
+  '@types/ws': ^8.5.12
   acorn: ^8.12.1
   acorn-walk: ^8.3.4
   cheerio: ^1.0.0
-  es-toolkit: ^1.44.0
+  es-toolkit: 1.44.0
   eslint: ^9.19.0
   eslint-config-next: ^15.1.6
   googleapis: ^148.0.0

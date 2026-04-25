@@ -25,6 +25,7 @@ export type TwitterMedia = {
     aspect_ratio?: Array<number>;
     duration_millis?: number;
     variants?: Array<{
+      bitrate?: number;
       content_type?: string;
       url?: string;
     }>;

@@ -3,14 +3,16 @@ import { Client } from "../codegen/ml/client/types.gen.js";
 import { getTwitterByUserNamePosts, getYoutubeByChannelNameVideos } from "../codegen/wormface/index.js";
 import { AppConfig } from "./config.js";
 import { logger } from "../util/logger.js";
+import { maxBy } from "es-toolkit";
 
 type Tweet =
-  | { type: "post"; text: string; media: string[]; id: string }
+  | { type: "post"; text: string; image: string[]; video: string[]; id: string }
   | {
       type: "conversation";
       items: {
         text: string;
-        media: string[];
+        image: string[];
+        video: string[];
       }[];
       id: string;
     };
@@ -33,9 +35,17 @@ export class WormfaceService {
           type: "post",
           id: tweet.entryId!,
           text: tweet.content.itemContent?.tweet_results?.result?.legacy?.full_text ?? "",
-          media:
-            tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map((m) => m.media_url_https!) ??
-            [],
+          image:
+            tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media
+              ?.filter((m) => m.type === "photo")
+              ?.map((m) => m.media_url_https!) ?? [],
+          video:
+            tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media
+              ?.filter((m) => m.type === "video")
+              ?.map((m) => {
+                const info = m.video_info?.variants?.filter((v) => typeof v.bitrate === "number") || [];
+                return maxBy(info, (v) => v.bitrate!)?.url!;
+              }) ?? [],
         });
       } else if (tweet.content?.entryType === "TimelineTimelineModule") {
         result.push({
@@ -44,9 +54,17 @@ export class WormfaceService {
           items:
             tweet.content?.items?.map((i) => ({
               text: i.item?.itemContent?.tweet_results?.result?.legacy?.full_text ?? "",
-              media:
-                i.item?.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map((m) => m.media_url_https!) ??
-                [],
+              image:
+                i.item?.itemContent?.tweet_results?.result?.legacy?.entities?.media
+                  ?.filter((m) => m.type === "photo")
+                  ?.map((m) => m.media_url_https!) ?? [],
+              video:
+                i.item?.itemContent?.tweet_results?.result?.legacy?.entities?.media
+                  ?.filter((m) => m.type === "video")
+                  ?.map((m) => {
+                    const info = m.video_info?.variants?.filter((v) => typeof v.bitrate === "number") || [];
+                    return maxBy(info, (v) => v.bitrate!)?.url!;
+                  }) ?? [],
             })) || [],
         });
       }

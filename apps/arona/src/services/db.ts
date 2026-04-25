@@ -101,6 +101,8 @@ export class DbService {
     };
     const images = await collection.find(query).toArray();
 
+    logger.info(`Scanning ${images.length} images...`);
+
     const results: SimilarImageResult[] = [];
     for (const img of images) {
       if (!img.perceptualHash || !img.pdqHashOriginal) continue;

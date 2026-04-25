@@ -19,7 +19,7 @@ catalogs:
       specifier: ^8.5.12
       version: 8.5.12
     es-toolkit:
-      specifier: ^1.44.0
+      specifier: 1.44.0
       version: 1.44.0
     pino:
       specifier: ^9.6.0
@@ -50,6 +50,9 @@ importers:
       '@sentry/node':
         specifier: 'catalog:'
         version: 9.15.0
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.44.0
       html-entities:
         specifier: ^2.5.2
         version: 2.6.0
