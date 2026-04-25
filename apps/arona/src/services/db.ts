@@ -1,5 +1,5 @@
-import { Context, Effect, Layer, Scope } from "effect";
-import { MongoClient, Db, Collection } from "mongodb";
+import { MongoClient, Collection } from "mongodb";
+import { AppConfig } from "./config.js";
 
 export interface MessageDoc {
   messageId: number;
@@ -28,14 +28,7 @@ export interface SimilarImageResult {
   pdqDistance?: number;
 }
 
-export interface DbServiceShape {
-  readonly saveMessage: (data: Omit<MessageDoc, "_id" | "createdAt">) => Effect.Effect<void, Error>;
-  readonly findSimilarImages: (
-    params: { perceptualHash: string; pdqHashes: string[]; currentMsgId?: number },
-    config: { phashThreshold: number; pdqThreshold: number }
-  ) => Effect.Effect<SimilarImageResult[], Error>;
-}
-
+const DB_NAME = "arona";
 const COLLECTION_NAME = "messages";
 
 function hammingDistance(a: string, b: string): number {
@@ -53,106 +46,87 @@ function hammingDistance(a: string, b: string): number {
   return distance;
 }
 
-export class DbService extends Context.Tag("DbService")<DbService, DbServiceShape>() {
-  static makeLive = (mongoUrl: string) =>
-    Layer.scoped(
-      DbService,
-      Effect.gen(function* () {
-        const client = new MongoClient(mongoUrl, { maxConnecting: 20 });
-        yield* Effect.tryPromise({
-          try: () => client.connect(),
-          catch: (e) => new Error("Failed to connect to MongoDB", { cause: e }),
+export class DbService {
+  static inject = ["config"] as const;
+
+  private _client?: MongoClient;
+  constructor(private config: AppConfig) {}
+
+  get client(): Promise<MongoClient> {
+    if (this._client) return Promise.resolve(this._client);
+
+    const c = new MongoClient(this.config.mongoUrl, { maxConnecting: 20 });
+    this._client = c;
+    return c.connect();
+  }
+  get collection(): Promise<Collection<MessageDoc>> {
+    return this.client.then((c) => c.db(DB_NAME).collection(COLLECTION_NAME));
+  }
+
+  async createIndex() {
+    const collection = await this.collection;
+    await collection.createIndex({ messageId: 1, segmentIndex: 1 }, { unique: true });
+    await collection.createIndex({ perceptualHash: 1 });
+    await collection.createIndex({ pdqHashOriginal: 1 });
+    await collection.createIndex({ createdAt: 1 });
+    await collection.createIndex({ type: 1, createdAt: -1 });
+  }
+
+  async saveMessage(data: Omit<MessageDoc, "_id" | "createdAt">) {
+    const collection = await this.collection;
+    await collection.insertOne({
+      ...data,
+      createdAt: new Date(),
+    });
+  }
+  async findSimilarImages(
+    params: { perceptualHash: string; pdqHashes: string[]; currentMsgId?: number },
+    config: { phashThreshold: number; pdqThreshold: number }
+  ) {
+    const { pdqHashes, perceptualHash, currentMsgId } = params;
+    const { pdqThreshold, phashThreshold } = config;
+    const collection = await this.collection;
+    const query: Record<string, unknown> = { type: "image", perceptualHash: { $exists: true } };
+    if (currentMsgId) {
+      query.messageId = { $ne: currentMsgId };
+    }
+
+    const images = await collection.find(query).toArray();
+
+    const results: SimilarImageResult[] = [];
+
+    for (const img of images) {
+      if (!img.perceptualHash || !img.pdqHashOriginal) continue;
+
+      const phashDist = hammingDistance(perceptualHash, img.perceptualHash);
+      const phashMatch = phashDist <= phashThreshold;
+
+      let pdqMatch = false;
+      let minPdqDist = Infinity;
+      for (const pdqHash of pdqHashes) {
+        const dist = hammingDistance(pdqHash, img.pdqHashOriginal);
+        minPdqDist = Math.min(minPdqDist, dist);
+        if (dist <= pdqThreshold) {
+          pdqMatch = true;
+          break;
+        }
+      }
+
+      if (phashMatch || pdqMatch) {
+        results.push({
+          sender: img.sender,
+          group: img.groupId,
+          ctime: img.createdAt,
+          imageUrl: img.imageUrl!,
+          perceptualHash: img.perceptualHash,
+          pdqHashOriginal: img.pdqHashOriginal,
+          matchType: phashMatch ? "phash" : "pdq",
+          phashDistance: phashDist,
+          pdqDistance: minPdqDist === Infinity ? undefined : minPdqDist,
         });
+      }
+    }
 
-        yield* Scope.addFinalizer(
-          yield* Effect.scope,
-          Effect.tryPromise({
-            try: () => client.close(),
-            catch: (e) => new Error("Failed to close MongoDB connection", { cause: e }),
-          }).pipe(
-            Effect.catchAll((e) =>
-              Effect.sync(() => {
-                console.error("Error closing MongoDB connection:", e);
-              })
-            )
-          )
-        );
-
-        const db: Db = client.db("arona");
-        const collection: Collection<MessageDoc> = db.collection(COLLECTION_NAME);
-
-        // 建索引
-        yield* Effect.tryPromise({
-          try: async () => {
-            await collection.createIndex({ messageId: 1, segmentIndex: 1 }, { unique: true });
-            await collection.createIndex({ perceptualHash: 1 });
-            await collection.createIndex({ pdqHashOriginal: 1 });
-            await collection.createIndex({ createdAt: 1 });
-            await collection.createIndex({ type: 1, createdAt: -1 });
-          },
-          catch: (e) => new Error("Failed to create indexes", { cause: e }),
-        });
-
-        return DbService.of({
-          saveMessage: (data) =>
-            Effect.tryPromise({
-              try: () =>
-                collection.insertOne({
-                  ...data,
-                  createdAt: new Date(),
-                }),
-              catch: (e) => new Error("Failed to save message", { cause: e }),
-            }).pipe(Effect.map(() => undefined)),
-
-          findSimilarImages: ({ perceptualHash, pdqHashes, currentMsgId }, { phashThreshold, pdqThreshold }) =>
-            Effect.gen(function* () {
-              const query: Record<string, unknown> = { type: "image", perceptualHash: { $exists: true } };
-              if (currentMsgId) {
-                query.messageId = { $ne: currentMsgId };
-              }
-
-              const images = yield* Effect.tryPromise({
-                try: () => collection.find(query).toArray(),
-                catch: (e) => new Error("Failed to query images", { cause: e }),
-              });
-
-              const results: SimilarImageResult[] = [];
-
-              for (const img of images) {
-                if (!img.perceptualHash || !img.pdqHashOriginal) continue;
-
-                const phashDist = hammingDistance(perceptualHash, img.perceptualHash);
-                const phashMatch = phashDist <= phashThreshold;
-
-                let pdqMatch = false;
-                let minPdqDist = Infinity;
-                for (const pdqHash of pdqHashes) {
-                  const dist = hammingDistance(pdqHash, img.pdqHashOriginal);
-                  minPdqDist = Math.min(minPdqDist, dist);
-                  if (dist <= pdqThreshold) {
-                    pdqMatch = true;
-                    break;
-                  }
-                }
-
-                if (phashMatch || pdqMatch) {
-                  results.push({
-                    sender: img.sender,
-                    group: img.groupId,
-                    ctime: img.createdAt,
-                    imageUrl: img.imageUrl!,
-                    perceptualHash: img.perceptualHash,
-                    pdqHashOriginal: img.pdqHashOriginal,
-                    matchType: phashMatch ? "phash" : "pdq",
-                    phashDistance: phashDist,
-                    pdqDistance: minPdqDist === Infinity ? undefined : minPdqDist,
-                  });
-                }
-              }
-
-              return results;
-            }),
-        });
-      })
-    );
+    return results;
+  }
 }

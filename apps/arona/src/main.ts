@@ -1,11 +1,22 @@
 import "./util/sentry.js";
+import { createInjector } from "typed-inject";
+import { OneBot } from "onebot";
+import { logger } from "./util/logger.js";
+
 import { Arona } from "./arona.js";
-import { createTwitterPlugin } from "./plugin/twitter.js";
+import { AppConfig } from "./services/config.js";
+import { RedisService } from "./services/redis.js";
+import { WormfaceService } from "./services/wormface.js";
+import { MlService } from "./services/ml.js";
+import { DbService } from "./services/db.js";
+import { S3Service } from "./services/media.js";
+
+import { TwitterPlugin } from "./plugin/twitter.js";
 // import { createYouTubePlugin } from "./plugin/youtube.js";
-import { createPokePlugin } from "./plugin/poke.js";
-import { createAlivePlugin } from "./plugin/alive.js";
-import { createMarsPlugin } from "./plugin/mars.js";
-import { createBackupPlugin } from "./plugin/backup.js";
+import { PokePlugin } from "./plugin/poke.js";
+import { AlivePlugin } from "./plugin/alive.js";
+import { MarsPlugin } from "./plugin/mars.js";
+import { BackupPlugin } from "./plugin/backup.js";
 
 function assertEnv(name: string): string {
   const value = process.env[name];
@@ -24,7 +35,7 @@ function parseGroupIds(value: string): number | number[] {
 
 const groupId = parseGroupIds(assertEnv("QQ_GROUP_ID"));
 
-const arona = new Arona({
+const config = {
   onebotOrigin: assertEnv("ONEBOT_ORIGIN"),
   onebotAuthToken: assertEnv("ONEBOT_AUTH_TOKEN"),
   s3Endpoint: assertEnv("MINIO_ENDPOINT"),
@@ -36,19 +47,25 @@ const arona = new Arona({
   wormfaceOrigin: assertEnv("WORMFACE_ORIGIN"),
   mlOrigin: assertEnv("MACHINE_LEARNING_ORIGIN"),
   mongoUrl: assertEnv("MONGO_URL"),
-});
+} satisfies AppConfig;
 
-arona.add("poke", createPokePlugin());
-arona.add("alive", createAlivePlugin());
-arona.add(
-  "mars",
-  createMarsPlugin({
-    phashThreshold: Number(process.env["PHASH_THRESHOLD"] ?? "10"),
-    pdqThreshold: Number(process.env["PDQ_THRESHOLD"] ?? "10"),
-  })
-);
-arona.add("backup", createBackupPlugin());
-arona.cron("twitter", createTwitterPlugin({ twitterUsername: "Blue_ArchiveJP", groupId }));
+const onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger.child({ module: "onebot" }));
+const injector = createInjector()
+  .provideValue("config", config)
+  .provideClass("redis", RedisService)
+  .provideValue("onebot", onebot)
+  .provideClass("wormface", WormfaceService)
+  .provideClass("ml", MlService)
+  .provideClass("db", DbService)
+  .provideClass("s3", S3Service);
+
+const arona = injector.injectClass(Arona);
+
+arona.add("poke", injector.injectClass(PokePlugin));
+arona.add("alive", injector.injectClass(AlivePlugin));
+arona.add("mars", injector.injectClass(MarsPlugin));
+arona.add("backup", injector.injectClass(BackupPlugin));
+arona.cron("twitter", injector.injectClass(TwitterPlugin));
 // arona.cron("youtube", createYouTubePlugin({ qqGroupId, youtubeChannelId: "UCmgf8DJrAXFnU7j3u0kklUQ" }), false);
 
 arona.start();

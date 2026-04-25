@@ -13,15 +13,11 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "0.94.0",
     "@types/node": "catalog:",
-    "concurrently": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
-    "@effect/platform": "^0.94.1",
-    "@effect/platform-node": "^0.104.0",
     "@sentry/node": "catalog:",
-    "effect": "catalog:",
     "got": "catalog:",
     "html-entities": "^2.5.2",
     "mongodb": "^6.0.0",
@@ -29,6 +25,7 @@
     "onebot": "workspace:*",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
-    "redis": "^5.0.0"
+    "redis": "^5.0.0",
+    "typed-inject": "^5.0.0"
   }
 }

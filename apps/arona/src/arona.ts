@@ -1,79 +1,21 @@
-import { Effect, Layer, Exit, Cause } from "effect";
 import * as Sentry from "@sentry/node";
-import { NodeContext, NodeFileSystem } from "@effect/platform-node";
-import { createClient } from "redis";
 import cron, { type ScheduledTask } from "node-cron";
 
 import { OneBot, OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
-import { RedisService, S3Service, OneBotService, WormfaceService, MlService, DbService } from "./services/index.js";
-import { RedisClient } from "./services/redis.js";
 import { logger } from "./util/logger.js";
-import type { EventPlugin, CronPlugin, Services } from "./types.js";
-
-export interface AronaConfig {
-  // OneBot
-  onebotOrigin: string;
-  onebotAuthToken: string;
-  adminId: number;
-
-  // Target groups (bot only processes messages from these groups)
-  groupId: number | number[];
-
-  // Redis
-  redisUrl: string;
-
-  // S3 server
-  s3Endpoint: string;
-  s3Ak: string;
-  s3Sk: string;
-
-  // Wormface
-  wormfaceOrigin: string;
-
-  // Arona-Machine-Learning
-  mlOrigin: string;
-
-  // MongoDB
-  mongoUrl: string;
-}
+import { AppConfig } from "./services/config.js";
+import { CronPlugin, EventPlugin } from "./core/plugin.js";
 
 export class Arona {
-  private onebot: OneBot;
-  private redis: RedisClient;
-  private layer: Layer.Layer<Services, never, never>;
+  static inject = ["config", "onebot"] as const;
 
   private eventPlugins = new Map<string, { plugin: EventPlugin; enabled: boolean }>();
   private cronPlugins = new Map<string, { plugin: CronPlugin; enabled: boolean; task: ScheduledTask | null }>();
 
-  constructor(private config: AronaConfig) {
-    this.onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger.child({ module: "onebot" }));
-    this.redis = (() => {
-      const client = createClient({ url: config.redisUrl });
-      client.on("error", (err) => logger.error({ msg: "Redis error", error: err }));
-      client.connect().then(() => {
-        logger.info("Redis connected");
-      });
-      return client;
-    })();
-
-    this.layer = Layer.mergeAll(
-      RedisService.makeLive(this.redis),
-      S3Service.makeLive({
-        endpoint: config.s3Endpoint,
-        ak: config.s3Ak,
-        sk: config.s3Sk,
-        mediaBucket: "media",
-        stickerBucket: "sticker",
-      }),
-      OneBotService.makeLive(this.onebot),
-      WormfaceService.makeLive(config.wormfaceOrigin),
-      MlService.makeLive(config.mlOrigin),
-      DbService.makeLive(config.mongoUrl),
-      NodeContext.layer
-    )
-      .pipe(Layer.provide(NodeFileSystem.layer))
-      .pipe(Layer.orDie);
-  }
+  constructor(
+    private config: AppConfig,
+    private onebot: OneBot
+  ) {}
 
   /** add event plugin */
   add(name: string, plugin: EventPlugin, enabled = true) {
@@ -131,23 +73,23 @@ export class Arona {
       return;
     }
 
-    for (const [name, { plugin, enabled }] of this.eventPlugins) {
+    for (const [_, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMessage) continue;
-      this.runEffect(plugin.onMessage(event), name);
+      plugin.onMessage(event);
     }
   }
 
   private handleNotice(event: OneBotNoticeEvent) {
-    for (const [name, { plugin, enabled }] of this.eventPlugins) {
+    for (const [_, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onNotice) continue;
-      this.runEffect(plugin.onNotice(event), name);
+      plugin.onNotice(event);
     }
   }
 
   private handleMeta(event: OneBotMetaEvent) {
-    for (const [name, { plugin, enabled }] of this.eventPlugins) {
+    for (const [_, { plugin, enabled }] of this.eventPlugins) {
       if (!enabled || !plugin.onMeta) continue;
-      this.runEffect(plugin.onMeta(event), name);
+      plugin.onMeta(event);
     }
   }
 
@@ -193,29 +135,20 @@ export class Arona {
     }
 
     entry.task = cron.schedule(entry.plugin.cron, () => {
-      void this.runEffect(entry.plugin.task, name);
+      // TODO: catch
+      // logger.error({
+      //   msg: "Plugin error",
+      //   plugin: pluginName,
+      //   error: pretty,
+      // });
+
+      // Sentry.withScope((scope) => {
+      //   scope.setTag("plugin", pluginName);
+      //   scope.setExtra("fullCause", pretty);
+      //   Sentry.captureException(cause);
+      // });
+      entry.plugin.task();
     });
     logger.info({ msg: "Cron task scheduled", name, cron: entry.plugin.cron });
-  }
-
-  private runEffect(effect: Effect.Effect<void, Error, Services>, pluginName: string) {
-    void Effect.runPromiseExit(effect.pipe(Effect.provide(this.layer))).then((exit) => {
-      if (Exit.isFailure(exit)) {
-        const cause = exit.cause;
-        const pretty = Cause.pretty(cause);
-
-        logger.error({
-          msg: "Plugin error",
-          plugin: pluginName,
-          error: pretty,
-        });
-
-        Sentry.withScope((scope) => {
-          scope.setTag("plugin", pluginName);
-          scope.setExtra("fullCause", pretty);
-          Sentry.captureException(cause);
-        });
-      }
-    });
   }
 }

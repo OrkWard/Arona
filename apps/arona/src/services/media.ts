@@ -1,64 +1,55 @@
 import { randomUUID } from "node:crypto";
-import { Context, Effect, Layer } from "effect";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { AppConfig } from "./config.js";
 
-export interface S3ServiceShape {
+const MEDIA_BUCKET = "media";
+const STICKER_BUCKET = "sticker";
+
+export class S3Service {
+  static inject = ["config"] as const;
+
+  private _s3client?: S3Client;
+  constructor(private config: AppConfig) {}
+
+  get S3(): S3Client {
+    if (this._s3client) return this._s3client;
+
+    const s = new S3Client({
+      region: "auto",
+      endpoint: this.config.s3Endpoint,
+      credentials: {
+        accessKeyId: this.config.s3Ak,
+        secretAccessKey: this.config.s3Sk,
+      },
+      forcePathStyle: true,
+    });
+    this._s3client = s;
+    return s;
+  }
+
   /**
    * Save a buffer as a media file.
    * @returns Full URL to access the saved media
    */
-  readonly saveMedia: (buffer: Buffer, ext: string) => Effect.Effect<string, Error>;
+  async saveMedia(buffer: Buffer, ext: string) {
+    const id = randomUUID();
+    const filename = `${id}.${ext}`;
+
+    await this.S3.send(
+      new PutObjectCommand({
+        Bucket: MEDIA_BUCKET,
+        Key: filename,
+        Body: buffer,
+      })
+    );
+
+    return `${this.config.s3Endpoint}/${MEDIA_BUCKET}/${filename}`;
+  }
 
   /**
    * Get URL for a sticker (e.g., "Arona_1.png").
    */
-  readonly getStickerUrl: (name: string) => string;
-}
-
-export class S3Service extends Context.Tag("MediaService")<S3Service, S3ServiceShape>() {
-  static makeLive = (config: {
-    endpoint: string;
-    ak: string;
-    sk: string;
-    stickerBucket: string;
-    mediaBucket: string;
-  }) =>
-    Layer.effect(
-      S3Service,
-      Effect.gen(function* () {
-        const S3 = new S3Client({
-          region: "auto",
-          endpoint: config.endpoint,
-          credentials: {
-            accessKeyId: config.ak,
-            secretAccessKey: config.sk,
-          },
-          forcePathStyle: true,
-        });
-
-        return S3Service.of({
-          saveMedia: (buffer, ext) =>
-            Effect.gen(function* () {
-              const id = randomUUID();
-              const filename = `${id}.${ext}`;
-
-              yield* Effect.tryPromise({
-                try: () =>
-                  S3.send(
-                    new PutObjectCommand({
-                      Bucket: config.mediaBucket,
-                      Key: filename,
-                      Body: buffer,
-                    })
-                  ),
-                catch: (e) => e as Error,
-              });
-
-              return `${config.endpoint}/${config.mediaBucket}/${filename}`;
-            }),
-
-          getStickerUrl: (name) => `${config.endpoint}/${config.stickerBucket}/${name}`,
-        });
-      })
-    );
+  getStickerUrl(name: string) {
+    return `${this.config.s3Endpoint}/${STICKER_BUCKET}/${name}`;
+  }
 }

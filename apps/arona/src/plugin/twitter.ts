@@ -1,9 +1,6 @@
-import { Effect } from "effect";
-
+import { CronPlugin } from "../core/plugin.js";
 import { logger as parentLogger } from "../util/logger.js";
 import { got } from "got";
-import { OneBotService, RedisService, S3Service, WormfaceService } from "../services/index.js";
-import type { CronPlugin } from "../types.js";
 
 const logger = parentLogger.child({ module: "twitter" });
 const { get } = got;
@@ -16,33 +13,29 @@ export interface TwitterPluginConfig {
   groupId: number | number[];
 }
 
-export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => ({
-  cron: "*/10 * * * * *",
+export class TwitterPlugin extends CronPlugin {
+  cron = "*/10 * * * * *";
 
-  task: Effect.gen(function* () {
-    const { client: redis } = yield* RedisService;
-    const onebot = yield* OneBotService;
-    const media = yield* S3Service;
-    const { twitter } = yield* WormfaceService;
-
-    const tweets = yield* twitter.getUserPosts({ username: config.twitterUsername });
+  async task() {
+    const tweets = await this.wormface.getUserPosts("Blue_ArchiveJP");
+    const redis = await this.redis.getClient();
 
     for (const tweet of tweets.slice(0, MAX_TWEETS_TO_PROCESS)) {
       const { id: tweetId, media: tweetMedia, text } = tweet;
 
-      const isMember = yield* Effect.promise(() => redis.sIsMember(REDIS_TWITTER_SENT, tweetId));
+      const isMember = await redis.sIsMember(REDIS_TWITTER_SENT, tweetId);
       if (isMember) {
         continue;
       }
       logger.info(`New Tweet detected: [${tweetId}] ${text?.slice(20)}`);
-      yield* Effect.promise(() => redis.sAdd(REDIS_TWITTER_SENT, tweetId));
+      await redis.sAdd(REDIS_TWITTER_SENT, tweetId);
       logger.info("Tweet record add to redis");
 
-      const targetGroups = Array.isArray(config.groupId) ? config.groupId : [config.groupId];
+      const targetGroups = Array.isArray(this.config.groupId) ? this.config.groupId : [this.config.groupId];
 
       for (const groupId of targetGroups) {
         if (text) {
-          yield* onebot.post("send_group_msg", {
+          await this.onebot.post("send_group_msg", {
             group_id: groupId,
             message: [{ type: "text", data: { text } }],
           });
@@ -51,11 +44,11 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
         if (tweetMedia) {
           logger.info(`Media counts: ${tweetMedia.length}`);
           for (const mediaUrl of tweetMedia) {
-            const buffer = yield* Effect.promise(() => get(mediaUrl).buffer());
-            const url = yield* media.saveMedia(buffer, "jpg");
+            const buffer = await get(mediaUrl).buffer();
+            const url = await this.s3.saveMedia(buffer, "jpg");
             logger.info(`Saved url: ${url}`);
 
-            yield* onebot.post("send_group_msg", {
+            await this.onebot.post("send_group_msg", {
               group_id: groupId,
               message: [{ type: "image", data: { file: url } }],
             });
@@ -65,5 +58,5 @@ export const createTwitterPlugin = (config: TwitterPluginConfig): CronPlugin => 
 
       logger.info("Tweet sent to groups done");
     }
-  }),
-});
+  }
+}

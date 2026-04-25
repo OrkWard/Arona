@@ -1,28 +1,27 @@
-import { Context, Effect, Layer } from "effect";
-import { ImageHashResponse, processImageGetImageHashPost } from "../codegen/ml/index.js";
+import { processImageGetImageHashPost } from "../codegen/ml/index.js";
 import { createClient } from "../codegen/ml/client/client.gen.js";
+import { Client } from "../codegen/ml/client/types.gen.js";
+import { AppConfig } from "./config.js";
 
-export interface MlServiceShape {
-  readonly getImageHash: (params: { url: string }) => Effect.Effect<ImageHashResponse, Error>;
-}
+export class MlService {
+  static inject = ["config"] as const;
 
-export class MlService extends Context.Tag("MlService")<MlService, MlServiceShape>() {
-  static makeLive = (baseUrl: string) => {
-    const client = createClient({ baseUrl });
+  private _client?: Client;
 
-    return Layer.succeed(
-      MlService,
-      MlService.of({
-        getImageHash: ({ url }) =>
-          Effect.promise(() => processImageGetImageHashPost({ client, body: { url } })).pipe(
-            Effect.flatMap((res) => {
-              if (typeof res.error !== "undefined") {
-                return Effect.fail(new Error(`ML API returned error: ${JSON.stringify(res.error)}`));
-              }
-              return Effect.succeed(res.data);
-            })
-          ),
-      })
-    );
-  };
+  constructor(private config: AppConfig) {}
+
+  get client(): Client {
+    if (this._client) {
+      return this._client;
+    }
+
+    const c = createClient({ baseUrl: this.config.mlOrigin, throwOnError: true });
+    this._client = c;
+    return c;
+  }
+
+  async getImageHash(url: string) {
+    const res = await processImageGetImageHashPost<true>({ client: this.client, body: { url } });
+    return res.data;
+  }
 }
