@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { AppConfig } from "./config.js";
+import { logger } from "../util/logger.js";
 
 const MEDIA_BUCKET = "media";
 const STICKER_BUCKET = "sticker";
@@ -8,13 +9,9 @@ const STICKER_BUCKET = "sticker";
 export class S3Service {
   static inject = ["config"] as const;
 
-  private _s3client?: S3Client;
-  constructor(private config: AppConfig) {}
-
-  get S3(): S3Client {
-    if (this._s3client) return this._s3client;
-
-    const s = new S3Client({
+  private s3: S3Client;
+  constructor(private config: AppConfig) {
+    this.s3 = new S3Client({
       region: "auto",
       endpoint: this.config.s3Endpoint,
       credentials: {
@@ -23,8 +20,7 @@ export class S3Service {
       },
       forcePathStyle: true,
     });
-    this._s3client = s;
-    return s;
+    logger.info("s3 client init");
   }
 
   /**
@@ -35,7 +31,7 @@ export class S3Service {
     const id = randomUUID();
     const filename = `${id}.${ext}`;
 
-    await this.S3.send(
+    await this.s3.send(
       new PutObjectCommand({
         Bucket: MEDIA_BUCKET,
         Key: filename,

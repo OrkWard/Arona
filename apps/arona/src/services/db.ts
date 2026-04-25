@@ -1,5 +1,6 @@
 import { MongoClient, Collection } from "mongodb";
 import { AppConfig } from "./config.js";
+import { logger } from "../util/logger.js";
 
 export interface MessageDoc {
   messageId: number;
@@ -56,6 +57,7 @@ export class DbService {
     if (this._client) return Promise.resolve(this._client);
 
     const c = new MongoClient(this.config.mongoUrl, { maxConnecting: 20 });
+    logger.info("Mongo client init");
     this._client = c;
     return c.connect();
   }
@@ -72,6 +74,7 @@ export class DbService {
     await collection.createIndex({ type: 1, createdAt: -1 });
   }
 
+  // save a message to db
   async saveMessage(data: Omit<MessageDoc, "_id" | "createdAt">) {
     const collection = await this.collection;
     await collection.insertOne({
@@ -79,28 +82,34 @@ export class DbService {
       createdAt: new Date(),
     });
   }
+
   async findSimilarImages(
-    params: { perceptualHash: string; pdqHashes: string[]; currentMsgId?: number },
+    params: { perceptualHash: string; pdqHashes: string[]; currentMsgId: number },
     config: { phashThreshold: number; pdqThreshold: number }
   ) {
     const { pdqHashes, perceptualHash, currentMsgId } = params;
     const { pdqThreshold, phashThreshold } = config;
     const collection = await this.collection;
-    const query: Record<string, unknown> = { type: "image", perceptualHash: { $exists: true } };
-    if (currentMsgId) {
-      query.messageId = { $ne: currentMsgId };
-    }
 
+    // query all images except current one
+    const query: Record<string, unknown> = {
+      type: "image",
+      perceptualHash: { $exists: true },
+      messageId: {
+        $ne: currentMsgId,
+      },
+    };
     const images = await collection.find(query).toArray();
 
     const results: SimilarImageResult[] = [];
-
     for (const img of images) {
       if (!img.perceptualHash || !img.pdqHashOriginal) continue;
 
+      // compare phash
       const phashDist = hammingDistance(perceptualHash, img.perceptualHash);
       const phashMatch = phashDist <= phashThreshold;
 
+      // compare pdq hash. since pdq hash can't handle rotate & flip we should compare for 8 times
       let pdqMatch = false;
       let minPdqDist = Infinity;
       for (const pdqHash of pdqHashes) {

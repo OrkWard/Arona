@@ -6,18 +6,10 @@ import { AppConfig } from "./config.js";
 export class MlService {
   static inject = ["config"] as const;
 
-  private _client?: Client;
+  private client: Client;
 
-  constructor(private config: AppConfig) {}
-
-  get client(): Client {
-    if (this._client) {
-      return this._client;
-    }
-
-    const c = createClient({ baseUrl: this.config.mlOrigin });
-    this._client = c;
-    return c;
+  constructor(private config: AppConfig) {
+    this.client = createClient({ baseUrl: config.mlOrigin });
   }
 
   async getImageHash(url: string) {

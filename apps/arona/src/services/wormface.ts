@@ -2,23 +2,18 @@ import { createClient } from "../codegen/wormface/client/client.gen.js";
 import { Client } from "../codegen/ml/client/types.gen.js";
 import { getTwitterByUserNamePosts, getYoutubeByChannelNameVideos } from "../codegen/wormface/index.js";
 import { AppConfig } from "./config.js";
+import { logger } from "../util/logger.js";
 
 export class WormfaceService {
   static inject = ["config"] as const;
 
-  private _client?: Client;
-  constructor(private config: AppConfig) {}
-
-  get client(): Client {
-    if (this._client) return this._client;
-
-    const c = createClient({ baseUrl: this.config.wormfaceOrigin });
-    this._client = c;
-    return c;
+  private client: Client;
+  constructor(private config: AppConfig) {
+    this.client = createClient({ baseUrl: this.config.wormfaceOrigin });
+    logger.info("wormface client created");
   }
 
   async getUserPosts(username: string) {
-    // TODO: config client to throw on error, not return
     const res = await getTwitterByUserNamePosts({ client: this.client, path: { userName: username } });
     const result = [] as { text?: string; media?: string[]; id: string }[];
     res.data.forEach((tweet) => {

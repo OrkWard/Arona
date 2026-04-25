@@ -50,22 +50,23 @@ const config = {
 } satisfies AppConfig;
 
 const onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger.child({ module: "onebot" }));
-const injector = createInjector()
+
+const container = createInjector()
   .provideValue("config", config)
-  .provideClass("redis", RedisService)
   .provideValue("onebot", onebot)
+  .provideClass("redis", RedisService)
   .provideClass("wormface", WormfaceService)
   .provideClass("ml", MlService)
   .provideClass("db", DbService)
   .provideClass("s3", S3Service);
 
-const arona = injector.injectClass(Arona);
+const arona = container.injectClass(Arona);
 
-arona.add("poke", injector.injectClass(PokePlugin));
-arona.add("alive", injector.injectClass(AlivePlugin));
-arona.add("mars", injector.injectClass(MarsPlugin));
-arona.add("backup", injector.injectClass(BackupPlugin));
-arona.cron("twitter", injector.injectClass(TwitterPlugin));
+arona.add("poke", container.injectClass(PokePlugin));
+arona.add("alive", container.injectClass(AlivePlugin));
+arona.add("mars", container.injectClass(MarsPlugin));
+arona.add("backup", container.injectClass(BackupPlugin));
+arona.cron("twitter", container.injectClass(TwitterPlugin));
 // arona.cron("youtube", createYouTubePlugin({ qqGroupId, youtubeChannelId: "UCmgf8DJrAXFnU7j3u0kklUQ" }), false);
 
 arona.start();

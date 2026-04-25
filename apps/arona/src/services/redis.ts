@@ -10,9 +10,7 @@ export class RedisService {
   constructor(private config: AppConfig) {}
 
   public async getClient() {
-    if (this._client) {
-      return this._client;
-    }
+    if (this._client) return this._client;
 
     const client = createClient({ url: this.config.redisUrl });
     client.on("error", (err) => logger.error({ msg: "Redis error", error: err }));
