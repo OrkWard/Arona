@@ -4,6 +4,17 @@ import { getTwitterByUserNamePosts, getYoutubeByChannelNameVideos } from "../cod
 import { AppConfig } from "./config.js";
 import { logger } from "../util/logger.js";
 
+type Tweet =
+  | { type: "post"; text: string; media: string[]; id: string }
+  | {
+      type: "conversation";
+      items: {
+        text: string;
+        media: string[];
+      }[];
+      id: string;
+    };
+
 export class WormfaceService {
   static inject = ["config"] as const;
 
@@ -15,24 +26,29 @@ export class WormfaceService {
 
   async getUserPosts(username: string) {
     const res = await getTwitterByUserNamePosts({ client: this.client, path: { userName: username } });
-    const result = [] as { text?: string; media?: string[]; id: string }[];
+    const result = [] as Tweet[];
     res.data.forEach((tweet) => {
       if (tweet.content?.entryType === "TimelineTimelineItem") {
         result.push({
+          type: "post",
           id: tweet.entryId!,
-          text: tweet.content.itemContent?.tweet_results?.result?.legacy?.full_text,
-          media: tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map(
-            (m) => m.media_url_https!
-          ),
+          text: tweet.content.itemContent?.tweet_results?.result?.legacy?.full_text ?? "",
+          media:
+            tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map((m) => m.media_url_https!) ??
+            [],
         });
       } else if (tweet.content?.entryType === "TimelineTimelineModule") {
-        result.push(
-          ...(tweet.content?.items?.map((i) => ({
-            id: i.entryId!,
-            text: i.item?.itemContent?.tweet_results?.result?.legacy?.full_text,
-            media: i.item?.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map((m) => m.media_url_https!),
-          })) || [])
-        );
+        result.push({
+          type: "conversation",
+          id: tweet.entryId!,
+          items:
+            tweet.content?.items?.map((i) => ({
+              text: i.item?.itemContent?.tweet_results?.result?.legacy?.full_text ?? "",
+              media:
+                i.item?.itemContent?.tweet_results?.result?.legacy?.entities?.media?.map((m) => m.media_url_https!) ??
+                [],
+            })) || [],
+        });
       }
     });
 

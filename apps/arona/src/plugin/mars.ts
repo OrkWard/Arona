@@ -103,14 +103,12 @@ export class MarsPlugin extends EventPlugin {
   }
 
   async onMessage(event: OneBotMessageEvent): Promise<void> {
-    logger.debug({ msg: "Mars plugin received message", message: event.message });
-
     const textSeg = findTextSegment(event.message);
     const match = textSeg?.data.text.trim().match(COMMAND_REGEX);
     logger.debug({ msg: "Mars command check", text: textSeg?.data.text, match: !!match });
     if (!match) return;
 
-    // 必须是对图片的回复
+    // 必须回复了另一条消息
     const replySeg = findReplySegment(event.message);
     if (!replySeg) {
       await this.sendReply(event, "Arona 没有找到需要检测的目标！");
@@ -121,6 +119,7 @@ export class MarsPlugin extends EventPlugin {
       message_id: parseInt(replySeg.data.id),
     });
 
+    // 回复的消息必须包含图片
     const imageSegs = findImageSegments(repliedMsg.message);
     if (imageSegs.length === 0) {
       await this.sendReply(event, "Arona 在目标消息中没有找到图片！");
@@ -129,10 +128,10 @@ export class MarsPlugin extends EventPlugin {
       await this.sendReply(event, `Arona 正在对${imageSegs.length}张图片进行检测……`);
     }
 
+    // 顺次检查
     const results: string[] = [];
     for (let i = 0; i < imageSegs.length; i++) {
       const imgSeg = imageSegs[i];
-      if (imgSeg.type !== "image") continue;
 
       logger.info(`Processing image ${i + 1}/${imageSegs.length} for mars command`);
 

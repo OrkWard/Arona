@@ -5,9 +5,9 @@
     "config": "op inject --in-file example.env --out-file .env -f",
     "openapi-ts": "openapi-ts",
     "dev:build": "tsc --build --watch",
-    "dev:start": "node --watch ./dist/main.js",
+    "dev:start": "node --watch --use-env-proxy ./dist/main.js",
     "build": "tsc --build",
-    "start": "node ./dist/main.js",
+    "start": "node --use-env-proxy ./dist/main.js",
     "migrate": "node ./dist/migrate.js"
   },
   "devDependencies": {

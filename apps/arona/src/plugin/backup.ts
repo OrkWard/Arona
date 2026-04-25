@@ -11,9 +11,9 @@ const logger = parentLogger.child({ module: "backup" });
  */
 export class BackupPlugin extends EventPlugin {
   private async processTextMessage(event: OneBotMessageEvent, text: string, segmentIndex: number) {
-    const messageId = event.message_id;
     if (event.message_type !== "group") return;
 
+    const messageId = event.message_id;
     await this.db.saveMessage({
       messageId,
       segmentIndex,
@@ -32,7 +32,6 @@ export class BackupPlugin extends EventPlugin {
 
     const messageId = event.message_id;
     const buffer = await ky.get(imageUrl).arrayBuffer();
-
     const minioUrl = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
     logger.debug({ msg: "Image uploaded to Minio", messageId, url: minioUrl });
 
