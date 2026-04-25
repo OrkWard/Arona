@@ -8,13 +8,29 @@ export default defineConfig([
       importFileExtension: ".js",
       postProcess: ["prettier"],
     },
+    plugins: [
+      "@hey-api/typescript",
+      "@hey-api/sdk",
+      {
+        name: "@hey-api/client-ky",
+        throwOnError: true,
+      },
+    ],
   },
   {
-    input: "../arona-ml/openapi.json",
+    input: "https://raw.githubusercontent.com/OrkWard/arona-ml/refs/heads/master/openapi.json",
     output: {
       path: "src/codegen/ml",
       importFileExtension: ".js",
       postProcess: ["prettier"],
     },
+    plugins: [
+      "@hey-api/typescript",
+      "@hey-api/sdk",
+      {
+        name: "@hey-api/client-ky",
+        throwOnError: true,
+      },
+    ],
   },
 ]);

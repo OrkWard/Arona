@@ -1,11 +1,9 @@
-import { got } from "got";
-
+import ky from "ky";
 import { logger as parentLogger } from "../util/logger.js";
 import type { OneBotMessageEvent } from "onebot";
 import { EventPlugin } from "../core/plugin.js";
 
 const logger = parentLogger.child({ module: "backup" });
-const { get } = got;
 
 /**
  * 备份群聊的消息
@@ -33,9 +31,9 @@ export class BackupPlugin extends EventPlugin {
     if (event.message_type !== "group") return;
 
     const messageId = event.message_id;
-    const buffer = await get(imageUrl).buffer();
+    const buffer = await ky.get(imageUrl).arrayBuffer();
 
-    const minioUrl = await this.s3.saveMedia(buffer, "jpg");
+    const minioUrl = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
     logger.debug({ msg: "Image uploaded to Minio", messageId, url: minioUrl });
 
     const hashResponse = await this.ml.getImageHash(minioUrl);

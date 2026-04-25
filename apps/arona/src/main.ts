@@ -3,7 +3,7 @@ import { createInjector } from "typed-inject";
 import { OneBot } from "onebot";
 import { logger } from "./util/logger.js";
 
-import { Arona } from "./arona.js";
+import { Arona } from "./core/arona.js";
 import { AppConfig } from "./services/config.js";
 import { RedisService } from "./services/redis.js";
 import { WormfaceService } from "./services/wormface.js";

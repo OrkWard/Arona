@@ -1,11 +1,9 @@
-import { got } from "got";
-
+import ky from "ky";
 import { logger as parentLogger } from "../util/logger.js";
 import type { Message, OneBotMessageEvent } from "onebot";
 import { EventPlugin } from "../core/plugin.js";
 
 const logger = parentLogger.child({ module: "mars" });
-const { get } = got;
 
 const COMMAND_REGEX = /^\/(火星|煋|晗|old|mars|m)$/;
 
@@ -54,8 +52,8 @@ export class MarsPlugin extends EventPlugin {
 
   // 处理图片
   private async processImage(currentMsgId: number, imageUrl: string, groupId: number) {
-    const buffer = await get(imageUrl).buffer();
-    const minioUrl = await this.s3.saveMedia(buffer, "jpg");
+    const buffer = await ky.get(imageUrl).arrayBuffer();
+    const minioUrl = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
     const hashResponse = await this.ml.getImageHash(minioUrl);
 
     const pdqhash = hashResponse.pdqhash;

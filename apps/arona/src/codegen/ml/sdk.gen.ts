@@ -28,7 +28,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * Process Image
  */
-export const processImageGetImageHashPost = <ThrowOnError extends boolean = false>(
+export const processImageGetImageHashPost = <ThrowOnError extends boolean = true>(
   options: Options<ProcessImageGetImageHashPostData, ThrowOnError>
 ) =>
   (options.client ?? client).post<

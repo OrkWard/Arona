@@ -15,13 +15,13 @@ export class MlService {
       return this._client;
     }
 
-    const c = createClient({ baseUrl: this.config.mlOrigin, throwOnError: true });
+    const c = createClient({ baseUrl: this.config.mlOrigin });
     this._client = c;
     return c;
   }
 
   async getImageHash(url: string) {
-    const res = await processImageGetImageHashPost<true>({ client: this.client, body: { url } });
+    const res = await processImageGetImageHashPost({ client: this.client, body: { url } });
     return res.data;
   }
 }

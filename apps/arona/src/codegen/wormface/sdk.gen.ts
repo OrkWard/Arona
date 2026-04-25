@@ -33,7 +33,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  * Get a list of tweets for a given user
  */
-export const getTwitterByUserNamePosts = <ThrowOnError extends boolean = false>(
+export const getTwitterByUserNamePosts = <ThrowOnError extends boolean = true>(
   options: Options<GetTwitterByUserNamePostsData, ThrowOnError>
 ) =>
   (options.client ?? client).get<GetTwitterByUserNamePostsResponses, GetTwitterByUserNamePostsErrors, ThrowOnError>({
@@ -46,7 +46,7 @@ export const getTwitterByUserNamePosts = <ThrowOnError extends boolean = false>(
  *
  * Get a list of videos for a given YouTube channel
  */
-export const getYoutubeByChannelNameVideos = <ThrowOnError extends boolean = false>(
+export const getYoutubeByChannelNameVideos = <ThrowOnError extends boolean = true>(
   options: Options<GetYoutubeByChannelNameVideosData, ThrowOnError>
 ) =>
   (options.client ?? client).get<

@@ -12,14 +12,14 @@ export class WormfaceService {
   get client(): Client {
     if (this._client) return this._client;
 
-    const c = createClient({ baseUrl: this.config.wormfaceOrigin, throwOnError: true });
+    const c = createClient({ baseUrl: this.config.wormfaceOrigin });
     this._client = c;
     return c;
   }
 
   async getUserPosts(username: string) {
     // TODO: config client to throw on error, not return
-    const res = await getTwitterByUserNamePosts<true>({ client: this.client, path: { userName: username } });
+    const res = await getTwitterByUserNamePosts({ client: this.client, path: { userName: username } });
     const result = [] as { text?: string; media?: string[]; id: string }[];
     res.data.forEach((tweet) => {
       if (tweet.content?.entryType === "TimelineTimelineItem") {

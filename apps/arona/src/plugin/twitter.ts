@@ -1,9 +1,8 @@
+import ky from "ky";
 import { CronPlugin } from "../core/plugin.js";
 import { logger as parentLogger } from "../util/logger.js";
-import { got } from "got";
 
 const logger = parentLogger.child({ module: "twitter" });
-const { get } = got;
 
 const MAX_TWEETS_TO_PROCESS = 2;
 const REDIS_TWITTER_SENT = "arona_twitter_bajp_sent";
@@ -44,8 +43,8 @@ export class TwitterPlugin extends CronPlugin {
         if (tweetMedia) {
           logger.info(`Media counts: ${tweetMedia.length}`);
           for (const mediaUrl of tweetMedia) {
-            const buffer = await get(mediaUrl).buffer();
-            const url = await this.s3.saveMedia(buffer, "jpg");
+            const buffer = await ky.get(mediaUrl).arrayBuffer();
+            const url = await this.s3.saveMedia(Buffer.from(buffer), "jpg");
             logger.info(`Saved url: ${url}`);
 
             await this.onebot.post("send_group_msg", {

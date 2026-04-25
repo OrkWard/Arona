@@ -2,9 +2,9 @@ import * as Sentry from "@sentry/node";
 import cron, { type ScheduledTask } from "node-cron";
 
 import { OneBot, OneBotMessageEvent, OneBotNoticeEvent, OneBotMetaEvent } from "onebot";
-import { logger } from "./util/logger.js";
-import { AppConfig } from "./services/config.js";
-import { CronPlugin, EventPlugin } from "./core/plugin.js";
+import { logger } from "../util/logger.js";
+import { AppConfig } from "../services/config.js";
+import { CronPlugin, EventPlugin } from "./plugin.js";
 
 export class Arona {
   static inject = ["config", "onebot"] as const;

@@ -18,8 +18,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
     "@sentry/node": "catalog:",
-    "got": "catalog:",
     "html-entities": "^2.5.2",
+    "ky": "^2.0.2",
     "mongodb": "^6.0.0",
     "node-cron": "^4.2.1",
     "onebot": "workspace:*",
