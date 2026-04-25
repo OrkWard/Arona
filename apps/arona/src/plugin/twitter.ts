@@ -2,6 +2,7 @@ import ky from "ky";
 import { CronPlugin } from "../core/plugin.js";
 import { logger as parentLogger } from "../util/logger.js";
 import { Tweet } from "../services/wormface.js";
+import { stableHash } from "stable-hash";
 
 const logger = parentLogger.child({ module: "twitter" });
 
@@ -18,7 +19,7 @@ function isTweetEmpty(tweet: Tweet): boolean {
   if (tweet.type === "post") {
     return !tweet.text && tweet.image.length === 0 && tweet.video.length === 0;
   } else if (tweet.type === "conversation") {
-    return tweet.items.reduce((acc, cur) => acc && isTweetEmpty({ type: "post", ...cur, id: "" }), true);
+    return tweet.items.reduce((acc, cur) => acc && isTweetEmpty({ type: "post", ...cur }), true);
   }
 
   return true;
@@ -52,7 +53,7 @@ export class TwitterPlugin extends CronPlugin {
     const redis = await this.redis.getClient();
 
     for (const tweet of tweets.slice(0, MAX_TWEETS_TO_PROCESS)) {
-      const { id: tweetId } = tweet;
+      const tweetId = stableHash(tweet);
 
       if (isTweetEmpty(tweet)) continue;
 

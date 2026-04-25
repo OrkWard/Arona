@@ -77,6 +77,9 @@ importers:
       redis:
         specifier: ^5.0.0
         version: 5.0.0
+      stable-hash:
+        specifier: ^0.0.6
+        version: 0.0.6
       typed-inject:
         specifier: ^5.0.0
         version: 5.0.0
@@ -1232,6 +1235,9 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+
+  stable-hash@0.0.6:
+    resolution: {integrity: sha512-0afH4mobqTybYZsXImQRLOjHV4gvOW+92HdUIax9t7a8d9v54KWykEuMVIcXhD9BCi+w3kS4x7O6fmZQ3JlG/g==}
 
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
@@ -2885,6 +2891,8 @@ snapshots:
       memory-pager: 1.5.0
 
   split2@4.2.0: {}
+
+  stable-hash@0.0.6: {}
 
   strip-json-comments@3.1.1: {}
 

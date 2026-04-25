@@ -27,6 +27,7 @@
     "pino": "catalog:",
     "pino-pretty": "catalog:",
     "redis": "^5.0.0",
+    "stable-hash": "^0.0.6",
     "typed-inject": "^5.0.0"
   }
 }

@@ -6,7 +6,7 @@ import { logger } from "../util/logger.js";
 import { maxBy } from "es-toolkit";
 
 export type Tweet =
-  | { type: "post"; text: string; image: string[]; video: string[]; id: string }
+  | { type: "post"; text: string; image: string[]; video: string[] }
   | {
       type: "conversation";
       items: {
@@ -14,7 +14,6 @@ export type Tweet =
         image: string[];
         video: string[];
       }[];
-      id: string;
     };
 
 export class WormfaceService {
@@ -33,7 +32,6 @@ export class WormfaceService {
       if (tweet.content?.entryType === "TimelineTimelineItem") {
         result.push({
           type: "post",
-          id: tweet.entryId!,
           text: tweet.content.itemContent?.tweet_results?.result?.legacy?.full_text ?? "",
           image:
             tweet.content.itemContent?.tweet_results?.result?.legacy?.entities?.media
@@ -50,7 +48,6 @@ export class WormfaceService {
       } else if (tweet.content?.entryType === "TimelineTimelineModule") {
         result.push({
           type: "conversation",
-          id: tweet.entryId!,
           items:
             tweet.content?.items?.map((i) => ({
               text: i.item?.itemContent?.tweet_results?.result?.legacy?.full_text ?? "",
