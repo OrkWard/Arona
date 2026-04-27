@@ -17,6 +17,7 @@ import { PokePlugin } from "./plugin/poke.js";
 import { AlivePlugin } from "./plugin/alive.js";
 import { MarsPlugin } from "./plugin/mars.js";
 import { BackupPlugin } from "./plugin/backup.js";
+import { migrate } from "./migrate.js";
 
 function assertEnv(name: string): string {
   const value = process.env[name];
@@ -59,6 +60,21 @@ const container = createInjector()
   .provideClass("ml", MlService)
   .provideClass("db", DbService)
   .provideClass("s3", S3Service);
+
+// migrate
+if (process.argv.includes("migrate")) {
+  await container
+    .injectFunction(migrate)
+    .then(() => {
+      console.log("Migrate success");
+      process.exit(0);
+    })
+    .catch((e) => {
+      console.error("Migrate fail");
+      console.error(e);
+      process.exit(1);
+    });
+}
 
 const arona = container.injectClass(Arona);
 

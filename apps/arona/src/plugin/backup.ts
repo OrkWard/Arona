@@ -50,8 +50,8 @@ export class BackupPlugin extends EventPlugin {
       type: "image",
       content: imageUrl, // Original URL
       imageUrl: minioUrl, // Minio URL
-      perceptualHash: hashResponse.perceptual_hash,
-      pdqHashOriginal: pdqhash.original,
+      perceptualHash: Buffer.from(hashResponse.perceptual_hash, "hex"),
+      pdqHashOriginal: Buffer.from(pdqhash.original, "hex"),
       pdqHashQuality: pdqhash.quality,
     });
 

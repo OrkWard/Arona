@@ -11,8 +11,8 @@ export interface MessageDoc {
   type: "text" | "image";
   content?: string;
   imageUrl?: string;
-  perceptualHash?: string;
-  pdqHashOriginal?: string;
+  perceptualHash?: Buffer;
+  pdqHashOriginal?: Buffer;
   pdqHashQuality?: number;
   createdAt: Date;
 }
@@ -32,17 +32,29 @@ export interface SimilarImageResult {
 const DB_NAME = "arona";
 const COLLECTION_NAME = "messages";
 
-function hammingDistance(a: string, b: string): number {
-  if (a.length !== b.length) {
-    // Handle hex strings of different lengths by padding
-    const maxLen = Math.max(a.length, b.length);
-    a = a.padStart(maxLen, "0");
-    b = b.padStart(maxLen, "0");
+/**
+ * 预计算的 8 位数值的比特位个数表 (0-255)
+ */
+const BIT_COUNTS: readonly number[] = (() => {
+  const counts = new Array(256);
+  for (let i = 0; i < 256; i++) {
+    // 使用 Brian Kernighan 算法计算 i 中 1 的个数
+    let n = i;
+    let cnt = 0;
+    while (n) {
+      n &= n - 1;
+      cnt++;
+    }
+    counts[i] = cnt;
   }
+  return counts;
+})();
+
+export function hammingDistance(a: Buffer, b: Buffer): number {
   let distance = 0;
   for (let i = 0; i < a.length; i++) {
-    const xor = parseInt(a[i], 16) ^ parseInt(b[i], 16);
-    distance += (xor & 1) + ((xor >> 1) & 1) + ((xor >> 2) & 1) + ((xor >> 3) & 1);
+    const xor = a[i] ^ b[i];
+    distance += BIT_COUNTS[xor];
   }
   return distance;
 }
@@ -108,14 +120,14 @@ export class DbService {
       if (!img.perceptualHash || !img.pdqHashOriginal) continue;
 
       // compare phash
-      const phashDist = hammingDistance(perceptualHash, img.perceptualHash);
+      const phashDist = hammingDistance(Buffer.from(perceptualHash, "hex"), img.perceptualHash);
       const phashMatch = phashDist <= phashThreshold;
 
       // compare pdq hash. since pdq hash can't handle rotate & flip we should compare for 8 times
       let pdqMatch = false;
       let minPdqDist = Infinity;
       for (const pdqHash of pdqHashes) {
-        const dist = hammingDistance(pdqHash, img.pdqHashOriginal);
+        const dist = hammingDistance(Buffer.from(pdqHash, "hex"), img.pdqHashOriginal);
         minPdqDist = Math.min(minPdqDist, dist);
         if (dist <= pdqThreshold) {
           pdqMatch = true;
@@ -129,8 +141,8 @@ export class DbService {
           group: img.groupId,
           ctime: img.createdAt,
           imageUrl: img.imageUrl!,
-          perceptualHash: img.perceptualHash,
-          pdqHashOriginal: img.pdqHashOriginal,
+          perceptualHash: img.perceptualHash.toString("hex"),
+          pdqHashOriginal: img.pdqHashOriginal.toString("hex"),
           matchType: phashMatch ? "phash" : "pdq",
           phashDistance: phashDist,
           pdqDistance: minPdqDist === Infinity ? undefined : minPdqDist,
