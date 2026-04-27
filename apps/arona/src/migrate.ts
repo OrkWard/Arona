@@ -3,6 +3,8 @@ import { DbService } from "./services/db.js";
 export async function migrate(db: DbService) {
   const collection = await db.collection;
 
+  const dryRun = process.argv.includes("--dry-run");
+
   const cursor = collection.find({
     $or: [{ perceptualHash: { $type: "string" } }, { pdqHashOriginal: { $type: "string" } }],
   });
@@ -20,9 +22,13 @@ export async function migrate(db: DbService) {
     }
 
     if (Object.keys(set).length > 0) {
-      await collection.updateOne({ _id: doc._id }, { $set: set });
+      if (!dryRun) {
+        // await collection.updateOne({ _id: doc._id }, { $set: set });
+      }
       updatedCount++;
     }
   }
+
+  console.log(`${updatedCount} record updated`);
 }
 migrate.inject = ["db"] as const;

@@ -8,7 +8,7 @@
     "dev:start": "node --watch --use-env-proxy ./dist/main.js",
     "build": "tsc --build",
     "start": "node --use-env-proxy ./dist/main.js",
-    "migrate": "node ./dist/migrate.js"
+    "migrate": "node ./dist/main.js migrate"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "0.94.0",
