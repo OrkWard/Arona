@@ -2,6 +2,7 @@ import ky from "ky";
 import { logger as parentLogger } from "../util/logger.js";
 import type { OneBotMessageEvent } from "onebot";
 import { EventPlugin } from "../core/plugin.js";
+import { Binary } from "mongodb";
 
 const logger = parentLogger.child({ module: "backup" });
 
@@ -50,8 +51,8 @@ export class BackupPlugin extends EventPlugin {
       type: "image",
       content: imageUrl, // Original URL
       imageUrl: minioUrl, // Minio URL
-      perceptualHash: Buffer.from(hashResponse.perceptual_hash, "hex"),
-      pdqHashOriginal: Buffer.from(pdqhash.original, "hex"),
+      perceptualHash: Binary.createFromHexString(hashResponse.perceptual_hash),
+      pdqHashOriginal: Binary.createFromHexString(pdqhash.original),
       pdqHashQuality: pdqhash.quality,
     });
 

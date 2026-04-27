@@ -1,4 +1,4 @@
-import { MongoClient, Collection } from "mongodb";
+import { MongoClient, Collection, Binary } from "mongodb";
 import { AppConfig } from "./config.js";
 import { logger } from "../util/logger.js";
 
@@ -11,8 +11,8 @@ export interface MessageDoc {
   type: "text" | "image";
   content?: string;
   imageUrl?: string;
-  perceptualHash?: Buffer;
-  pdqHashOriginal?: Buffer;
+  perceptualHash?: Binary;
+  pdqHashOriginal?: Binary;
   pdqHashQuality?: number;
   createdAt: Date;
 }
@@ -50,7 +50,7 @@ const BIT_COUNTS: readonly number[] = (() => {
   return counts;
 })();
 
-export function hammingDistance(a: Buffer, b: Buffer): number {
+export function hammingDistance(a: Uint8Array, b: Uint8Array): number {
   let distance = 0;
   for (let i = 0; i < a.length; i++) {
     const xor = a[i] ^ b[i];
@@ -120,14 +120,14 @@ export class DbService {
       if (!img.perceptualHash || !img.pdqHashOriginal) continue;
 
       // compare phash
-      const phashDist = hammingDistance(Buffer.from(perceptualHash, "hex"), img.perceptualHash);
+      const phashDist = hammingDistance(Buffer.from(perceptualHash, "hex"), img.perceptualHash.buffer);
       const phashMatch = phashDist <= phashThreshold;
 
       // compare pdq hash. since pdq hash can't handle rotate & flip we should compare for 8 times
       let pdqMatch = false;
       let minPdqDist = Infinity;
       for (const pdqHash of pdqHashes) {
-        const dist = hammingDistance(Buffer.from(pdqHash, "hex"), img.pdqHashOriginal);
+        const dist = hammingDistance(Buffer.from(pdqHash, "hex"), img.pdqHashOriginal.buffer);
         minPdqDist = Math.min(minPdqDist, dist);
         if (dist <= pdqThreshold) {
           pdqMatch = true;
