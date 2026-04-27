@@ -4,6 +4,9 @@ export async function migrate(db: DbService) {
   const collection = await db.collection;
 
   const dryRun = process.argv.includes("--dry-run");
+  if (dryRun) {
+    console.warn("warn: dry-run mode");
+  }
 
   const cursor = collection.find({
     $or: [{ perceptualHash: { $type: "string" } }, { pdqHashOriginal: { $type: "string" } }],
@@ -23,7 +26,7 @@ export async function migrate(db: DbService) {
 
     if (Object.keys(set).length > 0) {
       if (!dryRun) {
-        // await collection.updateOne({ _id: doc._id }, { $set: set });
+        await collection.updateOne({ _id: doc._id }, { $set: set });
       }
       updatedCount++;
     }
