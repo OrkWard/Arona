@@ -21,7 +21,7 @@ export class WormfaceService {
 
   private client: Client;
   constructor(private config: AppConfig) {
-    this.client = createClient({ baseUrl: this.config.wormfaceOrigin });
+    this.client = createClient({ baseUrl: this.config.wormfaceOrigin, throwOnError: true });
     logger.info("wormface client created");
   }
 

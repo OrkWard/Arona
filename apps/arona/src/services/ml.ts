@@ -9,7 +9,7 @@ export class MlService {
   private client: Client;
 
   constructor(private config: AppConfig) {
-    this.client = createClient({ baseUrl: config.mlOrigin });
+    this.client = createClient({ baseUrl: config.mlOrigin, throwOnError: true });
   }
 
   async getImageHash(url: string) {

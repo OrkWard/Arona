@@ -37,7 +37,7 @@ export class BackupPlugin extends EventPlugin {
     logger.debug({ msg: "Image uploaded to Minio", messageId, url: minioUrl });
 
     const hashResponse = await this.ml.getImageHash(minioUrl);
-    logger.debug({ msg: "Image hash computed", messageId, phash: hashResponse.perceptual_hash });
+    logger.debug({ msg: "Image hash computed", messageId, phash: hashResponse });
 
     const pdqhash = hashResponse.pdqhash;
 
