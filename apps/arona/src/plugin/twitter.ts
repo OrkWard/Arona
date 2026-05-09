@@ -68,22 +68,41 @@ export class TwitterPlugin extends CronPlugin {
 
       for (const groupId of targetGroups) {
         if (tweet.type === "post") {
+          logger.info({ text: tweet.text, groupId }, "Sending text");
           await this.onebot.post("send_group_msg", {
             group_id: groupId,
             message: [{ type: "text", data: { text: tweet.text } }],
           });
+          logger.info({ image: tweet.image, groupId }, "Sending image");
           await Promise.all(tweet.image.map((url) => this.sendImage(url, groupId)));
+          logger.info({ video: tweet.video, groupId }, "Sending video");
           await Promise.all(tweet.video.map((url) => this.sendVideo(url, groupId)));
         } else if (tweet.type === "conversation") {
           for (const singleTweet of tweet.items) {
+            logger.info(
+              { text: singleTweet.text, groupId, index: tweet.items.findIndex((i) => i == singleTweet) },
+              "Sending conversation text"
+            );
             await this.onebot.post("send_group_msg", {
               group_id: groupId,
               message: [{ type: "text", data: { text: singleTweet.text } }],
             });
+            logger.info(
+              { image: singleTweet.image, groupId, index: tweet.items.findIndex((i) => i == singleTweet) },
+              "Sending conversation image"
+            );
             await Promise.all(singleTweet.image.map((url) => this.sendImage(url, groupId)));
+            logger.info(
+              { video: singleTweet.video, groupId, index: tweet.items.findIndex((i) => i == singleTweet) },
+              "Sending conversation video"
+            );
             await Promise.all(singleTweet.video.map((url) => this.sendVideo(url, groupId)));
           }
         }
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        });
       }
 
       logger.info("Tweet sent to groups done");
