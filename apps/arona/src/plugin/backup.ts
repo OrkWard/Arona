@@ -63,11 +63,11 @@ export class BackupPlugin extends EventPlugin {
     let segmentIndex = 0;
     for (const segment of event.message) {
       if (segment.type === "text") {
-        this.processTextMessage(event, segment.data.text, segmentIndex).catch((e) => {
+        await this.processTextMessage(event, segment.data.text, segmentIndex).catch((e) => {
           throw new Error("Failed to process text", { cause: e });
         });
       } else if (segment.type === "image") {
-        this.processImageMessage(event, segment.data.url, segmentIndex).catch((e) => {
+        await this.processImageMessage(event, segment.data.url, segmentIndex).catch((e) => {
           throw new Error("Failed to process image", { cause: e });
         });
       }
