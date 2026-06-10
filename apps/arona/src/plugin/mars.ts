@@ -58,6 +58,8 @@ export class MarsPlugin extends EventPlugin {
 
     const pdqhash = hashResponse.pdqhash;
 
+    logger.info({ minioUrl, ...hashResponse });
+
     // Extract all PDQ hashes
     const pdqHashes = [
       pdqhash.original,
