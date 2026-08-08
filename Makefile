@@ -1,4 +1,5 @@
 IMAGE_NAME := localhost:5000/arona
+GIT_SHA   := $(shell git rev-parse --short HEAD)
 
 .PHONY: build config upload-sourcemap docker push
 
@@ -15,7 +16,8 @@ upload-sourcemap: build
 	sentry-cli sourcemaps upload apps/arona/dist
 
 docker:
-	docker build -t $(IMAGE_NAME):latest .
+	docker build -t $(IMAGE_NAME):latest -t $(IMAGE_NAME):$(GIT_SHA) .
 
 push: docker
 	docker push $(IMAGE_NAME):latest
+	docker push $(IMAGE_NAME):$(GIT_SHA)
