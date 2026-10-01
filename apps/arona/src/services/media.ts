@@ -48,10 +48,14 @@ export class S3Service {
     return JSON.parse(await response.Body.transformToString()) as T;
   }
 
+  getObjectUrl(bucket: string, key: string) {
+    return `${this.config.s3Endpoint}/${bucket}/${key}`;
+  }
+
   /**
    * Get URL for a sticker (e.g., "Arona_1.png").
    */
   getStickerUrl(name: string) {
-    return `${this.config.s3Endpoint}/${STICKER_BUCKET}/${name}`;
+    return this.getObjectUrl(STICKER_BUCKET, name);
   }
 }

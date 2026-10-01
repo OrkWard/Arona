@@ -1,4 +1,3 @@
-import { randomInt } from "node:crypto";
 import type { Message, OneBotMessageEvent } from "onebot";
 import { EventPlugin } from "../core/plugin.js";
 import { logger as parentLogger } from "../util/logger.js";
@@ -14,6 +13,7 @@ export interface AronaQuote {
   end: number;
   official_url: string;
   bilibili_url: string;
+  image_key: string;
   flags?: string[];
 }
 
@@ -35,6 +35,16 @@ export class RoastPlugin extends EventPlugin {
       message: [
         { type: "reply", data: { id: event.message_id.toString() } },
         { type: "text", data: { text } },
+      ],
+    });
+  }
+
+  private async sendImageReply(event: Extract<OneBotMessageEvent, { message_type: "group" }>, imageKey: string) {
+    await this.onebot.post("send_group_msg", {
+      group_id: event.group_id,
+      message: [
+        { type: "reply", data: { id: event.message_id.toString() } },
+        { type: "image", data: { file: this.s3.getObjectUrl("share", imageKey) } },
       ],
     });
   }
@@ -100,15 +110,22 @@ export class RoastPlugin extends EventPlugin {
         usage: decision.usage,
       });
 
-      const selected = decision.winners[randomInt(decision.winners.length)];
+      const selected = decision.winners.reduce((best, winner) =>
+        winner.confidence > best.confidence ? winner : best
+      );
       logger.info({
-        msg: "Arona roast random pick",
+        msg: "Arona roast highest-confidence pick",
         quoteId: selected.value.id,
         text: selected.value.text,
         episode: selected.value.episode,
         confidence: selected.confidence,
       });
-      await this.sendReply(event, selected.value.text);
+      try {
+        await this.sendImageReply(event, selected.value.image_key);
+      } catch (error) {
+        logger.warn({ msg: "Failed to send Arona roast image, falling back to text", error });
+        await this.sendReply(event, selected.value.text);
+      }
     } catch (error) {
       logger.error({ msg: "Arona roast failed", error });
       await this.sendReply(event, "Arona 现在有点困……");
