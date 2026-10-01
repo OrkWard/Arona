@@ -17,6 +17,15 @@ export interface MessageDoc {
   createdAt: Date;
 }
 
+export interface MessageContext {
+  messageId: number;
+  senderId: number;
+  sender: string;
+  content: string;
+  createdAt: Date;
+  isTarget: boolean;
+}
+
 export interface SimilarImageResult {
   sender: string;
   group: number;
@@ -93,6 +102,60 @@ export class DbService {
       ...data,
       createdAt: new Date(),
     });
+  }
+
+  async getMessageContext(groupId: number, targetMessageId: number, previousLimit = 50): Promise<MessageContext[]> {
+    if (!Number.isInteger(previousLimit) || previousLimit < 0) {
+      throw new RangeError("previousLimit must be a non-negative integer");
+    }
+
+    const collection = await this.collection;
+    const target = await collection.findOne({ groupId, messageId: targetMessageId });
+    if (!target) return [];
+
+    type AggregateMessage = {
+      _id: number;
+      senderId: number;
+      sender: string;
+      createdAt: Date;
+      segments: { index: number; content: string }[];
+    };
+
+    const messages = await collection
+      .aggregate<AggregateMessage>([
+        { $match: { groupId } },
+        { $sort: { messageId: 1, segmentIndex: 1 } },
+        {
+          $group: {
+            _id: "$messageId",
+            senderId: { $first: "$senderId" },
+            sender: { $first: "$sender" },
+            createdAt: { $min: "$createdAt" },
+            segments: {
+              $push: {
+                index: "$segmentIndex",
+                content: { $cond: [{ $eq: ["$type", "image"] }, "[图片]", { $ifNull: ["$content", ""] }] },
+              },
+            },
+          },
+        },
+        { $match: { $or: [{ createdAt: { $lt: target.createdAt } }, { _id: targetMessageId }] } },
+        { $sort: { createdAt: -1, _id: -1 } },
+        { $limit: previousLimit + 1 },
+      ])
+      .toArray();
+
+    return messages.toReversed().map((message) => ({
+      messageId: message._id,
+      senderId: message.senderId,
+      sender: message.sender,
+      content: message.segments
+        .toSorted((a, b) => a.index - b.index)
+        .map((segment) => segment.content)
+        .join(""),
+      createdAt: message.createdAt,
+      isTarget: message._id === targetMessageId,
+    }));
   }
 
   async findSimilarImages(

@@ -23,4 +23,11 @@ export type AppConfig = {
 
   // MongoDB
   mongoUrl: string;
+
+  // TypeSafe JEV decision API
+  jevApiKey: string;
+  jevOrigin: string;
+
+  // Arona quote corpus
+  aronaQuotesUrl: string;
 };

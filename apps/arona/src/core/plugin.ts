@@ -5,9 +5,10 @@ import { WormfaceService } from "../services/wormface.js";
 import { DbService } from "../services/db.js";
 import { MlService } from "../services/ml.js";
 import { S3Service } from "../services/media.js";
+import { JevService } from "../services/jev.js";
 
 export class BasePlugin {
-  static inject = ["config", "redis", "onebot", "wormface", "db", "ml", "s3"] as const;
+  static inject = ["config", "redis", "onebot", "wormface", "db", "ml", "s3", "jev"] as const;
 
   constructor(
     protected config: AppConfig,
@@ -16,7 +17,8 @@ export class BasePlugin {
     protected wormface: WormfaceService,
     protected db: DbService,
     protected ml: MlService,
-    protected s3: S3Service
+    protected s3: S3Service,
+    protected jev: JevService
   ) {}
 }
 
