@@ -114,6 +114,7 @@ export class RoastPlugin extends EventPlugin {
     } catch (error) {
       logger.error({ msg: "Arona roast failed", error });
       await this.sendReply(event, "Arona 现在有点困……");
+      throw error;
     }
   }
 }
