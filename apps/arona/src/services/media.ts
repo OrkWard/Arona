@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { AppConfig } from "./config.js";
 import { logger } from "../util/logger.js";
 
@@ -40,6 +40,12 @@ export class S3Service {
     );
 
     return `${this.config.s3Endpoint}/${MEDIA_BUCKET}/${filename}`;
+  }
+
+  async getJson<T>(bucket: string, key: string): Promise<T> {
+    const response = await this.s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    if (!response.Body) throw new Error(`S3 object has no body: ${bucket}/${key}`);
+    return JSON.parse(await response.Body.transformToString()) as T;
   }
 
   /**

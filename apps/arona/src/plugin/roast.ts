@@ -41,11 +41,9 @@ export class RoastPlugin extends EventPlugin {
 
   private loadQuotes() {
     if (!this.quotesPromise) {
-      this.quotesPromise = fetch(this.config.aronaQuotesUrl, { signal: AbortSignal.timeout(30_000) })
-        .then(async (response) => {
-          if (!response.ok) throw new Error(`Quote corpus request failed with HTTP ${response.status}`);
-          return ((await response.json()) as QuoteCorpus).quotes;
-        })
+      this.quotesPromise = this.s3
+        .getJson<QuoteCorpus>("share", "arona-channel/quotes.zh.json")
+        .then((corpus) => corpus.quotes)
         .catch((error) => {
           this.quotesPromise = undefined;
           throw error;

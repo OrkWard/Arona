@@ -28,6 +28,4 @@ export type AppConfig = {
   jevApiKey: string;
   jevOrigin: string;
 
-  // Arona quote corpus
-  aronaQuotesUrl: string;
 };

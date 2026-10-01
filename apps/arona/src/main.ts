@@ -52,7 +52,6 @@ const config = {
   mongoUrl: assertEnv("MONGO_URL"),
   jevApiKey: assertEnv("JEV_API_KEY"),
   jevOrigin: "https://api.typesafe.ai/v1/systemone",
-  aronaQuotesUrl: "http://oss.lan/share/arona-channel/quotes.zh.json",
 } satisfies AppConfig;
 
 const onebot = new OneBot(config.onebotOrigin, config.onebotAuthToken, logger.child({ module: "onebot" }));
